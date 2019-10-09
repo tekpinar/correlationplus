@@ -20,7 +20,8 @@ import numpy as np
 import getopt
 import sys
 import matplotlib
-from prody import *
+#from prody import *
+from prody import parsePDB
 from collections import Counter
 
 def usage():
@@ -101,14 +102,13 @@ def overall_nDCC_map(ccMatrix, out_file, sel_type, selectedAtoms):
     ##########################################################################
     #Set residue interface definitions
     fig=plt.figure()
+    fig.set_size_inches(8.0, 5.5, forward=True)
     plt.rcParams['font.size'] = 16
     ax=fig.add_subplot(1,1,1)
 
     plt.xlabel('Residue indices')
     plt.ylabel('Residue indices')
     plt.title(sel_type, y=1.08)
-
-    selection_tick_labels=[]
 
     #print(selectedAtoms.getChids())
 
@@ -155,14 +155,13 @@ def overall_nDCC_map(ccMatrix, out_file, sel_type, selectedAtoms):
 
     #print("Column Index of min value")
     #print(np.argmin(ccMatrix_sub, 1))
-            
+
+    #Set colorbar features here!  
     jet=plt.get_cmap('jet') 
     djet = cmap_discretize(jet, 8)
 
     plt.imshow(np.matrix(ccMatrix), cmap=djet)
     plt.clim(-1.0, 1.0)
-
-    fig.set_size_inches(8.0, 5.5, forward=True)
 
     position=fig.add_axes([0.85, 0.15, 0.03, 0.70])
     cbar=plt.colorbar(cax=position)
@@ -200,7 +199,7 @@ def overall_nDCC_map(ccMatrix, out_file, sel_type, selectedAtoms):
         ax.annotate(myList[i], xy=(1.05, 0), xycoords='axes fraction', xytext=(1.05, middlePoint-0.015), rotation=90, size=14, color='black')
         #print(middlePoint)
 
-    #plt.tight_layout()       
+    plt.tight_layout()       
     plt.savefig(out_file+'.png', dpi=200)
     #plt.show()
 
@@ -209,23 +208,12 @@ def intrachain_nDCC_maps(ccMatrix, out_file, sel_type, selectedAtoms):
     Plot intra-chain correlations if there are at least two chains!
     """
 
-    n=len(ccMatrix)
-    ##########################################################################
-    #Set residue interface definitions
-    fig=plt.figure()
-    plt.rcParams['font.size'] = 16
-    ax=fig.add_subplot(1,1,1)
-
-    plt.xlabel('Residue indices')
-    plt.ylabel('Residue indices')
-    plt.title(sel_type, y=1.08)
-
-    selection_tick_labels=[]
-
-    #print(selectedAtoms.getChids())
+#    n=len(ccMatrix)
 
     myList = list(Counter(selectedAtoms.getChids()).keys())
+    print(myList)
 
+    #selection_tick_labels=[]
     selection_reorder = []
     selection_tick_labels = []
     selection_tick_labels.append(str(selectedAtoms.getResnums()[0]))
@@ -238,89 +226,77 @@ def intrachain_nDCC_maps(ccMatrix, out_file, sel_type, selectedAtoms):
 
     print(selection_reorder)
 
-    major_nums=[]
-    major_labels=[]
-    #major_nums.extend(selection_reorder)
-    #major_labels.extend(selection_tick_labels)
+    for j in range(len(myList)):
+        #Set labels
+        major_nums=[]
+        major_labels=[]
+        realTicsList = np.linspace(selection_reorder[j], selection_reorder[j+1], 6, dtype=int)
+        ticsList = np.linspace(selection_reorder[j]-selection_reorder[j], selection_reorder[j+1]-selection_reorder[j], 6, dtype=int)
+        #selection_reorder[j+1]-
+        major_nums = ticsList
+        #major_nums = major_nums[0:-1]
+        print(realTicsList)
+        realTicsList[-1] = realTicsList[-1]-1
+        for item in realTicsList:
+            print(selectedAtoms.getResnums()[item])
+            major_labels.append(str(selectedAtoms.getResnums()[item]))
+        
+        #print(major_nums)
+        print(major_labels)
+        ##########################################################################
+        #Set plotting parameters
+        ##########################################################################
+        #Set residue interface definitions
+        fig=plt.figure()
+        fig.set_size_inches(8.0, 5.5, forward=True)
+        plt.rcParams['font.size'] = 16
+        ax=fig.add_subplot(1,1,1)
 
-    # y_nums=[]
-    # y_labels=[]
+        plt.xlabel('Residue indices')
+        plt.ylabel('Residue indices')
+        plt.title('Chain '+myList[j], y=1.08)
 
-    # y_nums.extend(selection_reorder)
-    # y_labels.extend(selection_tick_labels)
+        #plt.rcParams['axes.titlepad'] = 20
+        ax.autoscale(False)
+        ax.set_aspect('equal')
+        #for item in ax.get_xticks():
+        #    print(item)
 
-    ##########################################################################
-    #Set plotting parameters
+        #ax.set_xticks(major_nums, major_labels)
+        plt.xticks(major_nums, major_labels, size=12)
+        plt.yticks(major_nums, major_labels, size=12)
 
-    #plt.rcParams['axes.titlepad'] = 20
-    ax.autoscale(False)
-    ax.set_aspect('equal')
+        #ax.xaxis.set_tick_params(width=2, length=5, labelsize=12, minor=False)
+        #ax.yaxis.set_tick_params(width=2, length=5)
 
-    #ax.set_xticks(major_nums, major_labels, rotation=45, minor=False)
-    plt.xticks(major_nums, major_labels, size=12, rotation=45)
-    plt.yticks(major_nums, major_labels, size=12)
+        ax.tick_params(which='major', width=2, length=5)
+        ax.tick_params(which='minor', width=1, length=3)
 
-    #ax.xaxis.set_tick_params(width=2, length=5, labelsize=12, minor=False)
-    #ax.yaxis.set_tick_params(width=2, length=5)
+        #print("Min value")
+        #print("Row Index of min value")
+        #print(np.argmin(ccMatrix_sub, 0))
 
-    plt.axis([0, n, 0, n])
-    ax.tick_params(which='major', width=2, length=5)
-    ax.tick_params(which='minor', width=1, length=3)
+        #print("Column Index of min value")
+        #print(np.argmin(ccMatrix_sub, 1))
 
-    #print("Min value")
-    #print("Row Index of min value")
-    #print(np.argmin(ccMatrix_sub, 0))
+        #Set colorbar features here!
+        jet=plt.get_cmap('jet')
+        djet = cmap_discretize(jet, 8)
+        plt.axis([0, (selection_reorder[j+1]-selection_reorder[j]), 0, (selection_reorder[j+1]-selection_reorder[j])])
+        sub_nDCC_matrix = ccMatrix[(selection_reorder[j]) : (selection_reorder[j+1]), (selection_reorder[j]) : (selection_reorder[j+1])]
+        plt.imshow(np.matrix(sub_nDCC_matrix), cmap=djet)
+        plt.clim(-1.0, 1.0)
 
-    #print("Column Index of min value")
-    #print(np.argmin(ccMatrix_sub, 1))
-            
-    jet=plt.get_cmap('jet') 
-    djet = cmap_discretize(jet, 8)
+        position=fig.add_axes([0.85, 0.15, 0.03, 0.70])
+        
+        cbar=plt.colorbar(cax=position)
+        cbar.set_ticks([-1.00, -0.75, -0.50, -0.25, 0.00, 0.25, 0.50, 0.75, 1.00])
 
-    sub_nDCC_matrix = ccMatrix[(selection_reorder[0]) : (selection_reorder[1]), (selection_reorder[0]) : (selection_reorder[1])]
-    plt.imshow(np.matrix(sub_nDCC_matrix), cmap=djet)
-    plt.clim(-1.0, 1.0)
-
-    fig.set_size_inches(8.0, 5.5, forward=True)
-
-    position=fig.add_axes([0.85, 0.15, 0.03, 0.70])
-    cbar=plt.colorbar(cax=position)
-
-    cbar.set_ticks([-1.00, -0.75, -0.50, -0.25, 0.00, 0.25, 0.50, 0.75, 1.00])
-
-    for t in cbar.ax.get_yticklabels():
-        t.set_horizontalalignment('right')   
-        t.set_x(4.0)
-
-    #Add chain borders to the plot
-    for i in range(len(selection_reorder)-1):
-        beginningPoint = selection_reorder[i]/selection_reorder[-1]
-        endingPoint = selection_reorder[i+1]/selection_reorder[-1]
-        middlePoint = (float(beginningPoint)+float(endingPoint))/2.0
-        if(i%2==0):
-            #x axis
-            ax.annotate('', xy=(beginningPoint, 1.03), xycoords='axes fraction', \
-                        xytext=(endingPoint, 1.03), arrowprops=dict(linewidth = 2., arrowstyle="-", color='black'))
-
-            #y axis
-            ax.annotate('', xy=(1.04, beginningPoint), xycoords='axes fraction', \
-                        xytext=(1.04, endingPoint), arrowprops=dict(linewidth = 2., arrowstyle="-", color='gray'))  
-
-        elif(i%2==1):
-            #x axis
-            ax.annotate('', xy=(beginningPoint, 1.03), xycoords='axes fraction', \
-                        xytext=(endingPoint, 1.03), arrowprops=dict(linewidth = 2., arrowstyle="-", color='gray'))
-            
-            #y axis
-            ax.annotate('', xy=(1.04, beginningPoint), xycoords='axes fraction', \
-                        xytext=(1.04, endingPoint), arrowprops=dict(linewidth = 2., arrowstyle="-", color='black')) 
-
-        ax.annotate(myList[i], xy=(0, 1.04), xycoords='axes fraction', xytext=(middlePoint-0.015, 1.04), size=14, color='black')
-        ax.annotate(myList[i], xy=(1.05, 0), xycoords='axes fraction', xytext=(1.05, middlePoint-0.015), rotation=90, size=14, color='black')
-        #print(middlePoint)
-
-    #plt.tight_layout()       
-    plt.savefig(out_file+'chA.png', dpi=200)
+        for t in cbar.ax.get_yticklabels():
+            t.set_horizontalalignment('right')   
+            t.set_x(4.0)
+        
+        plt.savefig(out_file+'chain'+myList[j]+'.png', dpi=200)
 
     #plt.show()
 
