@@ -208,8 +208,6 @@ def intrachain_nDCC_maps(ccMatrix, out_file, sel_type, selectedAtoms):
     Plot intra-chain correlations if there are at least two chains!
     """
 
-#    n=len(ccMatrix)
-
     myList = list(Counter(selectedAtoms.getChids()).keys())
     print(myList)
 
@@ -235,14 +233,14 @@ def intrachain_nDCC_maps(ccMatrix, out_file, sel_type, selectedAtoms):
         #selection_reorder[j+1]-
         major_nums = ticsList
         #major_nums = major_nums[0:-1]
-        print(realTicsList)
+        #print(realTicsList)
         realTicsList[-1] = realTicsList[-1]-1
         for item in realTicsList:
-            print(selectedAtoms.getResnums()[item])
+            #print(selectedAtoms.getResnums()[item])
             major_labels.append(str(selectedAtoms.getResnums()[item]))
         
         #print(major_nums)
-        print(major_labels)
+        #print(major_labels)
         ##########################################################################
         #Set plotting parameters
         ##########################################################################
@@ -296,10 +294,127 @@ def intrachain_nDCC_maps(ccMatrix, out_file, sel_type, selectedAtoms):
             t.set_horizontalalignment('right')   
             t.set_x(4.0)
         
-        plt.savefig(out_file+'chain'+myList[j]+'.png', dpi=200)
+        plt.savefig(out_file+'-chain'+myList[j]+'.png', dpi=200)
 
-    #plt.show()
+        #plt.show()
+        plt.close('all')
 
+def interchain_nDCC_maps(ccMatrix, out_file, sel_type, selectedAtoms):
+    """
+    Plot inter-chain correlations if there are at least two chains!
+    """
+    from mpl_toolkits.axes_grid1 import make_axes_locatable
+    myList = list(Counter(selectedAtoms.getChids()).keys())
+    print(myList)
+    n=len(ccMatrix)
+    #selection_tick_labels=[]
+    selection_reorder = []
+    selection_tick_labels = []
+    selection_tick_labels.append(str(selectedAtoms.getResnums()[0]))
+    selection_reorder.append(0)
+    tempVal = 0
+    for i in Counter(selectedAtoms.getChids()).values():
+        tempVal = tempVal + i
+        selection_reorder.append(tempVal)
+        selection_tick_labels.append(str(selectedAtoms.getResnums()[tempVal-1]))
+
+    print(selection_reorder)
+
+    for k in range(len(myList)):
+        for l in range(0, k):
+            #Set labels for X axis
+            major_numsX=[]
+            major_labelsX=[]
+            realTicsListX = np.linspace(selection_reorder[l], \
+                                        selection_reorder[l+1], 6, dtype=int)
+
+            major_numsX = np.linspace(selection_reorder[l]-selection_reorder[l], \
+                                    selection_reorder[l+1]-selection_reorder[l],\
+                                                                6, dtype=int)
+
+            realTicsListX[-1] = realTicsListX[-1]-1
+            for item in realTicsListX:
+                #print(selectedAtoms.getResnums()[item])
+                major_labelsX.append(str(selectedAtoms.getResnums()[item]))
+
+            #Set labels for Y axis
+            major_numsY=[]
+            major_labelsY=[]
+            realTicsListY = np.linspace(selection_reorder[k], \
+                                        selection_reorder[k+1], 6, dtype=int)
+            major_numsY = np.linspace(selection_reorder[k]-selection_reorder[k], \
+                                    selection_reorder[k+1]-selection_reorder[k], 
+                                                                6, dtype=int)
+            
+
+            realTicsListY[-1] = realTicsListY[-1]-1
+            for item in realTicsListY:
+                #print(selectedAtoms.getResnums()[item])
+                major_labelsY.append(str(selectedAtoms.getResnums()[item]))
+            
+            #print(major_numsX)
+            #print(major_labelsX)
+            ##########################################################################
+            #Set plotting parameters
+            ##########################################################################
+            #Set residue interface definitions
+            fig=plt.figure()
+            fig.set_size_inches(8.0, 5.5, forward=True)
+            plt.rcParams['font.size'] = 16
+            ax=fig.add_subplot(1,1,1)
+
+            plt.xlabel('Residue indices - Chain '+myList[l])
+            plt.ylabel('Residue indices - Chain '+myList[k])
+            plt.title('Chains '+myList[l]+'-'+myList[k], y=1.08)
+
+            #plt.rcParams['axes.titlepad'] = 20
+            ax.autoscale(False)
+            ax.set_aspect('equal')
+            #for item in ax.get_xticks():
+            #    print(item)
+
+            #ax.set_xticks(major_numsX, major_labelsX)
+            plt.xticks(major_numsX, major_labelsX, size=12)
+            plt.yticks(major_numsY, major_labelsY, size=12)
+
+            #ax.xaxis.set_tick_params(width=2, length=5, labelsize=12, minor=False)
+            #ax.yaxis.set_tick_params(width=2, length=5)
+
+            ax.tick_params(which='major', width=2, length=5)
+            ax.tick_params(which='minor', width=1, length=3)
+
+            #print("Min value")
+            #print("Row Index of min value")
+            #print(np.argmin(ccMatrix_sub, 0))
+
+            #print("Column Index of min value")
+            #print(np.argmin(ccMatrix_sub, 1))
+
+            #Set colorbar features here!
+            jet=plt.get_cmap('jet')
+            djet = cmap_discretize(jet, 8)
+            plt.axis([0, n, 0, n])
+            plt.axis([0, (selection_reorder[l+1]-selection_reorder[l]), 0, (selection_reorder[k+1]-selection_reorder[k])])
+
+            sub_nDCC_matrix = ccMatrix[(selection_reorder[k]) : (selection_reorder[k+1]), (selection_reorder[l]) : (selection_reorder[l+1])]
+            plt.imshow(np.matrix(sub_nDCC_matrix), cmap=djet)
+            plt.clim(-1.0, 1.0)
+
+            #position=fig.add_axes([0.85, 0.15, 0.03, 0.70])
+            
+            divider = make_axes_locatable(plt.gca())
+            position = divider.append_axes("right", "5%", pad="25%")
+            cbar=plt.colorbar(cax=position)
+            cbar.set_ticks([-1.00, -0.75, -0.50, -0.25, 0.00, 0.25, 0.50, 0.75, 1.00])
+
+            for t in cbar.ax.get_yticklabels():
+                t.set_horizontalalignment('right')   
+                t.set_x(4.0)
+            
+            plt.savefig(out_file+'-chains'+myList[l]+'-'+myList[k]+'.png', dpi=200)
+            plt.close('all')
+            #plt.tight_layout()
+            #plt.show()
 
 if __name__ == "__main__":
     #TODO:
@@ -337,3 +452,4 @@ if __name__ == "__main__":
     chains = Counter(selectedAtoms.getChids()).keys()
     if(len(chains)>1):
         intrachain_nDCC_maps(ccMatrix, out_file, sel_type, selectedAtoms)
+        interchain_nDCC_maps(ccMatrix, out_file, sel_type, selectedAtoms)
