@@ -22,18 +22,19 @@ import sys
 import matplotlib
 #from prody import *
 from prody import parsePDB
+from prody import buildDistMatrix
 from collections import Counter
 
 def usage():
     """
-    Show how to use the small program!
+    Show how to use this program!
     """
     print("\nExample usage:\n")
-    print("python nDCCPotGeneral.py -i 4z90_cross-correlations.txt -s ' ' -p 4z90.pdb -o 4z90_cross-correlations\n")
+    print("python correlationPlus.py -i 4z90-cross-correlations.txt -s ' ' -p 4z90.pdb -o 4z90-cross-correlations\n")
     print("Arguments: -i: A file containing normalized dynamical cross correlations in matrix format.")
-    print("           -s: A string for the title of the plot.")
+    print("           -s: A string for the title of the plot. You can leave it empty as shown above.")
     print("           -p: PDB file of the protein.")
-    print("           -o: This will be your output file. Output is in png format.")
+    print("           -o: This will be your output file. Output figures are in png format.\n\n")
 
 def cmap_discretize(cmap, N):
     """Return a discrete colormap from the continuous colormap cmap.
@@ -85,7 +86,7 @@ def handle_arguments():
         else:
             assert False, usage()
 
-    if inp_file==None or out_file==None:
+    if inp_file==None or pdb_file==None:
         usage()
         sys.exit(-1)
     return (inp_file, out_file, sel_type, pdb_file)
@@ -199,8 +200,8 @@ def overall_nDCC_map(ccMatrix, out_file, sel_type, selectedAtoms):
         ax.annotate(myList[i], xy=(1.05, 0), xycoords='axes fraction', xytext=(1.05, middlePoint-0.015), rotation=90, size=14, color='black')
         #print(middlePoint)
 
-    plt.tight_layout()       
-    plt.savefig(out_file+'.png', dpi=200)
+    #plt.tight_layout()       
+    plt.savefig(out_file+'.png', bbox_inches='tight', dpi=200)
     #plt.show()
 
 def intrachain_nDCC_maps(ccMatrix, out_file, sel_type, selectedAtoms):
@@ -209,7 +210,7 @@ def intrachain_nDCC_maps(ccMatrix, out_file, sel_type, selectedAtoms):
     """
 
     myList = list(Counter(selectedAtoms.getChids()).keys())
-    print(myList)
+    #print(myList)
 
     #selection_tick_labels=[]
     selection_reorder = []
@@ -222,7 +223,7 @@ def intrachain_nDCC_maps(ccMatrix, out_file, sel_type, selectedAtoms):
         selection_reorder.append(tempVal)
         selection_tick_labels.append(str(selectedAtoms.getResnums()[tempVal-1]))
 
-    print(selection_reorder)
+    #print(selection_reorder)
 
     for j in range(len(myList)):
         #Set labels
@@ -305,7 +306,7 @@ def interchain_nDCC_maps(ccMatrix, out_file, sel_type, selectedAtoms):
     """
     from mpl_toolkits.axes_grid1 import make_axes_locatable
     myList = list(Counter(selectedAtoms.getChids()).keys())
-    print(myList)
+    #print(myList)
     n=len(ccMatrix)
     #selection_tick_labels=[]
     selection_reorder = []
@@ -318,7 +319,7 @@ def interchain_nDCC_maps(ccMatrix, out_file, sel_type, selectedAtoms):
         selection_reorder.append(tempVal)
         selection_tick_labels.append(str(selectedAtoms.getResnums()[tempVal-1]))
 
-    print(selection_reorder)
+    #print(selection_reorder)
 
     for k in range(len(myList)):
         for l in range(0, k):
@@ -416,6 +417,61 @@ def interchain_nDCC_maps(ccMatrix, out_file, sel_type, selectedAtoms):
             #plt.tight_layout()
             #plt.show()
 
+def distanceDistribution(ccMatrix, out_file, sel_type, selectedAtoms, \
+                            absoluteValues: bool, writeAllOutput: bool):
+    #Calculate distance matrix
+    dist_matrix=buildDistMatrix(selectedAtoms)
+    
+    #Plot the figure
+    #print("@> Min. distance: {0:.2f} Angstrom.".format(np.min(dist_matrix)))
+    print("@> Max. distance: {0:.2f} Angstrom.".format(np.max(dist_matrix)))
+
+    x=dist_matrix.flatten()
+    y=ccMatrix.flatten()
+
+    #fig, ax = plt.subplots()
+    plt.subplots()
+    plt.locator_params(axis='y', nbins=4)
+
+    plt.xticks(fontsize=16)
+    plt.yticks(fontsize=16)
+    plt.xlabel("Distance ($\AA$)", fontsize=20)
+
+    if(absoluteValues):
+        plt.ylabel("Abs(nDCC)", fontsize=20)
+        plt.ylim([0.0, 1.0])
+        dst_file = out_file+'-absolute-ndcc-vs-distance'
+
+    else:
+        plt.ylabel("nDCC", fontsize=20)
+        plt.ylim([-1.0, 1.0])
+        plt.axhline(0,color='k',lw=0.5)
+        dst_file = out_file+'-ndcc-vs-distance'
+
+    plt.plot(x,y, '.', color='k')
+    plt.tight_layout()
+    plt.xlim(xmin=0)
+    #plt.show()
+    plt.savefig(dst_file+'.png')
+    plt.close('all')
+    
+    #Write output
+    #Writing the output is very important for further analyses such as 
+    #inter-chain (inter-domain) or intra-chain (intra-domain) distributions etc.
+    if(writeAllOutput):
+        DATA_FILE = open(dst_file+'.dat', 'w')
+        for i in range(0, len(ccMatrix)):
+            for j in range(i+1, len(ccMatrix)):
+                DATA_FILE.write("{0:d}\t{1:s}\t{2:d}\t{3:s}\t{4:.3f}\t{5:.3f}\n".\
+                                format(selectedAtoms.getResnums()[i],\
+                                        selectedAtoms.getChids()[i],\
+                                        selectedAtoms.getResnums()[j],\
+                                        selectedAtoms.getChids()[j],\
+                                        dist_matrix[i][j],\
+                                        ccMatrix[i][j]))
+
+ 
+    
 if __name__ == "__main__":
     #TODO:
     # There are a bunch of things one can do with this script:
@@ -424,6 +480,12 @@ if __name__ == "__main__":
     #   a) as a pymol script output
     #   b) as a VMD script output
     # 3-Project secondary structures on x and y axes.
+    print("\n\n----------------------------Correlation Plus----------------------------\n")
+    print("        A small utility program to plot protein correlation maps.           \n")
+    print("                     Copyright - Mustafa Tekpinar 2019                        ")
+    print("                        Email: tekpinar@buffalo.edu                           ")
+    print("                             Licence: BSD                                 \n\n")
+
 
     (inp_file, out_file, sel_type, pdb_file) = handle_arguments()
     print("\n@> Input file   :", inp_file)
@@ -446,6 +508,11 @@ if __name__ == "__main__":
     #Call overall nDCC calculation
     overall_nDCC_map(ccMatrix, out_file, sel_type, selectedAtoms)
 
+    distanceDistribution(ccMatrix, out_file, sel_type, selectedAtoms, \
+                            absoluteValues=True , writeAllOutput=True)
+    
+    distanceDistribution(ccMatrix, out_file, sel_type, selectedAtoms, \
+                            absoluteValues=False , writeAllOutput=False)
     ##########################################################################
     #Check number of chains. If there are multiple chains, plot inter and 
     #intra chain correlations
@@ -453,3 +520,5 @@ if __name__ == "__main__":
     if(len(chains)>1):
         intrachain_nDCC_maps(ccMatrix, out_file, sel_type, selectedAtoms)
         interchain_nDCC_maps(ccMatrix, out_file, sel_type, selectedAtoms)
+
+    print("\n@> Program finished successfully!\n")
