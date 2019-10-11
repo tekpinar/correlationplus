@@ -30,11 +30,11 @@ def usage():
     Show how to use this program!
     """
     print("\nExample usage:\n")
-    print("python correlationPlus.py -i 4z90-cross-correlations.txt -s ' ' -p 4z90.pdb -o 4z90-cross-correlations\n")
-    print("Arguments: -i: A file containing normalized dynamical cross correlations in matrix format.")
-    print("           -s: A string for the title of the plot. You can leave it empty as shown above.")
-    print("           -p: PDB file of the protein.")
-    print("           -o: This will be your output file. Output figures are in png format.\n\n")
+    print("python correlationPlus.py -i 4z90-cross-correlations.txt 4z90.pdb \n")
+    print("Arguments: -i: A file containing normalized dynamical cross correlations in matrix format. (Mandatory)")
+    print("           -p: PDB file of the protein. (Mandatory)")
+    print("           -s: A string for the title of the plot. You can leave it empty as shown above. (Optional)")
+    print("           -o: This will be your output file. Output figures are in png format. (Optional)\n\n")
 
 def cmap_discretize(cmap, N):
     """Return a discrete colormap from the continuous colormap cmap.
@@ -86,12 +86,22 @@ def handle_arguments():
         else:
             assert False, usage()
 
+    #Input data matrix and PDB file are mandatory!
     if inp_file==None or pdb_file==None:
         usage()
         sys.exit(-1)
+
+    #Assign a default name if the user forgets the output file prefix.
+    if (out_file == None):
+        out_file = "correlation"
+
+    #The user may prefer not to submit a title for the output.
+    if (sel_type == None):
+        sel_type = ' '
+
     return (inp_file, out_file, sel_type, pdb_file)
 
-def overall_nDCC_map(ccMatrix, out_file, sel_type, selectedAtoms):
+def overallCorrelationMap(ccMatrix, minColorBarLimit, maxColorBarLimit, out_file, sel_type, selectedAtoms):
     """
     Plots nDCC maps for the whole structure
     """
@@ -162,7 +172,7 @@ def overall_nDCC_map(ccMatrix, out_file, sel_type, selectedAtoms):
     djet = cmap_discretize(jet, 8)
 
     plt.imshow(np.matrix(ccMatrix), cmap=djet)
-    plt.clim(-1.0, 1.0)
+    plt.clim(minColorBarLimit, maxColorBarLimit)
 
     position=fig.add_axes([0.85, 0.15, 0.03, 0.70])
     cbar=plt.colorbar(cax=position)
@@ -201,10 +211,10 @@ def overall_nDCC_map(ccMatrix, out_file, sel_type, selectedAtoms):
         #print(middlePoint)
 
     #plt.tight_layout()       
-    plt.savefig(out_file+'.png', bbox_inches='tight', dpi=200)
+    plt.savefig(out_file+'-overall.png', bbox_inches='tight', dpi=200)
     #plt.show()
 
-def intrachain_nDCC_maps(ccMatrix, out_file, sel_type, selectedAtoms):
+def intraChainCorrelationMaps(ccMatrix, minColorBarLimit, maxColorBarLimit, out_file, sel_type, selectedAtoms):
     """
     Plot intra-chain correlations if there are at least two chains!
     """
@@ -284,7 +294,7 @@ def intrachain_nDCC_maps(ccMatrix, out_file, sel_type, selectedAtoms):
         plt.axis([0, (selection_reorder[j+1]-selection_reorder[j]), 0, (selection_reorder[j+1]-selection_reorder[j])])
         sub_nDCC_matrix = ccMatrix[(selection_reorder[j]) : (selection_reorder[j+1]), (selection_reorder[j]) : (selection_reorder[j+1])]
         plt.imshow(np.matrix(sub_nDCC_matrix), cmap=djet)
-        plt.clim(-1.0, 1.0)
+        plt.clim(minColorBarLimit, maxColorBarLimit)
 
         position=fig.add_axes([0.85, 0.15, 0.03, 0.70])
         
@@ -300,7 +310,7 @@ def intrachain_nDCC_maps(ccMatrix, out_file, sel_type, selectedAtoms):
         #plt.show()
         plt.close('all')
 
-def interchain_nDCC_maps(ccMatrix, out_file, sel_type, selectedAtoms):
+def interChainCorrelationMaps(ccMatrix, minColorBarLimit, maxColorBarLimit, out_file, sel_type, selectedAtoms):
     """
     Plot inter-chain correlations if there are at least two chains!
     """
@@ -399,7 +409,7 @@ def interchain_nDCC_maps(ccMatrix, out_file, sel_type, selectedAtoms):
 
             sub_nDCC_matrix = ccMatrix[(selection_reorder[k]) : (selection_reorder[k+1]), (selection_reorder[l]) : (selection_reorder[l+1])]
             plt.imshow(np.matrix(sub_nDCC_matrix), cmap=djet)
-            plt.clim(-1.0, 1.0)
+            plt.clim(minColorBarLimit, maxColorBarLimit)
 
             #position=fig.add_axes([0.85, 0.15, 0.03, 0.70])
             
@@ -417,7 +427,7 @@ def interchain_nDCC_maps(ccMatrix, out_file, sel_type, selectedAtoms):
             #plt.tight_layout()
             #plt.show()
 
-def distanceDistribution(ccMatrix, out_file, sel_type, selectedAtoms, \
+def distanceDistribution(ccMatrix, out_file, title, selectedAtoms, \
                             absoluteValues: bool, writeAllOutput: bool):
     #Calculate distance matrix
     dist_matrix=buildDistMatrix(selectedAtoms)
@@ -436,17 +446,15 @@ def distanceDistribution(ccMatrix, out_file, sel_type, selectedAtoms, \
     plt.xticks(fontsize=16)
     plt.yticks(fontsize=16)
     plt.xlabel("Distance ($\AA$)", fontsize=20)
-
+    plt.ylabel(title, fontsize=20)
     if(absoluteValues):
-        plt.ylabel("Abs(nDCC)", fontsize=20)
         plt.ylim([0.0, 1.0])
-        dst_file = out_file+'-absolute-ndcc-vs-distance'
+        dst_file = out_file+'-absolute-correlation-vs-distance'
 
     else:
-        plt.ylabel("nDCC", fontsize=20)
         plt.ylim([-1.0, 1.0])
         plt.axhline(0,color='k',lw=0.5)
-        dst_file = out_file+'-ndcc-vs-distance'
+        dst_file = out_file+'-correlation-vs-distance'
 
     plt.plot(x,y, '.', color='k')
     plt.tight_layout()
@@ -469,9 +477,36 @@ def distanceDistribution(ccMatrix, out_file, sel_type, selectedAtoms, \
                                         selectedAtoms.getChids()[j],\
                                         dist_matrix[i][j],\
                                         ccMatrix[i][j]))
-
- 
+        DATA_FILE.close()
     
+def convertLMIdata2Matrix(inp_file, writeAllOutput: bool):
+    data_file=open(inp_file, 'r')
+
+    allLines=data_file.readlines()
+    data_list=[]
+    for line in allLines:
+        words=line.split()
+        for i in words:
+                data_list.append(i)
+
+    data_list = data_list[4:-1]
+    n=int(math.sqrt(len(data_list)))
+    data_array=np.array(data_list, dtype=float)
+
+    cc=np.reshape(data_array, (n, n))
+    print (cc.dtype)
+
+    data_file.close()
+    #Fill diagonal elements with zeros
+    np.fill_diagonal(cc, 0.0)
+
+    #Find maximum for the remaining matrix
+    maximum=cc.max()
+    #cc=cc/cc.max()
+    print (maximum)
+    np.fill_diagonal(cc, 1.0)
+
+    np.savetxt(inp_file[:-4]+"_modif.dat", cc, fmt='%.6f')
 if __name__ == "__main__":
     #TODO:
     # There are a bunch of things one can do with this script:
@@ -480,18 +515,19 @@ if __name__ == "__main__":
     #   a) as a pymol script output
     #   b) as a VMD script output
     # 3-Project secondary structures on x and y axes.
-    print("\n\n----------------------------Correlation Plus----------------------------\n")
-    print("        A small utility program to plot protein correlation maps.           \n")
-    print("                     Copyright - Mustafa Tekpinar 2019                        ")
-    print("                        Email: tekpinar@buffalo.edu                           ")
-    print("                             Licence: BSD                                 \n\n")
-
+    print("\n\n|------------------------------Correlation Plus------------------------------|")
+    print("|                                                                            |")
+    print("|       A small utility program to plot protein correlation maps.            |")
+    print("|                    Copyright - Mustafa Tekpinar 2019                       |")
+    print("|                       Email: tekpinar@buffalo.edu                          |")
+    print("|                            Licence: BSD                                    |")
+    print("|--------------------------------------------------------------------------- |\n\n")
 
     (inp_file, out_file, sel_type, pdb_file) = handle_arguments()
     print("\n@> Input file   :", inp_file)
     print("@> Pdb file     :", pdb_file)
+    print("@> Your title   :", sel_type)    
     print("@> Output       :", out_file)
-    print("@> Your title   :", sel_type)
 
     ##########################################################################
     #Read PDB file 
@@ -504,21 +540,44 @@ if __name__ == "__main__":
     #Read data file and assign to a numpy array
     ccMatrix=np.loadtxt(inp_file, dtype=float)
     
-    ##########################################################################
-    #Call overall nDCC calculation
-    overall_nDCC_map(ccMatrix, out_file, sel_type, selectedAtoms)
+    #Check the data type in the matrix.
+    minCorrelationValue = np.min(ccMatrix)
 
-    distanceDistribution(ccMatrix, out_file, sel_type, selectedAtoms, \
-                            absoluteValues=True , writeAllOutput=True)
-    
-    distanceDistribution(ccMatrix, out_file, sel_type, selectedAtoms, \
-                            absoluteValues=False , writeAllOutput=False)
+    maxCorrelationValue = np.max(ccMatrix)
+
+    if (minCorrelationValue<0.0):
+        #Assume that it is an nDCC file
+        minColorBarLimit = -1.0
+    else:
+        #Assume that it is an LMI file
+        minColorBarLimit = 0.0
+
+    if(maxCorrelationValue>1.0):
+        print("This correlation map is not normalized!")
+        sys.exit(-1)
+    ##########################################################################
+    #Call overall correlation calculation
+    maxColorBarLimit = 1.0
+    overallCorrelationMap(ccMatrix, minColorBarLimit, maxColorBarLimit,\
+                                    out_file, sel_type, selectedAtoms)
+
+    if (minCorrelationValue<0.0):
+        distanceDistribution(ccMatrix, out_file, "Abs(nDCC)", \
+            selectedAtoms, absoluteValues=True , writeAllOutput=False)
+        
+        distanceDistribution(ccMatrix, out_file, "nDCC", selectedAtoms, \
+                            absoluteValues=False , writeAllOutput=True)
+    else:
+        distanceDistribution(ccMatrix, out_file, "LMI", \
+            selectedAtoms, absoluteValues=True , writeAllOutput=True)
     ##########################################################################
     #Check number of chains. If there are multiple chains, plot inter and 
     #intra chain correlations
     chains = Counter(selectedAtoms.getChids()).keys()
     if(len(chains)>1):
-        intrachain_nDCC_maps(ccMatrix, out_file, sel_type, selectedAtoms)
-        interchain_nDCC_maps(ccMatrix, out_file, sel_type, selectedAtoms)
+        intraChainCorrelationMaps(ccMatrix, minColorBarLimit, maxColorBarLimit,\
+                                        out_file, sel_type, selectedAtoms)
+        interChainCorrelationMaps(ccMatrix, minColorBarLimit, maxColorBarLimit,\
+                                        out_file, sel_type, selectedAtoms)
 
     print("\n@> Program finished successfully!\n")
