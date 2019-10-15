@@ -1,0 +1,13 @@
+			CorrelationPlus
+A Python script to plot dynamical correlations for proteins.
+
+CorrelationPlus is a script that you can use to plot dynamical
+correlations for proteins and biological macromolecules. These
+correlations can be dynamical cross-correlations or linear mutual
+information. 
+
+This program is more useful if your structure containts multiple
+chains. The program will produce an output for overall structure 
+and all individual intra-chain correlations, if exist. Moreover,  
+the program will give you inter-chain correlations, if you have 
+more than one chain. 
