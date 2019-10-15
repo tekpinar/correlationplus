@@ -4,7 +4,7 @@ Program Name: Cross-correlation Plotting Program (I'll find a fancy name later!)
 Author      : Mustafa TEKPINAR
 Email       : tekpinar@buffalo.edu
 Copyright   : Mustafa Tekpinar - 2019
-License     : BSD
+License     : MIT License
 
 Purpose     : This is a small program to automatize plotting of normalized 
 dynamical cross-correlations obtained from molecular dynamics simulations or 
@@ -97,11 +97,11 @@ def handle_arguments():
 
     #The user may prefer not to submit a title for the output.
     if (sel_type == None):
-        sel_type = ' '
+        sel_type = "dcc"
 
     return (inp_file, out_file, sel_type, pdb_file)
 
-def overallCorrelationMap(ccMatrix, minColorBarLimit, maxColorBarLimit, out_file, sel_type, selectedAtoms):
+def overallCorrelationMap(ccMatrix, minColorBarLimit, maxColorBarLimit, out_file, title, selectedAtoms):
     """
     Plots nDCC maps for the whole structure
     """
@@ -119,7 +119,7 @@ def overallCorrelationMap(ccMatrix, minColorBarLimit, maxColorBarLimit, out_file
 
     plt.xlabel('Residue indices')
     plt.ylabel('Residue indices')
-    plt.title(sel_type, y=1.08)
+    plt.title(title, y=1.08)
 
     #print(selectedAtoms.getChids())
 
@@ -195,7 +195,7 @@ def overallCorrelationMap(ccMatrix, minColorBarLimit, maxColorBarLimit, out_file
 
             #y axis
             ax.annotate('', xy=(1.04, beginningPoint), xycoords='axes fraction', \
-                        xytext=(1.04, endingPoint), arrowprops=dict(linewidth = 2., arrowstyle="-", color='gray'))  
+                        xytext=(1.04, endingPoint), arrowprops=dict(linewidth = 2., arrowstyle="-", color='black'))  
 
         elif(i%2==1):
             #x axis
@@ -204,7 +204,7 @@ def overallCorrelationMap(ccMatrix, minColorBarLimit, maxColorBarLimit, out_file
             
             #y axis
             ax.annotate('', xy=(1.04, beginningPoint), xycoords='axes fraction', \
-                        xytext=(1.04, endingPoint), arrowprops=dict(linewidth = 2., arrowstyle="-", color='black')) 
+                        xytext=(1.04, endingPoint), arrowprops=dict(linewidth = 2., arrowstyle="-", color='gray')) 
 
         ax.annotate(myList[i], xy=(0, 1.04), xycoords='axes fraction', xytext=(middlePoint-0.015, 1.04), size=14, color='black')
         ax.annotate(myList[i], xy=(1.05, 0), xycoords='axes fraction', xytext=(1.05, middlePoint-0.015), rotation=90, size=14, color='black')
@@ -214,7 +214,7 @@ def overallCorrelationMap(ccMatrix, minColorBarLimit, maxColorBarLimit, out_file
     plt.savefig(out_file+'-overall.png', bbox_inches='tight', dpi=200)
     #plt.show()
 
-def intraChainCorrelationMaps(ccMatrix, minColorBarLimit, maxColorBarLimit, out_file, sel_type, selectedAtoms):
+def intraChainCorrelationMaps(ccMatrix, minColorBarLimit, maxColorBarLimit, out_file, title, selectedAtoms):
     """
     Plot intra-chain correlations if there are at least two chains!
     """
@@ -310,7 +310,7 @@ def intraChainCorrelationMaps(ccMatrix, minColorBarLimit, maxColorBarLimit, out_
         #plt.show()
         plt.close('all')
 
-def interChainCorrelationMaps(ccMatrix, minColorBarLimit, maxColorBarLimit, out_file, sel_type, selectedAtoms):
+def interChainCorrelationMaps(ccMatrix, minColorBarLimit, maxColorBarLimit, out_file, title, selectedAtoms):
     """
     Plot inter-chain correlations if there are at least two chains!
     """
@@ -490,7 +490,7 @@ def convertLMIdata2Matrix(inp_file, writeAllOutput: bool):
                 data_list.append(i)
 
     data_list = data_list[4:-1]
-    n=int(math.sqrt(len(data_list)))
+    n=int(np.sqrt(len(data_list)))
     data_array=np.array(data_list, dtype=float)
 
     cc=np.reshape(data_array, (n, n))
@@ -498,15 +498,18 @@ def convertLMIdata2Matrix(inp_file, writeAllOutput: bool):
 
     data_file.close()
     #Fill diagonal elements with zeros
-    np.fill_diagonal(cc, 0.0)
+    #np.fill_diagonal(cc, 0.0)
 
     #Find maximum for the remaining matrix
-    maximum=cc.max()
+    #maximum=cc.max()
     #cc=cc/cc.max()
-    print (maximum)
-    np.fill_diagonal(cc, 1.0)
+    #print (maximum)
+    #np.fill_diagonal(cc, 1.0)
 
-    np.savetxt(inp_file[:-4]+"_modif.dat", cc, fmt='%.6f')
+    if(writeAllOutput):
+        np.savetxt(inp_file[:-4]+"_modif.dat", cc, fmt='%.6f')
+    return cc
+
 if __name__ == "__main__":
     #TODO:
     # There are a bunch of things one can do with this script:
@@ -525,8 +528,8 @@ if __name__ == "__main__":
 
     (inp_file, out_file, sel_type, pdb_file) = handle_arguments()
     print("\n@> Input file   :", inp_file)
-    print("@> Pdb file     :", pdb_file)
-    print("@> Your title   :", sel_type)    
+    print("@> PDB file     :", pdb_file)
+    print("@> Data type    :", sel_type)    
     print("@> Output       :", out_file)
 
     ##########################################################################
@@ -538,7 +541,13 @@ if __name__ == "__main__":
 
     ##########################################################################
     #Read data file and assign to a numpy array
-    ccMatrix=np.loadtxt(inp_file, dtype=float)
+    if(sel_type=="dcc"):
+        ccMatrix=np.loadtxt(inp_file, dtype=float)
+    elif(sel_type=="lmi"):
+        ccMatrix = convertLMIdata2Matrix(inp_file, writeAllOutput=False)
+    else:
+        print("Unknown matrix format!\n")
+        sys.exit(-1)
     
     #Check the data type in the matrix.
     minCorrelationValue = np.min(ccMatrix)
@@ -559,7 +568,7 @@ if __name__ == "__main__":
     #Call overall correlation calculation
     maxColorBarLimit = 1.0
     overallCorrelationMap(ccMatrix, minColorBarLimit, maxColorBarLimit,\
-                                    out_file, sel_type, selectedAtoms)
+                                    out_file, " ", selectedAtoms)
 
     if (minCorrelationValue<0.0):
         distanceDistribution(ccMatrix, out_file, "Abs(nDCC)", \
@@ -576,8 +585,8 @@ if __name__ == "__main__":
     chains = Counter(selectedAtoms.getChids()).keys()
     if(len(chains)>1):
         intraChainCorrelationMaps(ccMatrix, minColorBarLimit, maxColorBarLimit,\
-                                        out_file, sel_type, selectedAtoms)
+                                        out_file, " ", selectedAtoms)
         interChainCorrelationMaps(ccMatrix, minColorBarLimit, maxColorBarLimit,\
-                                        out_file, sel_type, selectedAtoms)
+                                        out_file, " ", selectedAtoms)
 
     print("\n@> Program finished successfully!\n")

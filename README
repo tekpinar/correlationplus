@@ -11,3 +11,8 @@ chains. The program will produce an output for overall structure
 and all individual intra-chain correlations, if exist. Moreover,  
 the program will give you inter-chain correlations, if you have 
 more than one chain. 
+
+The program only requires a pdb file and a correlation data. 
+The correlation data has to be in matrix format, where only A(i,j)
+values are listed in a square matrix format. 
+
