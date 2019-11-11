@@ -30,10 +30,10 @@ def usage():
     Show how to use this program!
     """
     print("\nExample usage:\n")
-    print("python correlationPlus.py -i 4z90-cross-correlations.txt 4z90.pdb \n")
+    print("python correlationPlus.py -i 4z90-cross-correlations.txt -p 4z90.pdb \n")
     print("Arguments: -i: A file containing normalized dynamical cross correlations in matrix format. (Mandatory)")
     print("           -p: PDB file of the protein. (Mandatory)")
-    print("           -s: A string for the title of the plot. You can leave it empty as shown above. (Optional)")
+    print("           -s: It can be dcc, lmi or absdcc (absolute values of dcc). Default value is dcc (Optional)")
     print("           -o: This will be your output file. Output figures are in png format. (Optional)\n\n")
 
 def cmap_discretize(cmap, N):
@@ -214,7 +214,7 @@ def overallCorrelationMap(ccMatrix, minColorBarLimit, maxColorBarLimit, out_file
     plt.savefig(out_file+'-overall.png', bbox_inches='tight', dpi=200)
     #plt.show()
 
-def intraChainCorrelationMaps(ccMatrix, minColorBarLimit, maxColorBarLimit, out_file, title, selectedAtoms):
+def intraChainCorrelationMaps(ccMatrix, minColorBarLimit, maxColorBarLimit, out_file, title, selectedAtoms, saveMatrix):
     """
     Plot intra-chain correlations if there are at least two chains!
     """
@@ -310,7 +310,7 @@ def intraChainCorrelationMaps(ccMatrix, minColorBarLimit, maxColorBarLimit, out_
         #plt.show()
         plt.close('all')
 
-def interChainCorrelationMaps(ccMatrix, minColorBarLimit, maxColorBarLimit, out_file, title, selectedAtoms):
+def interChainCorrelationMaps(ccMatrix, minColorBarLimit, maxColorBarLimit, out_file, title, selectedAtoms, saveMatrix):
     """
     Plot inter-chain correlations if there are at least two chains!
     """
@@ -439,6 +439,8 @@ def distanceDistribution(ccMatrix, out_file, title, selectedAtoms, \
     x=dist_matrix.flatten()
     y=ccMatrix.flatten()
 
+    #print(len(y))
+
     #fig, ax = plt.subplots()
     plt.subplots()
     plt.locator_params(axis='y', nbins=4)
@@ -510,7 +512,121 @@ def convertLMIdata2Matrix(inp_file, writeAllOutput: bool):
         np.savetxt(inp_file[:-4]+"_modif.dat", cc, fmt='%.6f')
     return cc
 
-if __name__ == "__main__":
+def overallDifferenceMap(ccMatrix1, ccMatrix2, minColorBarLimit, maxColorBarLimit, out_file, title, selectedAtoms):
+    """
+    Plots the difference map between correlation maps for the entire structure. 
+    """
+
+    #selectedAtoms = parsePDB(pdb_file, subset='ca')
+    #chainLengths = Counter(selectedAtoms.getChids()).values()
+    diffMap = np.subtract(ccMatrix1, ccMatrix2)
+
+    n=len(ccMatrix1)
+    ##########################################################################
+    #Set residue interface definitions
+    fig=plt.figure()
+    fig.set_size_inches(8.0, 5.5, forward=True)
+    plt.rcParams['font.size'] = 16
+    ax=fig.add_subplot(1,1,1)
+
+    plt.xlabel('Residue indices')
+    plt.ylabel('Residue indices')
+    plt.title(title, y=1.08)
+
+    #print(selectedAtoms.getChids())
+
+    myList = list(Counter(selectedAtoms.getChids()).keys())
+
+    selection_reorder = []
+    selection_tick_labels = []
+    selection_tick_labels.append(str(selectedAtoms.getResnums()[0]))
+    selection_reorder.append(0)
+    tempVal = 0
+    for i in Counter(selectedAtoms.getChids()).values():
+        tempVal = tempVal + i
+        selection_reorder.append(tempVal)
+        selection_tick_labels.append(str(selectedAtoms.getResnums()[tempVal-1]))
+
+    #print(selection_reorder)
+
+    major_nums=[]
+    major_labels=[]
+    major_nums.extend(selection_reorder)
+    major_labels.extend(selection_tick_labels)
+
+    ##########################################################################
+    #Set plotting parameters
+
+    #plt.rcParams['axes.titlepad'] = 20
+    ax.autoscale(False)
+    ax.set_aspect('equal')
+
+    #ax.set_xticks(major_nums, major_labels, rotation=45, minor=False)
+    plt.xticks(major_nums, major_labels, size=12, rotation=45)
+    plt.yticks(major_nums, major_labels, size=12)
+
+    #ax.xaxis.set_tick_params(width=2, length=5, labelsize=12, minor=False)
+    #ax.yaxis.set_tick_params(width=2, length=5)
+
+    plt.axis([0, n, 0, n])
+    ax.tick_params(which='major', width=2, length=5)
+    ax.tick_params(which='minor', width=1, length=3)
+
+    #print("Min value")
+    #print("Row Index of min value")
+    #print(np.argmin(ccMatrix1_sub, 0))
+
+    #print("Column Index of min value")
+    #print(np.argmin(ccMatrix1_sub, 1))
+
+    #Set colorbar features here!  
+    jet=plt.get_cmap('jet') 
+    djet = cmap_discretize(jet, 8)
+
+    plt.imshow(np.matrix(diffMap), cmap=djet)
+    plt.clim(minColorBarLimit, maxColorBarLimit)
+
+    position=fig.add_axes([0.85, 0.15, 0.03, 0.70])
+    cbar=plt.colorbar(cax=position)
+
+    cbar.set_ticks([-1.00, -0.75, -0.50, -0.25, 0.00, 0.25, 0.50, 0.75, 1.00])
+
+    for t in cbar.ax.get_yticklabels():
+        t.set_horizontalalignment('right')   
+        t.set_x(4.0)
+
+    #Add chain borders to the plot
+    for i in range(len(selection_reorder)-1):
+        beginningPoint = selection_reorder[i]/selection_reorder[-1]
+        endingPoint = selection_reorder[i+1]/selection_reorder[-1]
+        middlePoint = (float(beginningPoint)+float(endingPoint))/2.0
+        if(i%2==0):
+            #x axis
+            ax.annotate('', xy=(beginningPoint, 1.03), xycoords='axes fraction', \
+                        xytext=(endingPoint, 1.03), arrowprops=dict(linewidth = 2., arrowstyle="-", color='black'))
+
+            #y axis
+            ax.annotate('', xy=(1.04, beginningPoint), xycoords='axes fraction', \
+                        xytext=(1.04, endingPoint), arrowprops=dict(linewidth = 2., arrowstyle="-", color='black'))  
+
+        elif(i%2==1):
+            #x axis
+            ax.annotate('', xy=(beginningPoint, 1.03), xycoords='axes fraction', \
+                        xytext=(endingPoint, 1.03), arrowprops=dict(linewidth = 2., arrowstyle="-", color='gray'))
+            
+            #y axis
+            ax.annotate('', xy=(1.04, beginningPoint), xycoords='axes fraction', \
+                        xytext=(1.04, endingPoint), arrowprops=dict(linewidth = 2., arrowstyle="-", color='gray')) 
+
+        ax.annotate(myList[i], xy=(0, 1.04), xycoords='axes fraction', xytext=(middlePoint-0.015, 1.04), size=14, color='black')
+        ax.annotate(myList[i], xy=(1.05, 0), xycoords='axes fraction', xytext=(1.05, middlePoint-0.015), rotation=90, size=14, color='black')
+        #print(middlePoint)
+
+    #plt.tight_layout()       
+    plt.savefig(out_file+'-overall-difference.png', bbox_inches='tight', dpi=200)
+    #plt.show()
+
+def main():
     #TODO:
     # There are a bunch of things one can do with this script:
     # 1-Plot nDCC maps or normalized linear mutual information maps!
@@ -518,12 +634,15 @@ if __name__ == "__main__":
     #   a) as a pymol script output
     #   b) as a VMD script output
     # 3-Project secondary structures on x and y axes.
+    # 4-Difference maps
+    # 5-Combining two correlation plots as as upper triangle and lower triangle. 
+    # 6-Filter correlations lower than a certain (absolute) value. 
     print("\n\n|------------------------------Correlation Plus------------------------------|")
     print("|                                                                            |")
     print("|       A small utility program to plot protein correlation maps.            |")
-    print("|                    Copyright - Mustafa Tekpinar 2019                       |")
+    print("|                 Copyright (c) 2019 Mustafa Tekpinar                        |")
     print("|                       Email: tekpinar@buffalo.edu                          |")
-    print("|                            Licence: BSD                                    |")
+    print("|                          Licence: MIT License                              |")
     print("|--------------------------------------------------------------------------- |\n\n")
 
     (inp_file, out_file, sel_type, pdb_file) = handle_arguments()
@@ -543,6 +662,8 @@ if __name__ == "__main__":
     #Read data file and assign to a numpy array
     if(sel_type=="dcc"):
         ccMatrix=np.loadtxt(inp_file, dtype=float)
+    elif(sel_type=="absdcc"):
+        ccMatrix=np.absolute(np.loadtxt(inp_file, dtype=float))
     elif(sel_type=="lmi"):
         ccMatrix = convertLMIdata2Matrix(inp_file, writeAllOutput=False)
     else:
@@ -563,6 +684,7 @@ if __name__ == "__main__":
 
     if(maxCorrelationValue>1.0):
         print("This correlation map is not normalized!")
+        #TODO: At this point, one can ask the use if s/he wants to normalize it!
         sys.exit(-1)
     ##########################################################################
     #Call overall correlation calculation
@@ -570,23 +692,36 @@ if __name__ == "__main__":
     overallCorrelationMap(ccMatrix, minColorBarLimit, maxColorBarLimit,\
                                     out_file, " ", selectedAtoms)
 
-    if (minCorrelationValue<0.0):
-        distanceDistribution(ccMatrix, out_file, "Abs(nDCC)", \
-            selectedAtoms, absoluteValues=True , writeAllOutput=False)
-        
-        distanceDistribution(ccMatrix, out_file, "nDCC", selectedAtoms, \
-                            absoluteValues=False , writeAllOutput=True)
-    else:
-        distanceDistribution(ccMatrix, out_file, "LMI", \
-            selectedAtoms, absoluteValues=True , writeAllOutput=True)
+    plotDistributions = False
+    if(plotDistributions == True):
+        if(sel_type=="dcc"):
+            distanceDistribution(ccMatrix, out_file, "nDCC", selectedAtoms, \
+                                absoluteValues=False , writeAllOutput=True)
+
+        elif(sel_type=="absdcc"):
+            distanceDistribution(ccMatrix, out_file, "Abs(nDCC)", \
+                selectedAtoms, absoluteValues=True , writeAllOutput=False)
+
+        elif(sel_type=="lmi"):
+            distanceDistribution(ccMatrix, out_file, "LMI", selectedAtoms, absoluteValues=True , writeAllOutput=True)
+
+        else:
+            print("Warning: Unknows correlation data.\n")
+            print("         Correlations can be dcc, absdcc, lmi!\n")
+
     ##########################################################################
     #Check number of chains. If there are multiple chains, plot inter and 
     #intra chain correlations
     chains = Counter(selectedAtoms.getChids()).keys()
-    if(len(chains)>1):
+    saveMatrix = True
+    plotChains = True
+    if((len(chains)>1) & (plotChains == True)):
         intraChainCorrelationMaps(ccMatrix, minColorBarLimit, maxColorBarLimit,\
-                                        out_file, " ", selectedAtoms)
+                                        out_file, " ", selectedAtoms, saveMatrix = False)
         interChainCorrelationMaps(ccMatrix, minColorBarLimit, maxColorBarLimit,\
-                                        out_file, " ", selectedAtoms)
+                                        out_file, " ", selectedAtoms, saveMatrix = False)
 
     print("\n@> Program finished successfully!\n")
+
+if __name__ == "__main__":
+    main()
