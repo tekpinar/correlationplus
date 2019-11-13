@@ -123,24 +123,35 @@ def overallCorrelationMap(ccMatrix, minColorBarLimit, maxColorBarLimit, out_file
 
     #print(selectedAtoms.getChids())
 
-    myList = list(Counter(selectedAtoms.getChids()).keys())
+    
 
     selection_reorder = []
     selection_tick_labels = []
     selection_tick_labels.append(str(selectedAtoms.getResnums()[0]))
     selection_reorder.append(0)
     tempVal = 0
-    for i in Counter(selectedAtoms.getChids()).values():
-        tempVal = tempVal + i
-        selection_reorder.append(tempVal)
-        selection_tick_labels.append(str(selectedAtoms.getResnums()[tempVal-1]))
-
-    #print(selection_reorder)
+    myList = list(Counter(selectedAtoms.getChids()).keys())
 
     major_nums=[]
     major_labels=[]
-    major_nums.extend(selection_reorder)
-    major_labels.extend(selection_tick_labels)
+
+    if(len(myList)==1):
+        realTicsList = np.linspace(0, len(selectedAtoms.getResnums())-1, 6, dtype=int)
+        major_nums = realTicsList
+
+        for item in (realTicsList):
+            #print(selectedAtoms.getResnums()[item])
+            major_labels.append(str(selectedAtoms.getResnums()[item]))
+    elif(len(myList)>1):
+        for i in Counter(selectedAtoms.getChids()).values():
+            tempVal = tempVal + i
+            selection_reorder.append(tempVal)
+            selection_tick_labels.append(str(selectedAtoms.getResnums()[tempVal-1]))
+        major_nums.extend(selection_reorder)
+        major_labels.extend(selection_tick_labels)
+    else:
+        print("Warning: Unknown chain ID!")
+    #print(selection_reorder)
 
     ##########################################################################
     #Set plotting parameters
@@ -183,32 +194,33 @@ def overallCorrelationMap(ccMatrix, minColorBarLimit, maxColorBarLimit, out_file
         t.set_horizontalalignment('right')   
         t.set_x(4.0)
 
-    #Add chain borders to the plot
-    for i in range(len(selection_reorder)-1):
-        beginningPoint = selection_reorder[i]/selection_reorder[-1]
-        endingPoint = selection_reorder[i+1]/selection_reorder[-1]
-        middlePoint = (float(beginningPoint)+float(endingPoint))/2.0
-        if(i%2==0):
-            #x axis
-            ax.annotate('', xy=(beginningPoint, 1.03), xycoords='axes fraction', \
-                        xytext=(endingPoint, 1.03), arrowprops=dict(linewidth = 2., arrowstyle="-", color='black'))
+    if(len(myList)>1):
+        #Add chain borders to the plot
+        for i in range(len(selection_reorder)-1):
+            beginningPoint = selection_reorder[i]/selection_reorder[-1]
+            endingPoint = selection_reorder[i+1]/selection_reorder[-1]
+            middlePoint = (float(beginningPoint)+float(endingPoint))/2.0
+            if(i%2==0):
+                #x axis
+                ax.annotate('', xy=(beginningPoint, 1.03), xycoords='axes fraction', \
+                            xytext=(endingPoint, 1.03), arrowprops=dict(linewidth = 2., arrowstyle="-", color='black'))
 
-            #y axis
-            ax.annotate('', xy=(1.04, beginningPoint), xycoords='axes fraction', \
-                        xytext=(1.04, endingPoint), arrowprops=dict(linewidth = 2., arrowstyle="-", color='black'))  
+                #y axis
+                ax.annotate('', xy=(1.04, beginningPoint), xycoords='axes fraction', \
+                            xytext=(1.04, endingPoint), arrowprops=dict(linewidth = 2., arrowstyle="-", color='black'))  
 
-        elif(i%2==1):
-            #x axis
-            ax.annotate('', xy=(beginningPoint, 1.03), xycoords='axes fraction', \
-                        xytext=(endingPoint, 1.03), arrowprops=dict(linewidth = 2., arrowstyle="-", color='gray'))
-            
-            #y axis
-            ax.annotate('', xy=(1.04, beginningPoint), xycoords='axes fraction', \
-                        xytext=(1.04, endingPoint), arrowprops=dict(linewidth = 2., arrowstyle="-", color='gray')) 
+            elif(i%2==1):
+                #x axis
+                ax.annotate('', xy=(beginningPoint, 1.03), xycoords='axes fraction', \
+                            xytext=(endingPoint, 1.03), arrowprops=dict(linewidth = 2., arrowstyle="-", color='gray'))
+                
+                #y axis
+                ax.annotate('', xy=(1.04, beginningPoint), xycoords='axes fraction', \
+                            xytext=(1.04, endingPoint), arrowprops=dict(linewidth = 2., arrowstyle="-", color='gray')) 
 
-        ax.annotate(myList[i], xy=(0, 1.04), xycoords='axes fraction', xytext=(middlePoint-0.015, 1.04), size=14, color='black')
-        ax.annotate(myList[i], xy=(1.05, 0), xycoords='axes fraction', xytext=(1.05, middlePoint-0.015), rotation=90, size=14, color='black')
-        #print(middlePoint)
+            ax.annotate(myList[i], xy=(0, 1.04), xycoords='axes fraction', xytext=(middlePoint-0.015, 1.04), size=14, color='black')
+            ax.annotate(myList[i], xy=(1.05, 0), xycoords='axes fraction', xytext=(1.05, middlePoint-0.015), rotation=90, size=14, color='black')
+            #print(middlePoint)
 
     #plt.tight_layout()       
     plt.savefig(out_file+'-overall.png', bbox_inches='tight', dpi=200)
@@ -714,7 +726,7 @@ def main():
     #intra chain correlations
     chains = Counter(selectedAtoms.getChids()).keys()
     saveMatrix = True
-    plotChains = True
+    plotChains = False
     if((len(chains)>1) & (plotChains == True)):
         intraChainCorrelationMaps(ccMatrix, minColorBarLimit, maxColorBarLimit,\
                                         out_file, " ", selectedAtoms, saveMatrix = False)
