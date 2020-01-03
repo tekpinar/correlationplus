@@ -33,7 +33,7 @@ def usage():
     print("python correlationPlus.py -i 4z90-cross-correlations.txt -p 4z90.pdb \n")
     print("Arguments: -i: A file containing normalized dynamical cross correlations in matrix format. (Mandatory)")
     print("           -p: PDB file of the protein. (Mandatory)")
-    print("           -s: It can be dcc, lmi or absdcc (absolute values of dcc). Default value is dcc (Optional)")
+    print("           -s: It can be ndcc, lmi or absndcc (absolute values of ndcc). Default value is ndcc (Optional)")
     print("           -o: This will be your output file. Output figures are in png format. (Optional)\n\n")
 
 def cmap_discretize(cmap, N):
@@ -97,7 +97,7 @@ def handle_arguments():
 
     #The user may prefer not to submit a title for the output.
     if (sel_type == None):
-        sel_type = "dcc"
+        sel_type = "ndcc"
 
     return (inp_file, out_file, sel_type, pdb_file)
 
@@ -544,6 +544,7 @@ def overallDifferenceMap(ccMatrix1, ccMatrix2, minColorBarLimit, maxColorBarLimi
     plt.xlabel('Residue indices')
     plt.ylabel('Residue indices')
     plt.title(title, y=1.08)
+    plt.grid()
 
     #print(selectedAtoms.getChids())
 
@@ -641,12 +642,12 @@ def overallDifferenceMap(ccMatrix1, ccMatrix2, minColorBarLimit, maxColorBarLimi
 def main():
     #TODO:
     # There are a bunch of things one can do with this script:
-    # 1-Plot nDCC maps or normalized linear mutual information maps!
+    # 1-Plot nDCC maps or normalized linear mutual information maps!: Done!
     # 2-Project (high) correlations onto PDB structure.
     #   a) as a pymol script output
     #   b) as a VMD script output
-    # 3-Project secondary structures on x and y axes.
-    # 4-Difference maps
+    # 3-Project secondary structures on x and y axes of a correlation map.
+    # 4-Difference maps: Done!
     # 5-Combining two correlation plots as as upper triangle and lower triangle. 
     # 6-Filter correlations lower than a certain (absolute) value. 
     print("\n\n|------------------------------Correlation Plus------------------------------|")
@@ -706,11 +707,11 @@ def main():
 
     plotDistributions = False
     if(plotDistributions == True):
-        if(sel_type=="dcc"):
+        if(sel_type=="ndcc"):
             distanceDistribution(ccMatrix, out_file, "nDCC", selectedAtoms, \
                                 absoluteValues=False , writeAllOutput=True)
 
-        elif(sel_type=="absdcc"):
+        elif(sel_type=="absndcc"):
             distanceDistribution(ccMatrix, out_file, "Abs(nDCC)", \
                 selectedAtoms, absoluteValues=True , writeAllOutput=False)
 
@@ -719,19 +720,19 @@ def main():
 
         else:
             print("Warning: Unknows correlation data.\n")
-            print("         Correlations can be dcc, absdcc, lmi!\n")
+            print("         Correlations can be ndcc, absndcc, lmi!\n")
 
     ##########################################################################
     #Check number of chains. If there are multiple chains, plot inter and 
     #intra chain correlations
     chains = Counter(selectedAtoms.getChids()).keys()
-    saveMatrix = True
+    saveMatrix = False
     plotChains = False
     if((len(chains)>1) & (plotChains == True)):
         intraChainCorrelationMaps(ccMatrix, minColorBarLimit, maxColorBarLimit,\
-                                        out_file, " ", selectedAtoms, saveMatrix = False)
+                                        out_file, " ", selectedAtoms, saveMatrix = True)
         interChainCorrelationMaps(ccMatrix, minColorBarLimit, maxColorBarLimit,\
-                                        out_file, " ", selectedAtoms, saveMatrix = False)
+                                        out_file, " ", selectedAtoms, saveMatrix = True)
 
     print("\n@> Program finished successfully!\n")
 
