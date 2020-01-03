@@ -24,7 +24,7 @@ def usage():
     print("Arguments: -i: The first file containing normalized dynamical cross correlations or LMI in matrix format. (Mandatory)")
     print("           -j: The second file containing normalized dynamical cross correlations or LMI in matrix format. (Mandatory)")
     print("           -p: PDB file of the protein. (Mandatory)")
-    print("           -t: It can be dcc, lmi or absdcc (absolute values of dcc). Default value is dcc (Optional)")
+    print("           -t: It can be ndcc, lmi or absndcc (absolute values of ndcc). Default value is ndcc (Optional)")
     print("           -o: This will be your output file. Output figures are in png format. (Optional)\n\n")
 
 def handle_arguments():
@@ -67,7 +67,7 @@ def handle_arguments():
 
     #The user may prefer not to submit a title for the output.
     if (sel_type == None):
-        sel_type = "dcc"
+        sel_type = "ndcc"
 
     return (inp_file1, inp_file2, out_file, sel_type, pdb_file)
 
@@ -83,13 +83,13 @@ def main():
         minColorBarLimit = -1
         maxColorBarLimit = 1
 
-    elif ((sel_type == 'absdcc')):
+    elif ((sel_type == 'absndcc')):
         ccMatrix1 = np.absolute(np.loadtxt(inp_file1, dtype=float))
         ccMatrix2 = np.absolute(np.loadtxt(inp_file2, dtype=float))
         minColorBarLimit = -1
         maxColorBarLimit = 1
 
-    elif ((sel_type == 'dcc')):
+    elif ((sel_type == 'ndcc')):
         ccMatrix1 = np.loadtxt(inp_file1, dtype=float)
         ccMatrix2 = np.loadtxt(inp_file2, dtype=float)
         minColorBarLimit = -2
@@ -97,7 +97,7 @@ def main():
 
     else:
         print("Error: Unknown matrix type!")
-        print("What is the type of your correlation map: lmi, dcc or absdcc?")
+        print("What is the type of your correlation map: lmi, ndcc or absndcc?")
         sys.exit(-1)
 
     ccDiffMatrix = np.subtract(ccMatrix1, ccMatrix2)
@@ -116,8 +116,6 @@ def main():
                                         out_file, " ", selectedAtoms, saveMatrix)
         interChainCorrelationMaps(ccDiffMatrix, minColorBarLimit, maxColorBarLimit,\
                                         out_file, " ", selectedAtoms, saveMatrix )
-
-
 
 
 if __name__ == "__main__":
