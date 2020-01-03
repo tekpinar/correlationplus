@@ -544,7 +544,7 @@ def overallDifferenceMap(ccMatrix1, ccMatrix2, minColorBarLimit, maxColorBarLimi
     plt.xlabel('Residue indices')
     plt.ylabel('Residue indices')
     plt.title(title, y=1.08)
-    plt.grid()
+    plt.grid(color='w', linestyle='--', linewidth=1)
 
     #print(selectedAtoms.getChids())
 
@@ -641,14 +641,14 @@ def overallDifferenceMap(ccMatrix1, ccMatrix2, minColorBarLimit, maxColorBarLimi
 
 def main():
     #TODO:
-    # There are a bunch of things one can do with this script:
+    # There are a bunch of things one can add with this script:
     # 1-Plot nDCC maps or normalized linear mutual information maps!: Done!
     # 2-Project (high) correlations onto PDB structure.
     #   a) as a pymol script output
     #   b) as a VMD script output
     # 3-Project secondary structures on x and y axes of a correlation map.
     # 4-Difference maps: Done!
-    # 5-Combining two correlation plots as as upper triangle and lower triangle. 
+    # 5-Combining two correlation plots as upper triangle and lower triangle. 
     # 6-Filter correlations lower than a certain (absolute) value. 
     print("\n\n|------------------------------Correlation Plus------------------------------|")
     print("|                                                                            |")

@@ -10,6 +10,7 @@ import os
 import sys
 import getopt
 
+from collections import Counter
 import correlationPlus as cP
 import numpy as np
 from prody import parsePDB
@@ -101,10 +102,10 @@ def main():
         sys.exit(-1)
 
     ccDiffMatrix = np.subtract(ccMatrix1, ccMatrix2)
-    #cP.overallDifferenceMap(ccMatrix1, ccMatrix2, minColorBarLimit, maxColorBarLimit, \
-    #                                                       out_file, " ", selectedAtoms)
-    cP.overallCorrelationMap(ccDiffMatrix, minColorBarLimit, maxColorBarLimit, \
-                                                    out_file, " ", selectedAtoms)
+    cP.overallDifferenceMap(ccMatrix1, ccMatrix2, minColorBarLimit, maxColorBarLimit, \
+                                                            out_file, " ", selectedAtoms)
+    #cP.overallCorrelationMap(ccDiffMatrix, minColorBarLimit, maxColorBarLimit, \
+    #                                                out_file, " ", selectedAtoms)
     ##########################################################################
     #Check number of chains. If there are multiple chains, plot inter and 
     #intra chain correlations
@@ -112,9 +113,9 @@ def main():
     saveMatrix = False
     plotChains = True
     if((len(chains)>1) & (plotChains == True)):
-        intraChainCorrelationMaps(ccDiffMatrix, minColorBarLimit, maxColorBarLimit,\
+        cP.intraChainCorrelationMaps(ccDiffMatrix, minColorBarLimit, maxColorBarLimit,\
                                         out_file, " ", selectedAtoms, saveMatrix)
-        interChainCorrelationMaps(ccDiffMatrix, minColorBarLimit, maxColorBarLimit,\
+        cP.interChainCorrelationMaps(ccDiffMatrix, minColorBarLimit, maxColorBarLimit,\
                                         out_file, " ", selectedAtoms, saveMatrix )
 
 
