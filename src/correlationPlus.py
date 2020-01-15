@@ -3,7 +3,7 @@
 Program Name: Cross-correlation Plotting Program (I'll find a fancy name later!)
 Author      : Mustafa TEKPINAR
 Email       : tekpinar@buffalo.edu
-Copyright   : Mustafa Tekpinar - 2019
+Copyright   : Mustafa Tekpinar - 2020
 License     : MIT License
 
 Purpose     : This is a small program to automatize plotting of normalized 
@@ -23,7 +23,7 @@ import matplotlib
 #from prody import *
 from prody import parsePDB
 from prody import buildDistMatrix
-from collections import Counter
+from collections import Counter, OrderedDict
 
 def usage():
     """
@@ -508,7 +508,7 @@ def convertLMIdata2Matrix(inp_file, writeAllOutput: bool):
     data_array=np.array(data_list, dtype=float)
 
     cc=np.reshape(data_array, (n, n))
-    print (cc.dtype)
+    #print (cc.dtype)
 
     data_file.close()
     #Fill diagonal elements with zeros
@@ -524,9 +524,11 @@ def convertLMIdata2Matrix(inp_file, writeAllOutput: bool):
         np.savetxt(inp_file[:-4]+"_modif.dat", cc, fmt='%.6f')
     return cc
 
-def overallDifferenceMap(ccMatrix1, ccMatrix2, minColorBarLimit, maxColorBarLimit, out_file, title, selectedAtoms):
+def overallUniformDifferenceMap(ccMatrix1, ccMatrix2, minColorBarLimit, maxColorBarLimit, out_file, title, selectedAtoms):
     """
     Plots the difference map between correlation maps for the entire structure. 
+    Sizes of ccMatrix1 and ccMatrix2 are identical. Only one atom set is 
+    sufficient to plot the difference map. 
     """
 
     #selectedAtoms = parsePDB(pdb_file, subset='ca')
@@ -638,22 +640,282 @@ def overallDifferenceMap(ccMatrix1, ccMatrix2, minColorBarLimit, maxColorBarLimi
     #plt.tight_layout()       
     plt.savefig(out_file+'-overall-difference.png', bbox_inches='tight', dpi=200)
     #plt.show()
+def findCommonCorePDB(selectedAtomSet1, selectedAtomSet2):
+    """
+    This function assumes that two structures are obtained 
+    exactly from the same species and there is not any mutation in any one
+    of them. This can happen when two conformations of a protein are obtained
+    with different number of missing atoms. 
+    Under these conditions, we are trying to match two structures and find
+    the common core of two structures that have different number of CA atoms.
+    We will use this information to subtract two correlation maps!
+    Here, the output will be a dictonary of indices matching in two structures.
+    """
+    print("@> Calculating a common core for two structures.")
+    lengthSet1 = len(selectedAtomSet1)
+    lengthSet2 = len(selectedAtomSet2)
+    
+    #print(lengthSet1)
+    #print(lengthSet2)
 
+    #I made it an ordered dictionary so that the it will not shuffle 
+    #the items in the dictionary!
+    commonCoreDictionary = OrderedDict()
+    # if (lengthSet1 > lengthSet2):
+    for i in range (0, lengthSet1):
+        for j in range (0, lengthSet2):
+            if((selectedAtomSet1.getResnums()[i] == \
+                    selectedAtomSet2.getResnums()[j]) and 
+                (selectedAtomSet1.getResnames()[i] == \
+                    selectedAtomSet2.getResnames()[j]) and \
+                (selectedAtomSet1.getChids()[i] == \
+                    selectedAtomSet2.getChids()[j])):
+                commonCoreDictionary[i] = j
+    #print(commonCoreDictionary)
+    return commonCoreDictionary
+
+def overallNonUniformDifferenceMap(ccMatrix1, ccMatrix2, minColorBarLimit, \
+                                    maxColorBarLimit, out_file, title, \
+                                    selectedAtomSet1, selectedAtomSet2):
+    """
+    Plots the difference map between correlation maps for the entire structure. 
+    Sizes of ccMatrix1 and ccMatrix2 are not identical. A mapping for matching 
+    residues is performed before difference map plotting. 
+    """
+
+    #selectedAtoms = parsePDB(pdb_file, subset='ca')
+    #chainLengths = Counter(selectedAtoms.getChids()).values()
+
+    commonCoreDictionary = findCommonCorePDB(selectedAtomSet1, selectedAtomSet2)
+    diffMap = np.zeros((len(commonCoreDictionary), len(commonCoreDictionary)), dtype=float)
+
+    items = list(commonCoreDictionary.items())
+
+    for i in range (0, len(commonCoreDictionary)):
+        key1, value1 = items[i]
+        for j in range (i, len(commonCoreDictionary)):
+            key2, value2 = items[j]
+            diffMap[i][j] = ccMatrix1[key1][key2]-ccMatrix2[value1][value2]
+            diffMap[j][i] = diffMap[i][j]  
+    #diffMap = np.subtract(ccMatrix1, ccMatrix2)
+
+    n=len(commonCoreDictionary)
+    ##########################################################################
+    #Set residue interface definitions
+    fig=plt.figure()
+    fig.set_size_inches(8.0, 5.5, forward=True)
+    plt.rcParams['font.size'] = 16
+    ax=fig.add_subplot(1,1,1)
+
+    plt.xlabel('Residue indices')
+    plt.ylabel('Residue indices')
+    plt.title(title, y=1.08)
+    plt.grid(color='w', linestyle='--', linewidth=1)
+
+    ##########################################################################
+    #Set xtics, ytic, xlabels, y labels etc. 
+    #This part may have to be rewritten! 
+    myList = list(Counter(selectedAtomSet1.getChids()).keys())
+
+    selection_reorder = []
+    selection_tick_labels = []
+    selection_tick_labels.append(str(selectedAtomSet1.getResnums()[0]))
+    selection_reorder.append(0)
+    tempVal = 0
+    for i in Counter(selectedAtomSet1.getChids()).values():
+        tempVal = tempVal + i
+        selection_reorder.append(tempVal)
+        selection_tick_labels.append(str(selectedAtomSet1.getResnums()[tempVal-1]))
+
+    #print(selection_reorder)
+
+    major_nums=[]
+    major_labels=[]
+    major_nums.extend(selection_reorder)
+    major_labels.extend(selection_tick_labels)
+
+    ##########################################################################
+    #Set plotting parameters
+
+    #plt.rcParams['axes.titlepad'] = 20
+    ax.autoscale(False)
+    ax.set_aspect('equal')
+
+    #ax.set_xticks(major_nums, major_labels, rotation=45, minor=False)
+    plt.xticks(major_nums, major_labels, size=12, rotation=45)
+    plt.yticks(major_nums, major_labels, size=12)
+
+    #ax.xaxis.set_tick_params(width=2, length=5, labelsize=12, minor=False)
+    #ax.yaxis.set_tick_params(width=2, length=5)
+
+    plt.axis([0, n, 0, n])
+    ax.tick_params(which='major', width=2, length=5)
+    ax.tick_params(which='minor', width=1, length=3)
+
+    #print("Min value")
+    #print("Row Index of min value")
+    #print(np.argmin(ccMatrix1_sub, 0))
+
+    #print("Column Index of min value")
+    #print(np.argmin(ccMatrix1_sub, 1))
+
+    #Set colorbar features here!  
+    jet=plt.get_cmap('jet') 
+    djet = cmap_discretize(jet, 8)
+
+    plt.imshow(np.matrix(diffMap), cmap=djet)
+    plt.clim(minColorBarLimit, maxColorBarLimit)
+
+    position=fig.add_axes([0.85, 0.15, 0.03, 0.70])
+    cbar=plt.colorbar(cax=position)
+
+    cbar.set_ticks([-1.00, -0.75, -0.50, -0.25, 0.00, 0.25, 0.50, 0.75, 1.00])
+
+    for t in cbar.ax.get_yticklabels():
+        t.set_horizontalalignment('right')   
+        t.set_x(4.0)
+    ###########################################################################
+    #Add chain borders to the plot
+    for i in range(len(selection_reorder)-1):
+        beginningPoint = selection_reorder[i]/selection_reorder[-1]
+        endingPoint = selection_reorder[i+1]/selection_reorder[-1]
+        middlePoint = (float(beginningPoint)+float(endingPoint))/2.0
+        if(i%2==0):
+            #x axis
+            ax.annotate('', xy=(beginningPoint, 1.03), xycoords='axes fraction', \
+                        xytext=(endingPoint, 1.03), arrowprops=dict(linewidth = 2., arrowstyle="-", color='black'))
+
+            #y axis
+            ax.annotate('', xy=(1.04, beginningPoint), xycoords='axes fraction', \
+                        xytext=(1.04, endingPoint), arrowprops=dict(linewidth = 2., arrowstyle="-", color='black'))  
+
+        elif(i%2==1):
+            #x axis
+            ax.annotate('', xy=(beginningPoint, 1.03), xycoords='axes fraction', \
+                        xytext=(endingPoint, 1.03), arrowprops=dict(linewidth = 2., arrowstyle="-", color='gray'))
+            
+            #y axis
+            ax.annotate('', xy=(1.04, beginningPoint), xycoords='axes fraction', \
+                        xytext=(1.04, endingPoint), arrowprops=dict(linewidth = 2., arrowstyle="-", color='gray')) 
+
+        ax.annotate(myList[i], xy=(0, 1.04), xycoords='axes fraction', xytext=(middlePoint-0.015, 1.04), size=14, color='black')
+        ax.annotate(myList[i], xy=(1.05, 0), xycoords='axes fraction', xytext=(1.05, middlePoint-0.015), rotation=90, size=14, color='black')
+        #print(middlePoint)
+    ###########################################################################
+    #plt.tight_layout()       
+    plt.savefig(out_file+'-overall-difference.png', bbox_inches='tight', dpi=200)
+    #plt.show()
+
+def projectCorrelationsOntoProteinVMD(ccMatrix, vmd_out_file, \
+                                        selectedAtoms, valueFilter,\
+                                        absoluteValues: bool, \
+                                        writeAllOutput: bool):
+    """
+    This function writes tcl files that contains the correlations between
+    residues i and j. It produces three output files: 
+    1-A general file that contains all correlation.
+    2-(If there are at least two chains) A file that contains interchain
+      correlations.
+    3-(If there are at least two chains) A file that contains intrachain
+      correlations. 
+    The output files can be visualized with VMD (Visual Molecular
+    dynamics) program as follows.
+    i) Load your pdb file, whether via command line or graphical interface.
+    ii) Go to Extemsions -> Tk Console and then
+    iii) source vmd-output-general.tcl
+    It can take some to load the general script. 
+    """
+    #Calculate distance matrix
+    dist_matrix=buildDistMatrix(selectedAtoms)
+    
+    #Plot the figure
+    #print("@> Min. distance: {0:.2f} Angstrom.".format(np.min(dist_matrix)))
+    print("@> Max. distance: {0:.2f} Angstrom.".format(np.max(dist_matrix)))
+
+    x=dist_matrix.flatten()
+    y=ccMatrix.flatten()
+
+    #print(len(y))
+
+    distanceFilter = 0.5
+    #valueFilter = 0.5
+    #Write output in VMD format
+    #Writing the output is very important for further analyses such as 
+    #inter-chain (inter-domain) or intra-chain (intra-domain) distributions etc.
+    #
+    draw_string = "draw cylinder"+\
+                " [lindex [[atomselect top \"chain {0:s} and resid {1:d} and name CA\"] get {{x y z}}] 0]"+\
+                " [lindex [[atomselect top \"chain {2:s} and resid {3:d} and name CA\"] get {{x y z}}] 0]"+\
+                " radius {4:.3f}\n"
+    DATA_FILE = open(vmd_out_file+'-general.tcl', 'w')
+    for i in range(0, len(ccMatrix)):
+        for j in range(i+1, len(ccMatrix)):
+            if(np.absolute(ccMatrix[i][j])>valueFilter):
+                DATA_FILE.write(draw_string.format(selectedAtoms.getChids()[i],\
+                        selectedAtoms.getResnums()[i],\
+                        selectedAtoms.getChids()[j],\
+                        selectedAtoms.getResnums()[j],\
+                        #The radius of the connecting cylinder is proportional to the correlation value.
+                        #However, it is necessary to multiply the radius with 0.5 to make it look better.
+                        ccMatrix[i][j]*0.5))
+    DATA_FILE.close()
+
+    chains = Counter(selectedAtoms.getChids()).keys()
+
+    plotChains = True
+    if((len(chains)>1) & (plotChains)):
+        #Inter-chain
+        for chainI in chains:
+            for chainJ in chains:
+                if(chainI != chainJ):                
+                    DATA_FILE = open(vmd_out_file+'-interchain-chains'+chainI+'-'+chainJ+'.tcl', 'w')
+                    for i in range(0, len(ccMatrix)):
+                        for j in range(i+1, len(ccMatrix)):
+                            if(np.absolute(ccMatrix[i][j])>valueFilter):
+                                if((selectedAtoms.getChids()[i] == chainI) and \
+                                    (selectedAtoms.getChids()[j] == chainJ)):
+                                    DATA_FILE.write(draw_string.\
+                                    format(selectedAtoms.getChids()[i],\
+                                            selectedAtoms.getResnums()[i],\
+                                            selectedAtoms.getChids()[j],\
+                                            selectedAtoms.getResnums()[j],\
+                                            #The radius of the connecting cylinder is proportional to the correlation value.
+                                            #However, it is necessary to multiply the radius with 0.5 to make it look better.
+                                            ccMatrix[i][j]*0.5))
+                    DATA_FILE.close()
+
+        #Intra-chain
+        for chain in chains:
+            DATA_FILE = open(vmd_out_file+'-intrachain-chain'+chain+'.tcl', 'w')
+            for i in range(0, len(ccMatrix)):
+                for j in range(i+1, len(ccMatrix)):
+                    if(np.absolute(ccMatrix[i][j])>valueFilter):
+                        if((selectedAtoms.getChids()[i] == chain) and \
+                           (selectedAtoms.getChids()[j] == chain)):    
+                            DATA_FILE.write(draw_string.\
+                            format(selectedAtoms.getChids()[i],\
+                                    selectedAtoms.getResnums()[i],\
+                                    selectedAtoms.getChids()[j],\
+                                    selectedAtoms.getResnums()[j],\
+                #The radius of the connecting cylinder is proportional to the correlation value.
+                #However, it is necessary to multiply the radius with 0.5 to make it look better.
+                                    ccMatrix[i][j]*0.5))
+            DATA_FILE.close()
 def main():
     #TODO:
-    # There are a bunch of things one can add with this script:
+    # There are a bunch of things one can add to this script:
     # 1-Plot nDCC maps or normalized linear mutual information maps!: Done!
     # 2-Project (high) correlations onto PDB structure.
-    #   a) as a pymol script output
-    #   b) as a VMD script output
+    #   a) as a Pymol script output
+    #   b) as a VMD script output: Almost Done!
     # 3-Project secondary structures on x and y axes of a correlation map.
     # 4-Difference maps: Done!
     # 5-Combining two correlation plots as upper triangle and lower triangle. 
     # 6-Filter correlations lower than a certain (absolute) value. 
     print("\n\n|------------------------------Correlation Plus------------------------------|")
     print("|                                                                            |")
-    print("|       A small utility program to plot protein correlation maps.            |")
-    print("|                 Copyright (c) 2019 Mustafa Tekpinar                        |")
+    print("|       A utility program to plot and analyze protein correlation maps.      |")
+    print("|               Copyright (c) 2019-2020 Mustafa Tekpinar                     |")
     print("|                       Email: tekpinar@buffalo.edu                          |")
     print("|                          Licence: MIT License                              |")
     print("|--------------------------------------------------------------------------- |\n\n")
@@ -697,7 +959,7 @@ def main():
 
     if(maxCorrelationValue>1.0):
         print("This correlation map is not normalized!")
-        #TODO: At this point, one can ask the use if s/he wants to normalize it!
+        #TODO: At this point, one can ask the user if s/he wants to normalize it!
         sys.exit(-1)
     ##########################################################################
     #Call overall correlation calculation
@@ -706,7 +968,7 @@ def main():
                                     out_file, " ", selectedAtoms)
 
     plotDistributions = False
-    if(plotDistributions == True):
+    if(plotDistributions):
         if(sel_type=="ndcc"):
             distanceDistribution(ccMatrix, out_file, "nDCC", selectedAtoms, \
                                 absoluteValues=False , writeAllOutput=True)
@@ -727,12 +989,17 @@ def main():
     #intra chain correlations
     chains = Counter(selectedAtoms.getChids()).keys()
     saveMatrix = False
-    plotChains = False
-    if((len(chains)>1) & (plotChains == True)):
+    plotChains = True
+    if((len(chains)>1) & (plotChains == False)):
         intraChainCorrelationMaps(ccMatrix, minColorBarLimit, maxColorBarLimit,\
-                                        out_file, " ", selectedAtoms, saveMatrix = True)
+                                        out_file, " ", selectedAtoms, saveMatrix)
         interChainCorrelationMaps(ccMatrix, minColorBarLimit, maxColorBarLimit,\
-                                        out_file, " ", selectedAtoms, saveMatrix = True)
+                                        out_file, " ", selectedAtoms, saveMatrix)
+
+    #Overall projection
+    # projectCorrelationsOntoProteinVMD(ccMatrix, "vmd-output", 
+    #                                     selectedAtoms, valueFilter=0.75,\
+    #                                     absoluteValues=True, writeAllOutput=True)
 
     print("\n@> Program finished successfully!\n")
 
