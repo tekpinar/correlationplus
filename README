@@ -16,3 +16,12 @@ The program only requires a pdb file and a correlation data.
 The correlation data has to be in matrix format, where only A(i,j)
 values are listed in a square matrix format. 
 
+To run a simple example, go to examples folder and then run:
+This will produce plot absolute values of dynamical cross correla
+tions. 
+ 
+python ../src/correlationPlus.py -i 6fl9_just_prot_anm_100_modes_rc_15_cross-correlations.txt -p 6fl9_centeredOrientedAligned2Z.pdb -s absdcc
+
+
+Sometimes, we may need to plot difference map of two correlation
+maps: 
