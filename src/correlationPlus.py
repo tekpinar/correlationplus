@@ -417,9 +417,11 @@ def interChainCorrelationMaps(ccMatrix, minColorBarLimit, maxColorBarLimit, out_
             jet=plt.get_cmap('jet')
             djet = cmap_discretize(jet, 8)
             plt.axis([0, n, 0, n])
-            plt.axis([0, (selection_reorder[l+1]-selection_reorder[l]), 0, (selection_reorder[k+1]-selection_reorder[k])])
+            plt.axis([0, (selection_reorder[l+1]-selection_reorder[l]), 0, \
+                         (selection_reorder[k+1]-selection_reorder[k])])
 
-            sub_nDCC_matrix = ccMatrix[(selection_reorder[k]) : (selection_reorder[k+1]), (selection_reorder[l]) : (selection_reorder[l+1])]
+            sub_nDCC_matrix = ccMatrix[(selection_reorder[k]) : (selection_reorder[k+1]), \
+                                       (selection_reorder[l]) : (selection_reorder[l+1])]
             plt.imshow(np.matrix(sub_nDCC_matrix), cmap=djet)
             plt.clim(minColorBarLimit, maxColorBarLimit)
 
@@ -902,26 +904,7 @@ def projectCorrelationsOntoProteinVMD(ccMatrix, vmd_out_file, \
                                     ccMatrix[i][j]*0.5))
             DATA_FILE.close()
 def correlationMapApp():
-    #TODO:
-    # There are a bunch of things one can add to this script:
-    # 1-Plot nDCC maps or normalized linear mutual information maps!: Done!
-    # 2-Project (high) correlations onto PDB structure.
-    #   a) as a Pymol script output
-    #   b) as a VMD script output: Done!
-    # 3-Project secondary structures on x and y axes of a correlation map.
-    # 4-Difference maps: Done!
-    # 5-Combining two correlation plots as upper triangle and lower triangle. 
-    # 6-Filter correlations lower than a certain (absolute) value. 
-    # 7-Filter correlations for residues that are vry close.
-    # 8
-    print("\n\n|------------------------------Correlation Plus------------------------------|")
-    print("|                                                                            |")
-    print("|       A utility program to plot and analyze protein correlation maps.      |")
-    print("|               Copyright (c) 2019-2020 Mustafa Tekpinar                     |")
-    print("|                       Email: tekpinar@buffalo.edu                          |")
-    print("|                          Licence: MIT License                              |")
-    print("|--------------------------------------------------------------------------- |\n\n")
-
+    print("@> Running 'Correlation Map App'")
     (inp_file, out_file, sel_type, pdb_file) = handle_arguments_correlationMaps()
     print("\n@> Input file   :", inp_file)
     print("@> PDB file     :", pdb_file)
@@ -969,18 +952,19 @@ def correlationMapApp():
     overallCorrelationMap(ccMatrix, minColorBarLimit, maxColorBarLimit,\
                                     out_file, " ", selectedAtoms)
 
-    plotDistributions = False
+    plotDistributions = True
     if(plotDistributions):
-        if(sel_type=="ndcc"):
+        if(sel_type=="dcc"):
             distanceDistribution(ccMatrix, out_file, "nDCC", selectedAtoms, \
                                 absoluteValues=False , writeAllOutput=True)
 
-        elif(sel_type=="absndcc"):
+        elif(sel_type=="absdcc"):
             distanceDistribution(ccMatrix, out_file, "Abs(nDCC)", \
                 selectedAtoms, absoluteValues=True , writeAllOutput=False)
 
         elif(sel_type=="lmi"):
-            distanceDistribution(ccMatrix, out_file, "LMI", selectedAtoms, absoluteValues=True , writeAllOutput=True)
+            distanceDistribution(ccMatrix, out_file, "LMI", selectedAtoms, \
+                                absoluteValues=True , writeAllOutput=True)
 
         else:
             print("Warning: Unknows correlation data.\n")
@@ -992,16 +976,28 @@ def correlationMapApp():
     chains = Counter(selectedAtoms.getChids()).keys()
     saveMatrix = False
     plotChains = True
-    if((len(chains)>1) & (plotChains == False)):
+    if((len(chains)>1) & (plotChains == True)):
         intraChainCorrelationMaps(ccMatrix, minColorBarLimit, maxColorBarLimit,\
                                         out_file, " ", selectedAtoms, saveMatrix)
         interChainCorrelationMaps(ccMatrix, minColorBarLimit, maxColorBarLimit,\
                                         out_file, " ", selectedAtoms, saveMatrix)
 
+    #Here, we can filter some correlation values closer than a distance.
+    #Typically, it is supposed to filter out the correlation within the 
+    #same secondary structure etc. 
+    filterByDistance = False
+    if (filterByDistance):
+        distanceValue=5.0
+        ccMatrix=filterCorrelationMapByDistance(ccMatrix, out_file, " ", \
+                                            selectedAtoms, distanceValue,\
+                                            absoluteValues=False, \
+                                            writeAllOutput=False)
+    
+    
     #Overall projection
-    # projectCorrelationsOntoProteinVMD(ccMatrix, "vmd-output", 
-    #                                     selectedAtoms, valueFilter=0.675,\
-    #                                     absoluteValues=True, writeAllOutput=True)
+    projectCorrelationsOntoProteinVMD(ccMatrix, out_file, 
+                                        selectedAtoms, valueFilter=0.75,\
+                                        absoluteValues=True, writeAllOutput=True)
 
     print("\n@> Program finished successfully!\n")
 def usage_diffMaps():
@@ -1074,6 +1070,7 @@ def diffMapApp():
     Therefore, if one of the proteins is contains a mutation or just a 
     relative of the first one, the app won't work. 
     """
+    print("@> Running 'Difference Map App'")
     (inp_file1, inp_file2, out_file, sel_type, pdb_file1, pdb_file2) = handle_arguments_diffMaps()
 
     selectedAtomSet1 = parsePDB(pdb_file1, subset='ca')
@@ -1136,5 +1133,69 @@ def diffMapApp():
                                 minColorBarLimit, maxColorBarLimit, \
                                 out_file, " ", \
                                 selectedAtomSet1, selectedAtomSet2)
+def filterCorrelationMapByDistance(ccMatrix, out_file, title, \
+                                    selectedAtoms, distanceValue,\
+                                    absoluteValues: bool, writeAllOutput: bool):
+    """
+    If residues are closer to each other than a certain distance 
+    (distanceValue), make these correlations zero. This filter can be useful 
+    to get rid of short distance correlation for visualization purposes. 
+    This function returns a filtered ccMatrix.
+    """
+    print("@> Filtering correlations lower than "+str(distanceValue)+" Angstrom")
+    #Calculate distance matrix
+    dist_matrix=buildDistMatrix(selectedAtoms)
+    
+    #print("@> Min. distance: {0:.2f} Angstrom.".format(np.min(dist_matrix)))
+    #print("@> Max. distance: {0:.2f} Angstrom.".format(np.max(dist_matrix)))
+
+    for i in range(0, len(ccMatrix)):
+        for j in range(i+1, len(ccMatrix)):
+            if(dist_matrix[i][j]<distanceValue):
+                ccMatrix[i][j] = 0.0
+                ccMatrix[j][i] = 0.0
+
+    if(absoluteValues):
+        dst_file = out_file+'-absolute-correlation-filtered'
+
+    else:
+        dst_file = out_file+'-correlation-filtered'
+    
+    #Write output
+    #Writing the output is very important for further analyses such as 
+    #inter-chain (inter-domain) or intra-chain (intra-domain) distributions etc.
+    if(writeAllOutput):
+        DATA_FILE = open(dst_file+'filtered.dat', 'w')
+        for i in range(0, len(ccMatrix)):
+            for j in range(i+1, len(ccMatrix)):
+                DATA_FILE.write("{0:d}\t{1:s}\t{2:d}\t{3:s}\t{4:.3f}\t{5:.3f}\n".\
+                                format(selectedAtoms.getResnums()[i],\
+                                        selectedAtoms.getChids()[i],\
+                                        selectedAtoms.getResnums()[j],\
+                                        selectedAtoms.getChids()[j],\
+                                        dist_matrix[i][j],\
+                                        ccMatrix[i][j]))
+        DATA_FILE.close()
+    return ccMatrix
+
 if __name__ == "__main__":
+        #TODO:
+    # There are a bunch of things one can add to this script:
+    # 1-Plot nDCC maps or normalized linear mutual information maps!: Done!
+    # 2-Project (high) correlations onto PDB structure.
+    #   a) as a Pymol script output
+    #   b) as a VMD script output: Done!
+    # 3-Project secondary structures on x and y axes of a correlation map.
+    # 4-Difference maps: Done!
+    # 5-Combining two correlation plots as upper triangle and lower triangle. 
+    # 6-Filter correlations lower than a certain (absolute) value. 
+    # 7-Filter correlations for residues that are very close.
+    # 8
+    print("\n\n|------------------------------Correlation Plus------------------------------|")
+    print("|                                                                            |")
+    print("|       A utility program to plot and analyze protein correlation maps.      |")
+    print("|               Copyright (c) 2019-2020 Mustafa Tekpinar                     |")
+    print("|                       Email: tekpinar@buffalo.edu                          |")
+    print("|                          Licence: MIT License                              |")
+    print("|--------------------------------------------------------------------------- |\n\n")
     correlationMapApp()

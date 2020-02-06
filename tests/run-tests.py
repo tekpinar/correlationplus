@@ -8,9 +8,10 @@ So, I will do it here by checking diffs of output images.
 
 def runTests():
     #Test correlationMapApp for nDCC maps
-    os.system("python ../src/correlationPlus.py -i"\
-        +" ../examples/6fl9_just_prot_anm_100_modes_rc_15_cross-correlations.txt"\
-        +" -p ../examples/6fl9_centeredOrientedAligned2Z.pdb -s absdcc")
+    os.system("python ../src/correlationPlus.py"\
+        +" -i ../examples/6fl9_just_prot_anm_100_modes_rc_15_cross-correlations.txt"\
+        +" -p ../examples/6fl9_centeredOrientedAligned2Z.pdb"\
+        +" -s absdcc")
 
     #Test correlationMapApp for absolute nDCC maps
     #os.system()
@@ -22,7 +23,8 @@ def runTests():
     os.system("python ../src/diffMap.py"+\
         " -i ../examples/6fl9_rc15_scalCoeff1_100_modes_lmi_v2.dat"+\
         " -j ../examples/zacharias_rc15_scalCoeff15_100_modes_lmi.dat"+\
-        " -p ../examples/6fl9_centeredOrientedAligned2Z.pdb -t lmi")
+        " -p ../examples/6fl9_centeredOrientedAligned2Z.pdb"+\
+        " -t lmi")
 
 if __name__ == "__main__":
     runTests()
