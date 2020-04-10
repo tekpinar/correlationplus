@@ -61,19 +61,22 @@ def cmap_discretize(cmap, N):
 
 ##################### HANDLE ARGUMENTS ##########################################                                                                           
 def handle_arguments_correlationMaps():
-    opts, args = getopt.getopt(sys.argv[1:],"hi:o:s:p:",["inp=", "out=", "sel=", "pdb="])
+    opts, args = getopt.getopt(sys.argv[1:],"hi:o:s:p:",["help", "inp=", "out=", "sel=", "pdb="])
     inp_file = None
     pdb_file = None
     out_file = None
     sel_type = None
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:],"hi:o:s:p:",["inp=", "out=", "sel=", "pdb="])
+        opts, args = getopt.getopt(sys.argv[1:],"hi:o:s:p:",["help", "inp=", "out=", "sel=", "pdb="])
     except getopt.GetoptError:
-        usage()
+        usage_correlationMaps()
     for opt, arg in opts:
-        if opt == '-h':
-            usage()
+        # if opt == '-h':
+        #     usage_correlationMaps()
+        #     sys.exit(-1)
+        if opt in ('-h', "--help"):
+            usage_correlationMaps()
             sys.exit(-1)
         elif opt in ("-i", "--inp"):
             inp_file = arg
@@ -84,11 +87,11 @@ def handle_arguments_correlationMaps():
         elif opt in ("-p", "--pdb"):
             pdb_file = arg
         else:
-            assert False, usage()
+            assert False, usage_correlationMaps()
 
     #Input data matrix and PDB file are mandatory!
     if inp_file==None or pdb_file==None:
-        usage()
+        usage_correlationMaps()
         sys.exit(-1)
 
     #Assign a default name if the user forgets the output file prefix.
@@ -1188,12 +1191,12 @@ if __name__ == "__main__":
     # 3-Project secondary structures on x and y axes of a correlation map.
     # 4-Difference maps: Done!
     # 5-Combining two correlation plots as upper triangle and lower triangle. 
-    # 6-Filter correlations lower than a certain (absolute) value. 
-    # 7-Filter correlations for residues that are very close.
+    # 6-Filter correlations lower than a certain (absolute) value.: Done!
+    # 7-Filter correlations for residues that are very close.: Done!
     # 8
     print("\n\n|------------------------------Correlation Plus------------------------------|")
     print("|                                                                            |")
-    print("|       A utility program to plot and analyze protein correlation maps.      |")
+    print("|   A set of utility programs to plot and analyze protein correlation maps.  |")
     print("|               Copyright (c) 2019-2020 Mustafa Tekpinar                     |")
     print("|                       Email: tekpinar@buffalo.edu                          |")
     print("|                          Licence: MIT License                              |")
