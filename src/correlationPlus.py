@@ -529,6 +529,41 @@ def convertLMIdata2Matrix(inp_file, writeAllOutput: bool):
         np.savetxt(inp_file[:-4]+"_modif.dat", cc, fmt='%.6f')
     return cc
 
+# def readForceConstantsMatrix(inp_file, writeAllOutput: bool):
+# """
+#     The force constant matrix is in the following format!
+#     i j k_ij
+# """
+#     data_file=open(inp_file, 'r')
+
+#     allLines=data_file.readlines()
+#     data_list=[]
+#     for line in allLines:
+#         words=line.split()
+#         for i in words:
+#                 data_list.append(i)
+
+#     #data_list = data_list[4:-1]
+#     n=int(np.sqrt(len(data_list)))
+#     data_array=np.array(data_list, dtype=float)
+
+#     cc=np.reshape(data_array, (n, n))
+#     #print (cc.dtype)
+
+#     data_file.close()
+#     #Fill diagonal elements with zeros
+#     #np.fill_diagonal(cc, 0.0)
+
+#     #Find maximum for the remaining matrix
+#     #maximum=cc.max()
+#     #cc=cc/cc.max()
+#     #print (maximum)
+#     #np.fill_diagonal(cc, 1.0)
+
+#     if(writeAllOutput):
+#         np.savetxt(inp_file[:-4]+"_modif.dat", cc, fmt='%.6f')
+#     return cc
+
 def overallUniformDifferenceMap(ccMatrix1, ccMatrix2, minColorBarLimit, maxColorBarLimit, out_file, title, selectedAtoms):
     """
     Plots the difference map between correlation maps for the entire structure. 
@@ -852,6 +887,11 @@ def projectCorrelationsOntoProteinVMD(ccMatrix, vmd_out_file, \
                 " [lindex [[atomselect top \"chain {0:s} and resid {1:d} and name CA\"] get {{x y z}}] 0]"+\
                 " [lindex [[atomselect top \"chain {2:s} and resid {3:d} and name CA\"] get {{x y z}}] 0]"+\
                 " radius {4:.3f}\n"
+    vdw_representation_string = "mol representation VDW 0.750000 50.000000\n"+\
+                                "mol material Glossy\n"+\
+                                "#mol color ColorID 7\n"+\
+                                "mol selection \"chain {0:s} and resid {1:d} and name CA\"\n"+\
+                                "mol addrep 0\n"
     DATA_FILE = open(vmd_out_file+'-general.tcl', 'w')
     for i in range(0, len(ccMatrix)):
         for j in range(i+1, len(ccMatrix)):
@@ -879,6 +919,13 @@ def projectCorrelationsOntoProteinVMD(ccMatrix, vmd_out_file, \
                             if(np.absolute(ccMatrix[i][j])>valueFilter):
                                 if((selectedAtoms.getChids()[i] == chainI) and \
                                     (selectedAtoms.getChids()[j] == chainJ)):
+                                    DATA_FILE.write(vdw_representation_string.\
+                                    format(selectedAtoms.getChids()[i],\
+                                            selectedAtoms.getResnums()[i]))
+                                    DATA_FILE.write(vdw_representation_string.\
+                                    format(selectedAtoms.getChids()[j],\
+                                            selectedAtoms.getResnums()[j]))
+                                    
                                     DATA_FILE.write(draw_string.\
                                     format(selectedAtoms.getChids()[i],\
                                             selectedAtoms.getResnums()[i],\
@@ -896,7 +943,13 @@ def projectCorrelationsOntoProteinVMD(ccMatrix, vmd_out_file, \
                 for j in range(i+1, len(ccMatrix)):
                     if(np.absolute(ccMatrix[i][j])>valueFilter):
                         if((selectedAtoms.getChids()[i] == chain) and \
-                           (selectedAtoms.getChids()[j] == chain)):    
+                           (selectedAtoms.getChids()[j] == chain)):
+                            DATA_FILE.write(vdw_representation_string.\
+                            format(selectedAtoms.getChids()[i],\
+                                    selectedAtoms.getResnums()[i]))
+                            DATA_FILE.write(vdw_representation_string.\
+                            format(selectedAtoms.getChids()[j],\
+                                            selectedAtoms.getResnums()[j]))    
                             DATA_FILE.write(draw_string.\
                             format(selectedAtoms.getChids()[i],\
                                     selectedAtoms.getResnums()[i],\
