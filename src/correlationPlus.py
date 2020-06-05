@@ -896,6 +896,12 @@ def projectCorrelationsOntoProteinVMD(ccMatrix, vmd_out_file, \
     for i in range(0, len(ccMatrix)):
         for j in range(i+1, len(ccMatrix)):
             if(np.absolute(ccMatrix[i][j])>valueFilter):
+                DATA_FILE.write(vdw_representation_string.\
+                format(selectedAtoms.getChids()[i],\
+                        selectedAtoms.getResnums()[i]))
+                DATA_FILE.write(vdw_representation_string.\
+                format(selectedAtoms.getChids()[j],\
+                        selectedAtoms.getResnums()[j]))
                 DATA_FILE.write(draw_string.format(selectedAtoms.getChids()[i],\
                         selectedAtoms.getResnums()[i],\
                         selectedAtoms.getChids()[j],\
