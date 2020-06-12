@@ -23,6 +23,7 @@ import matplotlib
 
 #from prody import *
 from prody import parsePDB
+from prody import writePDB
 from prody import buildDistMatrix
 from collections import Counter, OrderedDict
 
@@ -1258,9 +1259,149 @@ def filterCorrelationMapByDistance(ccMatrix, out_file, title, \
         DATA_FILE.close()
     return ccMatrix
 
-def networkAnalysis(ccMatrix, valueFilter, out_file, centrality, selectedAtoms):
+def projectCentralitiesOntoProteinVMD(centrality, centralityArray, \
+                                    out_file, \
+                                    selectedAtoms, scalingFactor):
     """
-    This function calculates various network (graph) parameters of a protein.
+    Produces VMD output files for visualizing protein centralities.  
+    This function writes a tcl file and a PDB file that can be viewed in
+    VMD. Bfactor field of the protein contains the centrality information. 
+    The first N residues with the highest centrality are highlighed in VDW 
+    representation.  that  that contains the centralities on 
+    on Bfactor field of the pdb.  
+    The output files can be visualized with VMD (Visual Molecular
+    dynamics) program as follows.
+    i) Load your pdb file, whether via command line or graphical interface.
+    ii) Go to Extemsions -> Tk Console and then
+    iii) source vmd-output-general.tcl
+    It can take some to load the general script. 
+
+    Parameters
+    ----------
+    centrality: string
+        It can have 'degree', 'betweenness', 'closeness' or 'current_flow'. 
+    centralityArray: A numpy data array ?
+        It is a numpy matrix of typically nDCC, LMI or Generalized Correlations.
+    out_file: string
+        Prefix of the output file. According to the centralty measure, it will be 
+        extended. 
+    selectedAtoms: object
+        This is a prody.parsePDB object of typically CA atoms of a protein.
+    ScalingFactor: float
+        Sometimes, the values of the centrality arrays are too small. 
+        The scaling factor multiplies the array to make the values visible in 
+        the Bfactor colums.
+    
+    Returns
+    -------
+    Nothing
+    """
+
+    #Write output in VMD format
+    #Writing the output is very important for further analyses such as 
+    #inter-chain (inter-domain) or intra-chain (intra-domain) distributions etc.
+    #
+    vdw_representation_string = "mol representation VDW 0.750000 25.000000\n"+\
+                                "mol material Glossy\n"+\
+                                "#mol color ColorID 7\n"+\
+                                "mol selection \"chain {0:s} and resid {1:d} and name CA\"\n"+\
+                                "mol addrep 0\n"
+
+
+    VMD_FILE = open(out_file+'_'+centrality+'.tcl', 'w')
+
+    VMD_FILE.write("mol new "+out_file+"_"+centrality+".pdb"+"\n")
+    VMD_FILE.write("mol modstyle 0 0 Tube 0.5 25\n")
+    VMD_FILE.write("mol modcolor 0 0 Beta\n")
+    VMD_FILE.write("mol modmaterial 0 0 MetallicPastel\n")
+
+    selectedAtoms.setBetas([scalingFactor*i for i in centralityArray])
+    # for i in range(0, len(centralityArray)):
+    #     selectedAtoms[i].setBeta(centralityArray)
+    
+    writePDB(out_file+'_'+centrality+'.pdb', selectedAtoms)
+
+        # for j in range(i+1, len(ccMatrix)):
+        #     if(np.absolute(ccMatrix[i][j])>valueFilter):
+        #         VMD_FILE.write(vdw_representation_string.\
+        #         format(selectedAtoms.getChids()[i],\
+        #                 selectedAtoms.getResnums()[i]))
+        #         VMD_FILE.write(vdw_representation_string.\
+        #         format(selectedAtoms.getChids()[j],\
+        #                 selectedAtoms.getResnums()[j]))
+        #         VMD_FILE.write(draw_string.format(selectedAtoms.getChids()[i],\
+        #                 selectedAtoms.getResnums()[i],\
+        #                 selectedAtoms.getChids()[j],\
+        #                 selectedAtoms.getResnums()[j],\
+        #                 #The radius of the connecting cylinder is proportional to the correlation value.
+        #                 #However, it is necessary to multiply the radius with 0.5 to make it look better.
+        #                 ccMatrix[i][j]*0.5))
+    VMD_FILE.close()
+
+    chains = Counter(selectedAtoms.getChids()).keys()
+
+    plotChains = True
+    # if((len(chains)>1) & (plotChains)):
+    #     #Inter-chain
+    #     for chainI in chains:
+    #         for chainJ in chains:
+    #             if(chainI != chainJ):                
+    #                 VMD_FILE = open(vmd_out_file+'-interchain-chains'+chainI+'-'+chainJ+'.tcl', 'w')
+    #                 VMD_FILE.write("mol modstyle 0 0 NewCartoon 0.300000 50.000000 3.250000 0\n")
+    #                 VMD_FILE.write("mol modcolor 0 0 Chain\n")
+    #                 VMD_FILE.write("mol modmaterial 0 0 MetallicPastel\n")
+    #                 for i in range(0, len(ccMatrix)):
+    #                     for j in range(i+1, len(ccMatrix)):
+    #                         if(np.absolute(ccMatrix[i][j])>valueFilter):
+    #                             if((selectedAtoms.getChids()[i] == chainI) and \
+    #                                 (selectedAtoms.getChids()[j] == chainJ)):
+    #                                 VMD_FILE.write(vdw_representation_string.\
+    #                                 format(selectedAtoms.getChids()[i],\
+    #                                         selectedAtoms.getResnums()[i]))
+    #                                 VMD_FILE.write(vdw_representation_string.\
+    #                                 format(selectedAtoms.getChids()[j],\
+    #                                         selectedAtoms.getResnums()[j]))
+                                    
+    #                                 VMD_FILE.write(draw_string.\
+    #                                 format(selectedAtoms.getChids()[i],\
+    #                                         selectedAtoms.getResnums()[i],\
+    #                                         selectedAtoms.getChids()[j],\
+    #                                         selectedAtoms.getResnums()[j],\
+    #                                         #The radius of the connecting cylinder is proportional to the correlation value.
+    #                                         #However, it is necessary to multiply the radius with 0.5 to make it look better.
+    #                                         ccMatrix[i][j]*0.5))
+    #                 VMD_FILE.close()
+
+    #     #Intra-chain
+    #     for chain in chains:
+    #         VMD_FILE = open(vmd_out_file+'-intrachain-chain'+chain+'.tcl', 'w')
+    #         VMD_FILE.write("mol modstyle 0 0 NewCartoon 0.300000 50.000000 3.250000 0\n")
+    #         VMD_FILE.write("mol modcolor 0 0 Chain\n")
+    #         VMD_FILE.write("mol modmaterial 0 0 MetallicPastel\n")
+    #         for i in range(0, len(ccMatrix)):
+    #             for j in range(i+1, len(ccMatrix)):
+    #                 if(np.absolute(ccMatrix[i][j])>valueFilter):
+    #                     if((selectedAtoms.getChids()[i] == chain) and \
+    #                        (selectedAtoms.getChids()[j] == chain)):
+    #                         VMD_FILE.write(vdw_representation_string.\
+    #                         format(selectedAtoms.getChids()[i],\
+    #                                 selectedAtoms.getResnums()[i]))
+    #                         VMD_FILE.write(vdw_representation_string.\
+    #                         format(selectedAtoms.getChids()[j],\
+    #                                         selectedAtoms.getResnums()[j]))    
+    #                         VMD_FILE.write(draw_string.\
+    #                         format(selectedAtoms.getChids()[i],\
+    #                                 selectedAtoms.getResnums()[i],\
+    #                                 selectedAtoms.getChids()[j],\
+    #                                 selectedAtoms.getResnums()[j],\
+    #             #The radius of the connecting cylinder is proportional to the correlation value.
+    #             #However, it is necessary to multiply the radius with 0.5 to make it look better.
+    #                                 ccMatrix[i][j]*0.5))
+    #         VMD_FILE.close()
+
+def centralityAnalysis(ccMatrix, valueFilter, out_file, centrality, selectedAtoms):
+    """
+    This function calculates various network (graph) centralities of a protein.
 
     This function calculates some network centrality measures such as 
         -degree
@@ -1268,7 +1409,7 @@ def networkAnalysis(ccMatrix, valueFilter, out_file, centrality, selectedAtoms):
         -closeness
         -current flow betweenness
         -eigenvector.
-    
+    This function needs Python 3.6 or later to maintain dictionary order.!!!
     Parameters
     ----------
     ccMatrix: Numpy matrix
@@ -1279,8 +1420,7 @@ def networkAnalysis(ccMatrix, valueFilter, out_file, centrality, selectedAtoms):
         Prefix of the output file. According to the centralty measure, it will be 
         extended. 
     centrality: string
-        It can have 'degree', 'betweenness', 'closeness' or 
-        'current_flow'. 
+        It can have 'degree', 'betweenness', 'closeness' or 'current_flow'. 
     selectedAtoms: object
         This is a prody.parsePDB object of typically CA atoms of a protein.
     
@@ -1306,54 +1446,126 @@ def networkAnalysis(ccMatrix, valueFilter, out_file, centrality, selectedAtoms):
                 #dynNetwork.add_edge(i, j, weight=fabs(correlationArray[i][j]))
 
     ##########################Calculate degrees of all nodes
-    if ((centrality == 'degree') or (centrality == 'all')):
+    if ((centrality == 'degree')):
         degreeResult = dynNetwork.degree(weight='weight')
-        print("Degree calculation finished!")
+        degreeResultList = []
+        for i in range (0, len(degreeResult)):
+            degreeResultList.append(degreeResult[i])
+        print(degreeResultList)
+        print("@> Degree calculation finished!")
 
         #open a file for degree
         degreeFile = open(out_file+"_degree_value_filter"+"{:.2f}".format(valueFilter)+'.dat', "w") 
         for i in range(n): 
         #    print(str(i)+" "+(str(dynNetwork.degree(i, weight='weight'))))
-            degreeFile.write("{0:d}\t{1:.3f}\n".format((i)+1, degreeResult[i]))
+            degreeFile.write("{0:d}\t{1:.6f}\t{2:s}\n".format(selectedAtoms[i].getResnum(), degreeResult[i], selectedAtoms[i].getChid()))
         degreeFile.close()
+        projectCentralitiesOntoProteinVMD(centrality, 
+                        degreeResultList, \
+                        out_file, \
+                        selectedAtoms, scalingFactor=1)
 
 
     ##########################Calculate betweenness
-    elif ((centrality == 'betweenness') or (centrality == 'all')):
+    elif ((centrality == 'betweenness')):
         betweennessResult = nx.betweenness_centrality(dynNetwork, k=None, \
             normalized=True, weight='weight', endpoints=False, seed=None)
+        print("@> Betweenness calculation finished!")
+        # print(betweennessResult)
 
         #open a file for betweenness
         betweennessFile = open(out_file+"_betweenness_value_filter"+"{:.2f}".\
             format(valueFilter)+'.dat', "w") 
-        print("Betweenness calculation finished!")
+        
         for i in range(n): 
         #    print(str(i)+" "+(str(dynNetwork.betweenness(i, weight='weight'))))
-            betweennessFile.write("{0:d}\t{1:.6f}\n".format((i)+1, betweennessResult[i]))
+            betweennessFile.write("{0:d}\t{1:.6f}\t{2:s}\n".\
+                format(selectedAtoms[i].getResnum(), \
+                        betweennessResult[i], \
+                        selectedAtoms[i].getChid()))
         betweennessFile.close()
+        # print(list(betweennessResult.values()))
+        # print(len(list(betweennessResult.values())))
+        projectCentralitiesOntoProteinVMD(centrality, 
+                                list(betweennessResult.values()), \
+                                out_file, \
+                                selectedAtoms, scalingFactor=100)
 
     ##########################Calculate closeness
-    elif ((centrality == 'closeness') or (centrality == 'all')):
+    elif ((centrality == 'closeness')):
         closenessResult = nx.closeness_centrality(dynNetwork, u=None, distance='weight')
+        print("@> Closeness calculation finished!")
+
         #open a file for closeness
         closenessFile = open(out_file+"_closeness_value_filter"+"{:.2f}".format(valueFilter)+'.dat', "w") 
-        print("Closeness calculation finished!")
+
         for i in range(n): 
         #    print(str(i)+" "+(str(dynNetwork.closeness(i, weight='weight'))))
-            closenessFile.write("{0:d}\t{1:.6f}\n".format((i)+1, closenessResult[i]))
+            closenessFile.write("{0:d}\t{1:.6f}\t{2:s}\n".format(selectedAtoms[i].getResnum(), closenessResult[i], selectedAtoms[i].getChid()))
         closenessFile.close()
 
+        projectCentralitiesOntoProteinVMD(centrality, 
+                        list(closenessResult.values()), \
+                        out_file, \
+                        selectedAtoms, scalingFactor=1)
+
     ##########################Calculate current_flow_betweenness
-    elif ((centrality == 'current_flow') or (centrality == 'all')):
+    elif ((centrality == 'current_flow')):
         current_flow_betweennessResult = nx.current_flow_betweenness_centrality(dynNetwork, normalized=True, weight='weight')
+        
+        print("@> Current flow betweenness calculation finished!")
+
 
         #open a file for current_flow betweenness
         current_flow_betweennessFile = open(out_file+"_current_flow_betweenness_value_filter"+"{:.2f}".format(valueFilter)+'.dat', "w") 
-        print("Current flow betweenness calculation finished!")
+        
         for i in range(n): 
         #    print(str(i)+" "+(str(dynNetwork.betweenness(i, weight='weight'))))
-            current_flow_betweennessFile.write("{0:d}\t{1:.6f}\n".format((i)+1, current_flow_betweennessResult[i]))
+            current_flow_betweennessFile.write("{0:d}\t{1:.6f}\t{2:s}\n".format(selectedAtoms[i].getResnum(), current_flow_betweennessResult[i], selectedAtoms[i].getChid()))
         current_flow_betweennessFile.close()
+
+        projectCentralitiesOntoProteinVMD(centrality, 
+                list(current_flow_betweennessResult.values()), \
+                out_file, \
+                selectedAtoms, scalingFactor=100)
+    else:
+        print("ERROR: Unknown centrality selected! It can only be")
+        print("       'degree', 'betweenness', 'closeness' or 'current_flow'!")
+        sys.exit(-1)
+
+
+def networkAnalysisApp():
+    print("@> Running 'Network Analysis App'")
+    (inp_file, out_file, sel_type, pdb_file) = handle_arguments_correlationMaps()
+    print("\n@> Input file   :", inp_file)
+    print("@> PDB file     :", pdb_file)
+    print("@> Data type    :", sel_type)    
+    print("@> Output       :", out_file)
+
+    ##########################################################################
+    #Read PDB file 
+    #TODO: This is the only place where I use Prody.
+    #Maybe, I can replace it with a library that only parses 
+    #PDB files. Prody does a lot more!
+    selectedAtoms = parsePDB(pdb_file, subset='ca')
+    
+    ##########################################################################
+    #Read data file and assign to a numpy array
+    if(sel_type=="dcc"):
+        ccMatrix=np.loadtxt(inp_file, dtype=float)
+    elif(sel_type=="absdcc"):
+        ccMatrix=np.absolute(np.loadtxt(inp_file, dtype=float))
+    elif(sel_type=="lmi"):
+        ccMatrix = convertLMIdata2Matrix(inp_file, writeAllOutput=True)
+    else:
+        print("Unknown matrix format!\n")
+        sys.exit(-1)
+
+    valueFilter=0.3
+    centralityAnalysis(ccMatrix, valueFilter, out_file, "degree", selectedAtoms)
+    centralityAnalysis(ccMatrix, valueFilter, out_file, "betweenness", selectedAtoms)
+    centralityAnalysis(ccMatrix, valueFilter, out_file, "closeness", selectedAtoms)
+    centralityAnalysis(ccMatrix, valueFilter, out_file, "current_flow", selectedAtoms)
 
 if __name__ == "__main__":
         #TODO:
@@ -1367,7 +1579,8 @@ if __name__ == "__main__":
     # 5-Combining two correlation plots as upper triangle and lower triangle. 
     # 6-Filter correlations lower than a certain (absolute) value.: Done!
     # 7-Filter correlations for residues that are very close.: Done!
-    # 8
+    # 8-Add centrality calculations: Done
+    # 9-Add centrality visualizations. 
     print("\n\n|------------------------------Correlation Plus------------------------------|")
     print("|                                                                            |")
     print("|   A set of utility programs to plot and analyze protein correlation maps.  |")
@@ -1375,4 +1588,5 @@ if __name__ == "__main__":
     print("|                       Email: tekpinar@buffalo.edu                          |")
     print("|                          Licence: MIT License                              |")
     print("|--------------------------------------------------------------------------- |\n\n")
-    correlationMapApp()
+    #correlationMapApp()
+    networkAnalysisApp()
