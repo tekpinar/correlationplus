@@ -1301,12 +1301,6 @@ def projectCentralitiesOntoProteinVMD(centrality, centralityArray, \
     #Writing the output is very important for further analyses such as 
     #inter-chain (inter-domain) or intra-chain (intra-domain) distributions etc.
     #
-    vdw_representation_string = "mol representation VDW 0.750000 25.000000\n"+\
-                                "mol material Glossy\n"+\
-                                "#mol color ColorID 7\n"+\
-                                "mol selection \"chain {0:s} and resid {1:d} and name CA\"\n"+\
-                                "mol addrep 0\n"
-
 
     VMD_FILE = open(out_file+'_'+centrality+'.tcl', 'w')
 
@@ -1315,89 +1309,77 @@ def projectCentralitiesOntoProteinVMD(centrality, centralityArray, \
     VMD_FILE.write("mol modcolor 0 0 Beta\n")
     VMD_FILE.write("mol modmaterial 0 0 MetallicPastel\n")
 
+
+    vdw_representation_string = "mol representation VDW 0.750000 25.000000\n"+\
+                                "mol material Glossy\n"+\
+                                "mol color Beta\n"+\
+                                "mol selection \"chain {0:s} and resid {1:d} and name CA\"\n"+\
+                                "mol addrep 0\n"
+    sortedList = np.flip(np.argsort(centralityArray))
+    for i in range (0, 20):
+        print(centralityArray[sortedList[i]])
+        VMD_FILE.write(vdw_representation_string.\
+        format(selectedAtoms.getChids()[sortedList[i]],\
+                selectedAtoms.getResnums()[sortedList[i]]))
+
     selectedAtoms.setBetas([scalingFactor*i for i in centralityArray])
-    # for i in range(0, len(centralityArray)):
-    #     selectedAtoms[i].setBeta(centralityArray)
     
     writePDB(out_file+'_'+centrality+'.pdb', selectedAtoms)
 
-        # for j in range(i+1, len(ccMatrix)):
-        #     if(np.absolute(ccMatrix[i][j])>valueFilter):
-        #         VMD_FILE.write(vdw_representation_string.\
-        #         format(selectedAtoms.getChids()[i],\
-        #                 selectedAtoms.getResnums()[i]))
-        #         VMD_FILE.write(vdw_representation_string.\
-        #         format(selectedAtoms.getChids()[j],\
-        #                 selectedAtoms.getResnums()[j]))
-        #         VMD_FILE.write(draw_string.format(selectedAtoms.getChids()[i],\
-        #                 selectedAtoms.getResnums()[i],\
-        #                 selectedAtoms.getChids()[j],\
-        #                 selectedAtoms.getResnums()[j],\
-        #                 #The radius of the connecting cylinder is proportional to the correlation value.
-        #                 #However, it is necessary to multiply the radius with 0.5 to make it look better.
-        #                 ccMatrix[i][j]*0.5))
     VMD_FILE.close()
 
+
+def plotCentralities(centrality, centralityArray, \
+                                    out_file, \
+                                    selectedAtoms, scalingFactor):
     chains = Counter(selectedAtoms.getChids()).keys()
 
-    plotChains = True
-    # if((len(chains)>1) & (plotChains)):
-    #     #Inter-chain
-    #     for chainI in chains:
-    #         for chainJ in chains:
-    #             if(chainI != chainJ):                
-    #                 VMD_FILE = open(vmd_out_file+'-interchain-chains'+chainI+'-'+chainJ+'.tcl', 'w')
-    #                 VMD_FILE.write("mol modstyle 0 0 NewCartoon 0.300000 50.000000 3.250000 0\n")
-    #                 VMD_FILE.write("mol modcolor 0 0 Chain\n")
-    #                 VMD_FILE.write("mol modmaterial 0 0 MetallicPastel\n")
-    #                 for i in range(0, len(ccMatrix)):
-    #                     for j in range(i+1, len(ccMatrix)):
-    #                         if(np.absolute(ccMatrix[i][j])>valueFilter):
-    #                             if((selectedAtoms.getChids()[i] == chainI) and \
-    #                                 (selectedAtoms.getChids()[j] == chainJ)):
-    #                                 VMD_FILE.write(vdw_representation_string.\
-    #                                 format(selectedAtoms.getChids()[i],\
-    #                                         selectedAtoms.getResnums()[i]))
-    #                                 VMD_FILE.write(vdw_representation_string.\
-    #                                 format(selectedAtoms.getChids()[j],\
-    #                                         selectedAtoms.getResnums()[j]))
-                                    
-    #                                 VMD_FILE.write(draw_string.\
-    #                                 format(selectedAtoms.getChids()[i],\
-    #                                         selectedAtoms.getResnums()[i],\
-    #                                         selectedAtoms.getChids()[j],\
-    #                                         selectedAtoms.getResnums()[j],\
-    #                                         #The radius of the connecting cylinder is proportional to the correlation value.
-    #                                         #However, it is necessary to multiply the radius with 0.5 to make it look better.
-    #                                         ccMatrix[i][j]*0.5))
-    #                 VMD_FILE.close()
+    if((len(chains)>1)):
+        #Intra-chain
+        for chain in chains:
+            x = []
+            y = []
+            dst_file = out_file+'_' + centrality + '_chain'+chain
+            for i in range(0, len(selectedAtoms.getResnums())):
+                if((selectedAtoms.getChids()[i] == chain)):
+                    x.append(selectedAtoms[i].getResnum())
+                    y.append(centralityArray[i])
+        
+            plt.subplots()
+            plt.locator_params(axis='y', nbins=5)
 
-    #     #Intra-chain
-    #     for chain in chains:
-    #         VMD_FILE = open(vmd_out_file+'-intrachain-chain'+chain+'.tcl', 'w')
-    #         VMD_FILE.write("mol modstyle 0 0 NewCartoon 0.300000 50.000000 3.250000 0\n")
-    #         VMD_FILE.write("mol modcolor 0 0 Chain\n")
-    #         VMD_FILE.write("mol modmaterial 0 0 MetallicPastel\n")
-    #         for i in range(0, len(ccMatrix)):
-    #             for j in range(i+1, len(ccMatrix)):
-    #                 if(np.absolute(ccMatrix[i][j])>valueFilter):
-    #                     if((selectedAtoms.getChids()[i] == chain) and \
-    #                        (selectedAtoms.getChids()[j] == chain)):
-    #                         VMD_FILE.write(vdw_representation_string.\
-    #                         format(selectedAtoms.getChids()[i],\
-    #                                 selectedAtoms.getResnums()[i]))
-    #                         VMD_FILE.write(vdw_representation_string.\
-    #                         format(selectedAtoms.getChids()[j],\
-    #                                         selectedAtoms.getResnums()[j]))    
-    #                         VMD_FILE.write(draw_string.\
-    #                         format(selectedAtoms.getChids()[i],\
-    #                                 selectedAtoms.getResnums()[i],\
-    #                                 selectedAtoms.getChids()[j],\
-    #                                 selectedAtoms.getResnums()[j],\
-    #             #The radius of the connecting cylinder is proportional to the correlation value.
-    #             #However, it is necessary to multiply the radius with 0.5 to make it look better.
-    #                                 ccMatrix[i][j]*0.5))
-    #         VMD_FILE.close()
+            plt.xticks(fontsize=16)
+            plt.yticks(fontsize=16)
+            plt.ylabel(centrality, fontsize=20)
+            plt.xlabel("Residue Number", fontsize=20)
+
+            #plt.plot(x, centralityArray '.', color='k')
+            plt.bar(x, y, color='k')
+            plt.tight_layout()
+            #plt.show()
+            plt.savefig(dst_file + '.png')
+            plt.close('all')
+    else:
+        dst_file = out_file+'_' + centrality
+        plt.subplots()
+        #plt.locator_params(axis='y', nbins=4)
+
+        plt.xticks(fontsize=16)
+        plt.yticks(fontsize=16)
+        plt.ylabel(centrality, fontsize=20)
+        plt.xlabel("Residue Number", fontsize=20)
+
+        x = selectedAtoms.getResnums()
+        #plt.plot(x, centralityArray '.', color='k')
+        plt.bar(x, centralityArray, color='k')
+        plt.tight_layout()
+        #plt.xlim(xmin=0) #xmin will be removed in matplotlib 3.2
+        #plt.xlim(left=0)
+        #plt.show()
+        plt.savefig(dst_file + '.png')
+        plt.close('all')
+
+
 
 def centralityAnalysis(ccMatrix, valueFilter, out_file, centrality, selectedAtoms):
     """
@@ -1451,16 +1433,21 @@ def centralityAnalysis(ccMatrix, valueFilter, out_file, centrality, selectedAtom
         degreeResultList = []
         for i in range (0, len(degreeResult)):
             degreeResultList.append(degreeResult[i])
-        print(degreeResultList)
+        # print(degreeResultList)
         print("@> Degree calculation finished!")
 
         #open a file for degree
         degreeFile = open(out_file+"_degree_value_filter"+"{:.2f}".format(valueFilter)+'.dat', "w") 
         for i in range(n): 
         #    print(str(i)+" "+(str(dynNetwork.degree(i, weight='weight'))))
-            degreeFile.write("{0:d}\t{1:.6f}\t{2:s}\n".format(selectedAtoms[i].getResnum(), degreeResult[i], selectedAtoms[i].getChid()))
+            degreeFile.write("{0:d}\t{1:.6f}\t{2:s}\n".\
+                format(selectedAtoms[i].getResnum(), degreeResult[i], selectedAtoms[i].getChid()))
         degreeFile.close()
         projectCentralitiesOntoProteinVMD(centrality, 
+                        degreeResultList, \
+                        out_file, \
+                        selectedAtoms, scalingFactor=1)
+        plotCentralities(centrality, \
                         degreeResultList, \
                         out_file, \
                         selectedAtoms, scalingFactor=1)
@@ -1489,7 +1476,7 @@ def centralityAnalysis(ccMatrix, valueFilter, out_file, centrality, selectedAtom
         projectCentralitiesOntoProteinVMD(centrality, 
                                 list(betweennessResult.values()), \
                                 out_file, \
-                                selectedAtoms, scalingFactor=100)
+                                selectedAtoms, scalingFactor=1000)
 
     ##########################Calculate closeness
     elif ((centrality == 'closeness')):
@@ -1501,7 +1488,8 @@ def centralityAnalysis(ccMatrix, valueFilter, out_file, centrality, selectedAtom
 
         for i in range(n): 
         #    print(str(i)+" "+(str(dynNetwork.closeness(i, weight='weight'))))
-            closenessFile.write("{0:d}\t{1:.6f}\t{2:s}\n".format(selectedAtoms[i].getResnum(), closenessResult[i], selectedAtoms[i].getChid()))
+            closenessFile.write("{0:d}\t{1:.6f}\t{2:s}\n".\
+                format(selectedAtoms[i].getResnum(), closenessResult[i], selectedAtoms[i].getChid()))
         closenessFile.close()
 
         projectCentralitiesOntoProteinVMD(centrality, 
@@ -1527,7 +1515,7 @@ def centralityAnalysis(ccMatrix, valueFilter, out_file, centrality, selectedAtom
         projectCentralitiesOntoProteinVMD(centrality, 
                 list(current_flow_betweennessResult.values()), \
                 out_file, \
-                selectedAtoms, scalingFactor=100)
+                selectedAtoms, scalingFactor=1000)
     else:
         print("ERROR: Unknown centrality selected! It can only be")
         print("       'degree', 'betweenness', 'closeness' or 'current_flow'!")
@@ -1568,7 +1556,7 @@ def networkAnalysisApp():
     centralityAnalysis(ccMatrix, valueFilter, out_file, "current_flow", selectedAtoms)
 
 if __name__ == "__main__":
-        #TODO:
+    #TODO:
     # There are a bunch of things one can add to this script:
     # 1-Plot nDCC maps or normalized linear mutual information maps!: Done!
     # 2-Project (high) correlations onto PDB structure.
