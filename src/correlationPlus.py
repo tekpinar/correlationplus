@@ -483,7 +483,8 @@ def distanceDistribution(ccMatrix, out_file, title, selectedAtoms, \
 
     plt.plot(x,y, '.', color='k')
     plt.tight_layout()
-    plt.xlim(xmin=0)
+    #plt.xlim(xmin=0) #xmin will be removed in matplotlib 3.2
+    plt.xlim(left=0)
     #plt.show()
     plt.savefig(dst_file+'.png')
     plt.close('all')
