@@ -20,10 +20,16 @@ import numpy as np
 import getopt
 import sys
 import matplotlib
+
 #from prody import *
 from prody import parsePDB
 from prody import buildDistMatrix
 from collections import Counter, OrderedDict
+
+
+import networkx as nx
+from math import fabs
+from math import log
 
 def usage_correlationMaps():
     """
@@ -445,7 +451,7 @@ def interChainCorrelationMaps(ccMatrix, minColorBarLimit, maxColorBarLimit, out_
             #plt.show()
 
 def distanceDistribution(ccMatrix, out_file, title, selectedAtoms, \
-                            absoluteValues: bool, writeAllOutput: bool):
+    absoluteValues: bool, writeAllOutput: bool):
     #Calculate distance matrix
     dist_matrix=buildDistMatrix(selectedAtoms)
     
@@ -893,6 +899,11 @@ def projectCorrelationsOntoProteinVMD(ccMatrix, vmd_out_file, \
                                 "mol selection \"chain {0:s} and resid {1:d} and name CA\"\n"+\
                                 "mol addrep 0\n"
     DATA_FILE = open(vmd_out_file+'-general.tcl', 'w')
+
+
+    DATA_FILE.write("mol modstyle 0 0 NewCartoon 0.300000 50.000000 3.250000 0\n")
+    DATA_FILE.write("mol modcolor 0 0 Chain\n")
+    DATA_FILE.write("mol modmaterial 0 0 MetallicPastel\n")
     for i in range(0, len(ccMatrix)):
         for j in range(i+1, len(ccMatrix)):
             if(np.absolute(ccMatrix[i][j])>valueFilter):
@@ -920,6 +931,9 @@ def projectCorrelationsOntoProteinVMD(ccMatrix, vmd_out_file, \
             for chainJ in chains:
                 if(chainI != chainJ):                
                     DATA_FILE = open(vmd_out_file+'-interchain-chains'+chainI+'-'+chainJ+'.tcl', 'w')
+                    DATA_FILE.write("mol modstyle 0 0 NewCartoon 0.300000 50.000000 3.250000 0\n")
+                    DATA_FILE.write("mol modcolor 0 0 Chain\n")
+                    DATA_FILE.write("mol modmaterial 0 0 MetallicPastel\n")
                     for i in range(0, len(ccMatrix)):
                         for j in range(i+1, len(ccMatrix)):
                             if(np.absolute(ccMatrix[i][j])>valueFilter):
@@ -945,6 +959,9 @@ def projectCorrelationsOntoProteinVMD(ccMatrix, vmd_out_file, \
         #Intra-chain
         for chain in chains:
             DATA_FILE = open(vmd_out_file+'-intrachain-chain'+chain+'.tcl', 'w')
+            DATA_FILE.write("mol modstyle 0 0 NewCartoon 0.300000 50.000000 3.250000 0\n")
+            DATA_FILE.write("mol modcolor 0 0 Chain\n")
+            DATA_FILE.write("mol modmaterial 0 0 MetallicPastel\n")
             for i in range(0, len(ccMatrix)):
                 for j in range(i+1, len(ccMatrix)):
                     if(np.absolute(ccMatrix[i][j])>valueFilter):
@@ -987,7 +1004,7 @@ def correlationMapApp():
     elif(sel_type=="absdcc"):
         ccMatrix=np.absolute(np.loadtxt(inp_file, dtype=float))
     elif(sel_type=="lmi"):
-        ccMatrix = convertLMIdata2Matrix(inp_file, writeAllOutput=False)
+        ccMatrix = convertLMIdata2Matrix(inp_file, writeAllOutput=True)
     else:
         print("Unknown matrix format!\n")
         sys.exit(-1)
@@ -1139,8 +1156,8 @@ def diffMapApp():
 
 
     if (sel_type == 'lmi'):
-        ccMatrix1 = convertLMIdata2Matrix(inp_file1, writeAllOutput=False)
-        ccMatrix2 = convertLMIdata2Matrix(inp_file2, writeAllOutput=False)
+        ccMatrix1 = convertLMIdata2Matrix(inp_file1, writeAllOutput=True)
+        ccMatrix2 = convertLMIdata2Matrix(inp_file2, writeAllOutput=True)
 
         minColorBarLimit = -1
         maxColorBarLimit = 1
@@ -1239,6 +1256,103 @@ def filterCorrelationMapByDistance(ccMatrix, out_file, title, \
                                         ccMatrix[i][j]))
         DATA_FILE.close()
     return ccMatrix
+
+def networkAnalysis(ccMatrix, valueFilter, out_file, centrality, selectedAtoms):
+    """
+    This function calculates various network (graph) parameters of a protein.
+
+    This function calculates some network centrality measures such as 
+        -degree
+        -betweenness
+        -closeness
+        -current flow betweenness
+        -eigenvector.
+    
+    Parameters
+    ----------
+    ccMatrix: Numpy matrix
+        It is a numpy matrix of typically nDCC, LMI or Generalized Correlations.
+    valueFilter: float
+        The ccMatrix values than the valueFilter will be ignored.
+    out_file: string
+        Prefix of the output file. According to the centralty measure, it will be 
+        extended. 
+    centrality: string
+        It can have 'degree', 'betweenness', 'closeness' or 
+        'current_flow'. 
+    selectedAtoms: object
+        This is a prody.parsePDB object of typically CA atoms of a protein.
+    
+    Returns
+    -------
+    Nothing
+    """
+    #Create your  graph
+    dynNetwork = nx.Graph()
+    
+
+    n = selectedAtoms.numAtoms()
+
+    #Add all CA atoms as nodes
+    for i in range(n):
+        dynNetwork.add_node(i)
+
+    #Add all pairwise interactions greater than the valueFilter as edges.
+    for i in range(n):
+        for j in range(n):
+            if(fabs(ccMatrix[i][j])>valueFilter):
+                dynNetwork.add_edge(i, j, weight=-log(fabs(ccMatrix[i][j])))
+                #dynNetwork.add_edge(i, j, weight=fabs(correlationArray[i][j]))
+
+    ##########################Calculate degrees of all nodes
+    if ((centrality == 'degree') or (centrality == 'all')):
+        degreeResult = dynNetwork.degree(weight='weight')
+        print("Degree calculation finished!")
+
+        #open a file for degree
+        degreeFile = open(out_file+"_degree_value_filter"+"{:.2f}".format(valueFilter)+'.dat', "w") 
+        for i in range(n): 
+        #    print(str(i)+" "+(str(dynNetwork.degree(i, weight='weight'))))
+            degreeFile.write("{0:d}\t{1:.3f}\n".format((i)+1, degreeResult[i]))
+        degreeFile.close()
+
+
+    ##########################Calculate betweenness
+    elif ((centrality == 'betweenness') or (centrality == 'all')):
+        betweennessResult = nx.betweenness_centrality(dynNetwork, k=None, \
+            normalized=True, weight='weight', endpoints=False, seed=None)
+
+        #open a file for betweenness
+        betweennessFile = open(out_file+"_betweenness_value_filter"+"{:.2f}".\
+            format(valueFilter)+'.dat', "w") 
+        print("Betweenness calculation finished!")
+        for i in range(n): 
+        #    print(str(i)+" "+(str(dynNetwork.betweenness(i, weight='weight'))))
+            betweennessFile.write("{0:d}\t{1:.6f}\n".format((i)+1, betweennessResult[i]))
+        betweennessFile.close()
+
+    ##########################Calculate closeness
+    elif ((centrality == 'closeness') or (centrality == 'all')):
+        closenessResult = nx.closeness_centrality(dynNetwork, u=None, distance='weight')
+        #open a file for closeness
+        closenessFile = open(out_file+"_closeness_value_filter"+"{:.2f}".format(valueFilter)+'.dat', "w") 
+        print("Closeness calculation finished!")
+        for i in range(n): 
+        #    print(str(i)+" "+(str(dynNetwork.closeness(i, weight='weight'))))
+            closenessFile.write("{0:d}\t{1:.6f}\n".format((i)+1, closenessResult[i]))
+        closenessFile.close()
+
+    ##########################Calculate current_flow_betweenness
+    elif ((centrality == 'current_flow') or (centrality == 'all')):
+        current_flow_betweennessResult = nx.current_flow_betweenness_centrality(dynNetwork, normalized=True, weight='weight')
+
+        #open a file for current_flow betweenness
+        current_flow_betweennessFile = open(out_file+"_current_flow_betweenness_value_filter"+"{:.2f}".format(valueFilter)+'.dat', "w") 
+        print("Current flow betweenness calculation finished!")
+        for i in range(n): 
+        #    print(str(i)+" "+(str(dynNetwork.betweenness(i, weight='weight'))))
+            current_flow_betweennessFile.write("{0:d}\t{1:.6f}\n".format((i)+1, current_flow_betweennessResult[i]))
+        current_flow_betweennessFile.close()
 
 if __name__ == "__main__":
         #TODO:
