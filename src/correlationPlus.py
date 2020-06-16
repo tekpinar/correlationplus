@@ -1279,7 +1279,8 @@ def projectCentralitiesOntoProteinVMD(centrality, centralityArray, \
     Parameters
     ----------
     centrality: string
-        It can have 'degree', 'betweenness', 'closeness' or 'current_flow'. 
+        It can have 'degree', 'betweenness', 'closeness', 
+        'current_flow_betweenness' or 'current_flow_closeness'.  
     centralityArray: A numpy data array ?
         It is a numpy matrix of typically nDCC, LMI or Generalized Correlations.
     out_file: string
@@ -1307,7 +1308,7 @@ def projectCentralitiesOntoProteinVMD(centrality, centralityArray, \
     VMD_FILE.write("mol new "+out_file+"_"+centrality+".pdb"+"\n")
     VMD_FILE.write("mol modstyle 0 0 Tube 0.5 25\n")
     VMD_FILE.write("mol modcolor 0 0 Beta\n")
-    VMD_FILE.write("mol modmaterial 0 0 MetallicPastel\n")
+    VMD_FILE.write("mol modmaterial 0 0 Glossy\n")
 
 
     vdw_representation_string = "mol representation VDW 0.750000 25.000000\n"+\
@@ -1317,7 +1318,7 @@ def projectCentralitiesOntoProteinVMD(centrality, centralityArray, \
                                 "mol addrep 0\n"
     sortedList = np.flip(np.argsort(centralityArray))
     for i in range (0, 20):
-        print(centralityArray[sortedList[i]])
+        #print(centralityArray[sortedList[i]])
         VMD_FILE.write(vdw_representation_string.\
         format(selectedAtoms.getChids()[sortedList[i]],\
                 selectedAtoms.getResnums()[sortedList[i]]))
@@ -1332,6 +1333,34 @@ def projectCentralitiesOntoProteinVMD(centrality, centralityArray, \
 def plotCentralities(centrality, centralityArray, \
                                     out_file, \
                                     selectedAtoms, scalingFactor):
+    """
+    Plots the centrality values on a 2D graph. 
+    The centrality values are plotted on a 2D png file.
+    If there are at least two chains, the function produces a figure 
+    for each chain. 
+
+    Parameters
+    ----------
+    centrality: string
+        It can have 'degree', 'betweenness', 'closeness', 
+        'current_flow_betweenness' or 'current_flow_closeness'. 
+    centralityArray: A numpy data array ?
+        It is a numpy matrix of typically nDCC, LMI or Generalized Correlations.
+    out_file: string
+        Prefix of the output file. According to the centralty measure, it will be 
+        extended. 
+    selectedAtoms: object
+        This is a prody.parsePDB object of typically CA atoms of a protein.
+    ScalingFactor: float
+        Sometimes, the values of the centrality arrays are too small. 
+        The scaling factor multiplies the array to make the values visible in 
+        the Bfactor colums.
+
+    Return
+    ------
+    Nothing
+    """
+
     chains = Counter(selectedAtoms.getChids()).keys()
 
     if((len(chains)>1)):
@@ -1350,7 +1379,7 @@ def plotCentralities(centrality, centralityArray, \
 
             plt.xticks(fontsize=16)
             plt.yticks(fontsize=16)
-            plt.ylabel(centrality, fontsize=20)
+            plt.ylabel(centrality.replace('_', ' '), fontsize=20)
             plt.xlabel("Residue Number", fontsize=20)
 
             #plt.plot(x, centralityArray '.', color='k')
@@ -1366,7 +1395,7 @@ def plotCentralities(centrality, centralityArray, \
 
         plt.xticks(fontsize=16)
         plt.yticks(fontsize=16)
-        plt.ylabel(centrality, fontsize=20)
+        plt.ylabel(centrality.replace('_', ' '), fontsize=20)
         plt.xlabel("Residue Number", fontsize=20)
 
         x = selectedAtoms.getResnums()
@@ -1402,7 +1431,8 @@ def centralityAnalysis(ccMatrix, valueFilter, out_file, centrality, selectedAtom
         Prefix of the output file. According to the centralty measure, it will be 
         extended. 
     centrality: string
-        It can have 'degree', 'betweenness', 'closeness' or 'current_flow'. 
+        It can have 'degree', 'betweenness', 'closeness', 
+        'current_flow_betweenness' or 'current_flow_closeness'. 
     selectedAtoms: object
         This is a prody.parsePDB object of typically CA atoms of a protein.
     
@@ -1477,6 +1507,10 @@ def centralityAnalysis(ccMatrix, valueFilter, out_file, centrality, selectedAtom
                                 list(betweennessResult.values()), \
                                 out_file, \
                                 selectedAtoms, scalingFactor=1000)
+        plotCentralities(centrality, \
+                        list(betweennessResult.values()), \
+                        out_file, \
+                        selectedAtoms, scalingFactor=1)
 
     ##########################Calculate closeness
     elif ((centrality == 'closeness')):
@@ -1496,9 +1530,14 @@ def centralityAnalysis(ccMatrix, valueFilter, out_file, centrality, selectedAtom
                         list(closenessResult.values()), \
                         out_file, \
                         selectedAtoms, scalingFactor=1)
+        plotCentralities(centrality, \
+                        list(closenessResult.values()), \
+                        out_file, \
+                        selectedAtoms, scalingFactor=1)
+        
 
     ##########################Calculate current_flow_betweenness
-    elif ((centrality == 'current_flow')):
+    elif ((centrality == 'current_flow_betweenness')):
         current_flow_betweennessResult = nx.current_flow_betweenness_centrality(dynNetwork, normalized=True, weight='weight')
         
         print("@> Current flow betweenness calculation finished!")
@@ -1513,12 +1552,62 @@ def centralityAnalysis(ccMatrix, valueFilter, out_file, centrality, selectedAtom
         current_flow_betweennessFile.close()
 
         projectCentralitiesOntoProteinVMD(centrality, 
-                list(current_flow_betweennessResult.values()), \
-                out_file, \
-                selectedAtoms, scalingFactor=1000)
+                        list(current_flow_betweennessResult.values()), \
+                        out_file, \
+                        selectedAtoms, scalingFactor=1000)
+        plotCentralities(centrality, \
+                        list(current_flow_betweennessResult.values()), \
+                        out_file, \
+                        selectedAtoms, scalingFactor=1)
+    ##########################Calculate closeness
+    elif ((centrality == 'current_flow_closeness')):
+        current_flow_closenessResult = nx.current_flow_closeness_centrality(dynNetwork, weight='weight')
+        
+        print("@> Current flow closeness calculation finished!")
+
+
+        #open a file for current_flow closeness
+        current_flow_closenessFile = open(out_file+"_current_flow_closeness_value_filter"+"{:.2f}".format(valueFilter)+'.dat', "w") 
+        
+        for i in range(n): 
+        #    print(str(i)+" "+(str(dynNetwork.closeness(i, weight='weight'))))
+            current_flow_closenessFile.write("{0:d}\t{1:.6f}\t{2:s}\n".format(selectedAtoms[i].getResnum(), current_flow_closenessResult[i], selectedAtoms[i].getChid()))
+        current_flow_closenessFile.close()
+
+        projectCentralitiesOntoProteinVMD(centrality, 
+                        list(current_flow_closenessResult.values()), \
+                        out_file, \
+                        selectedAtoms, scalingFactor=1000)
+        plotCentralities(centrality, \
+                        list(current_flow_closenessResult.values()), \
+                        out_file, \
+                        selectedAtoms, scalingFactor=1)
+    ##########################Calculate eigenvector centrality
+    elif ((centrality == 'eigenvector')):
+        eigenvectorResult = nx.eigenvector_centrality_numpy(dynNetwork, weight='weight')
+        print("@> Eigenvector calculation finished!")
+
+        #open a file for closeness
+        eigenvectorFile = open(out_file+"_eigenvector_value_filter"+"{:.2f}".format(valueFilter)+'.dat', "w") 
+
+        for i in range(n): 
+        #    print(str(i)+" "+(str(dynNetwork.closeness(i, weight='weight'))))
+            eigenvectorFile.write("{0:d}\t{1:.6f}\t{2:s}\n".\
+                format(selectedAtoms[i].getResnum(), eigenvectorResult[i], selectedAtoms[i].getChid()))
+        eigenvectorFile.close()
+
+        projectCentralitiesOntoProteinVMD(centrality, 
+                        list(eigenvectorResult.values()), \
+                        out_file, \
+                        selectedAtoms, scalingFactor=1)
+        plotCentralities(centrality, \
+                        list(eigenvectorResult.values()), \
+                        out_file, \
+                        selectedAtoms, scalingFactor=1)
     else:
         print("ERROR: Unknown centrality selected! It can only be")
-        print("       'degree', 'betweenness', 'closeness' or 'current_flow'!")
+        print("       'degree', 'betweenness', 'closeness',")
+        print("       'current_flow_betweenness' or 'current_flow_closeness'!")
         sys.exit(-1)
 
 
@@ -1553,7 +1642,9 @@ def networkAnalysisApp():
     centralityAnalysis(ccMatrix, valueFilter, out_file, "degree", selectedAtoms)
     centralityAnalysis(ccMatrix, valueFilter, out_file, "betweenness", selectedAtoms)
     centralityAnalysis(ccMatrix, valueFilter, out_file, "closeness", selectedAtoms)
-    centralityAnalysis(ccMatrix, valueFilter, out_file, "current_flow", selectedAtoms)
+    centralityAnalysis(ccMatrix, valueFilter, out_file, "current_flow_betweenness", selectedAtoms)
+    centralityAnalysis(ccMatrix, valueFilter, out_file, "current_flow_closeness", selectedAtoms)
+    centralityAnalysis(ccMatrix, valueFilter, out_file, "eigenvector", selectedAtoms)
 
 if __name__ == "__main__":
     #TODO:
