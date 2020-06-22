@@ -1302,7 +1302,8 @@ def projectCentralitiesOntoProteinVMD(centrality, centralityArray, \
     #Writing the output is very important for further analyses such as 
     #inter-chain (inter-domain) or intra-chain (intra-domain) distributions etc.
     #
-
+    percentage = 0.10
+    numKeyResidues = int(percentage*len(selectedAtoms))
     VMD_FILE = open(out_file+'_'+centrality+'.tcl', 'w')
 
     VMD_FILE.write("mol new "+out_file+"_"+centrality+".pdb"+"\n")
@@ -1317,7 +1318,7 @@ def projectCentralitiesOntoProteinVMD(centrality, centralityArray, \
                                 "mol selection \"chain {0:s} and resid {1:d} and name CA\"\n"+\
                                 "mol addrep 0\n"
     sortedList = np.flip(np.argsort(centralityArray))
-    for i in range (0, 20):
+    for i in range (0, numKeyResidues):
         #print(centralityArray[sortedList[i]])
         VMD_FILE.write(vdw_representation_string.\
         format(selectedAtoms.getChids()[sortedList[i]],\
