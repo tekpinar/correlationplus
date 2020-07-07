@@ -152,7 +152,26 @@ def handle_arguments_main():
 ####################################################
 def overallCorrelationMap(ccMatrix, minColorBarLimit, maxColorBarLimit, out_file, title, selectedAtoms):
     """
-    Plots nDCC maps for the whole structure
+        Plots nDCC maps for the whole structure.
+
+    Parameters
+    ----------
+    ccMatrix: A numpy square matrix of floats
+    minColorBarLimit: unsigned int 
+        Mostly, -1 or 0. 
+    maxColorBarLimit: unsigned int 
+        Mostly, 1. 
+    out_file: string
+        prefix for the output png files. 
+        This prefix will get _overall.png extension.
+    title: string
+        Title of the figure.
+    selectedAtoms: prody object
+        A list of -typically CA- atoms selected from the parsed PDB file.
+    
+    Returns
+    -------
+    Nothing
     """
 
     #selectedAtoms = parsePDB(pdb_file, subset='ca')
