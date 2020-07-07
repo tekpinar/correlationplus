@@ -32,6 +32,19 @@ import networkx as nx
 from math import fabs
 from math import log
 
+def usage_main():
+    """
+    Show how to use this program!
+    """
+    print("\nExample usage:\n")
+    print("python correlationPlus.py -h\n")
+    print("CorrelationPlus contains three/two analysis apps:")
+    print("mapAnalysisApp")
+    print("networkAnalysisApp")
+    print("You can get information about each individual app as follows:\n\n")
+    print("python correlationPlus networkAnalysisApp -h \n\n")
+
+
 def usage_correlationMaps():
     """
     Show how to use this program!
@@ -984,7 +997,7 @@ def projectCorrelationsOntoProteinVMD(ccMatrix, vmd_out_file, \
                 #However, it is necessary to multiply the radius with 0.5 to make it look better.
                                     ccMatrix[i][j]*0.5))
             DATA_FILE.close()
-def correlationMapApp():
+def mapAnalysisApp():
     print("@> Running 'Correlation Map App'")
     (inp_file, out_file, sel_type, pdb_file) = handle_arguments_correlationMaps()
     print("\n@> Input file   :", inp_file)
@@ -1668,5 +1681,5 @@ if __name__ == "__main__":
     print("|                       Email: tekpinar@buffalo.edu                          |")
     print("|                          Licence: MIT License                              |")
     print("|--------------------------------------------------------------------------- |\n\n")
-    #correlationMapApp()
+    #mapAnalysisApp()
     networkAnalysisApp()
