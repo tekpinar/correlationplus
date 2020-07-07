@@ -40,12 +40,12 @@ def usage_main():
     print("python correlationPlus.py -h\n")
     print("CorrelationPlus contains three/two analysis apps:")
     print("mapAnalysisApp")
-    print("networkAnalysisApp")
+    print("centralityAnalysisApp")
     print("You can get information about each individual app as follows:\n\n")
-    print("python correlationPlus networkAnalysisApp -h \n\n")
+    print("python correlationPlus centralityAnalysisApp -h \n\n")
 
 
-def usage_correlationMaps():
+def usage_mapAnalysisApp():
     """
     Show how to use this program!
     """
@@ -80,23 +80,20 @@ def cmap_discretize(cmap, N):
     return matplotlib.colors.LinearSegmentedColormap(cmap.name + "_%d"%N, cdict, 1024)
 
 ##################### HANDLE ARGUMENTS ##########################################                                                                           
-def handle_arguments_correlationMaps():
-    opts, args = getopt.getopt(sys.argv[1:],"hi:o:s:p:",["help", "inp=", "out=", "sel=", "pdb="])
+def handle_arguments_mapAnalysisApp():
+    opts, args = getopt.getopt(sys.argv[2:],"hi:o:s:p:",["help", "inp=", "out=", "sel=", "pdb="])
     inp_file = None
     pdb_file = None
     out_file = None
     sel_type = None
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:],"hi:o:s:p:",["help", "inp=", "out=", "sel=", "pdb="])
+        opts, args = getopt.getopt(sys.argv[2:],"hi:o:s:p:",["help", "inp=", "out=", "sel=", "pdb="])
     except getopt.GetoptError:
-        usage_correlationMaps()
+        usage_mapAnalysisApp()
     for opt, arg in opts:
-        # if opt == '-h':
-        #     usage_correlationMaps()
-        #     sys.exit(-1)
         if opt in ('-h', "--help"):
-            usage_correlationMaps()
+            usage_mapAnalysisApp()
             sys.exit(-1)
         elif opt in ("-i", "--inp"):
             inp_file = arg
@@ -107,11 +104,11 @@ def handle_arguments_correlationMaps():
         elif opt in ("-p", "--pdb"):
             pdb_file = arg
         else:
-            assert False, usage_correlationMaps()
+            assert False, usage_mapAnalysisApp()
 
     #Input data matrix and PDB file are mandatory!
     if inp_file==None or pdb_file==None:
-        usage_correlationMaps()
+        usage_mapAnalysisApp()
         sys.exit(-1)
 
     #Assign a default name if the user forgets the output file prefix.
@@ -124,6 +121,35 @@ def handle_arguments_correlationMaps():
 
     return (inp_file, out_file, sel_type, pdb_file)
 
+##################################################
+def handle_arguments_main():
+    opts, args = getopt.getopt(sys.argv[1:],"ha",["help", "app="])
+    app = None
+
+    try:
+        opts, args = getopt.getopt(sys.argv[1:],"ha",["help", "app="])
+    except getopt.GetoptError:
+        usage_main()
+    for opt, arg in opts:
+        if opt in ('-h', "--help"):
+            usage_main()
+            sys.exit(-1)
+        elif opt in ("-a", "--app"):
+            app = arg
+        else:
+            assert False, usage_main()
+
+    #Input data matrix and PDB file are mandatory!
+    if app==None:
+        usage_main()
+        sys.exit(-1)
+
+    #The user may prefer not to submit a title for the output.
+    if (sel_type == None):
+        sel_type = "ndcc"
+
+    return (app)
+####################################################
 def overallCorrelationMap(ccMatrix, minColorBarLimit, maxColorBarLimit, out_file, title, selectedAtoms):
     """
     Plots nDCC maps for the whole structure
@@ -999,7 +1025,7 @@ def projectCorrelationsOntoProteinVMD(ccMatrix, vmd_out_file, \
             DATA_FILE.close()
 def mapAnalysisApp():
     print("@> Running 'Correlation Map App'")
-    (inp_file, out_file, sel_type, pdb_file) = handle_arguments_correlationMaps()
+    (inp_file, out_file, sel_type, pdb_file) = handle_arguments_mapAnalysisApp()
     print("\n@> Input file   :", inp_file)
     print("@> PDB file     :", pdb_file)
     print("@> Data type    :", sel_type)    
@@ -1108,7 +1134,7 @@ def usage_diffMaps():
     print("           -o: This will be your output file. Output figures are in png format. (Optional)\n\n")
 
 def handle_arguments_diffMaps():
-    opts, args = getopt.getopt(sys.argv[1:],"hi:j:o:t:p:q:",["inp1=", "inp2=", "out=", "type=", "pdb=", "pdb2="])
+    opts, args = getopt.getopt(sys.argv[2:],"hi:j:o:t:p:q:",["inp1=", "inp2=", "out=", "type=", "pdb=", "pdb2="])
     inp_file1 = None
     inp_file2 = None
     pdb_file1 = None
@@ -1117,7 +1143,7 @@ def handle_arguments_diffMaps():
     sel_type = None
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:],"hi:j:o:t:p:q:",["inp1=", "inp2=", "out=", "type=", "pdb=", "pdb2="])
+        opts, args = getopt.getopt(sys.argv[2:],"hi:j:o:t:p:q:",["inp1=", "inp2=", "out=", "type=", "pdb=", "pdb2="])
     except getopt.GetoptError:
         usage_diffMaps()
     for opt, arg in opts:
@@ -1161,8 +1187,7 @@ def diffMapApp():
     Moreover, if you provide a second pdb file, it can match residue 
     numbers and names of Calpha atoms in the pdb files. 
     Please, beware that the program does not do any sequence alignment.
-    Therefore, if one of the proteins is contains a mutation or just a 
-    relative of the first one, the app won't work. 
+    Therefore, if one of the proteins contains a mutation, the app won't work. 
     """
     print("@> Running 'Difference Map App'")
     (inp_file1, inp_file2, out_file, sel_type, pdb_file1, pdb_file2) = handle_arguments_diffMaps()
@@ -1625,9 +1650,9 @@ def centralityAnalysis(ccMatrix, valueFilter, out_file, centrality, selectedAtom
         sys.exit(-1)
 
 
-def networkAnalysisApp():
+def centralityAnalysisApp():
     print("@> Running 'Network Analysis App'")
-    (inp_file, out_file, sel_type, pdb_file) = handle_arguments_correlationMaps()
+    (inp_file, out_file, sel_type, pdb_file) = handle_arguments_mapAnalysisApp()
     print("\n@> Input file   :", inp_file)
     print("@> PDB file     :", pdb_file)
     print("@> Data type    :", sel_type)    
@@ -1681,5 +1706,19 @@ if __name__ == "__main__":
     print("|                       Email: tekpinar@buffalo.edu                          |")
     print("|                          Licence: MIT License                              |")
     print("|--------------------------------------------------------------------------- |\n\n")
-    #mapAnalysisApp()
-    networkAnalysisApp()
+    if((len(sys.argv)>1)):
+        if(sys.argv[1] == "mapAnalysisApp"):
+            mapAnalysisApp()
+        elif(sys.argv[1] == "diffMapApp"):
+            diffMapApp()
+        elif(sys.argv[1] == "centralityAnalysisApp"):
+            centralityAnalysisApp()
+        elif((sys.argv[1] == "-h") or ((sys.argv[1] == "--help"))):
+            usage_main()
+        else:
+            usage_main()
+            sys.exit(-1)
+    else:
+        usage_main()
+        sys.exit(-1)    
+    

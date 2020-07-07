@@ -1,7 +1,0 @@
-import os
-import sys
-"""
-Unfortunately, this is not the most systematic way of writing unit tests.
-But I needed a quick and dirty way of checking integrity of the apps.
-So, I will do it here by checking diffs of output images.
-"""
