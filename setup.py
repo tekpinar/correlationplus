@@ -30,7 +30,8 @@ setup(name='correlationPlus',
       # file where some variables must be fixed by install
       entry_points={
           'console_scripts': [
-              'mapAnalysis=correlation_plus.scripts.mapAnalysis:mapAnalysisApp'
+              'mapAnalysis=correlation_plus.scripts.mapAnalysis:mapAnalysisApp',
+              'diffMap=correlation_plus.scripts.diffMap:diffMapApp'
           ]
       }
       )
