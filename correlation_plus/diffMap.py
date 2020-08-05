@@ -7,9 +7,6 @@ Please, beware that the program does not do any sequence alignment.
 Therefore, if one of the proteins is contains a mutation or just a 
 relative of the first one, the app won't work. 
 """
-import os
-import sys
-import getopt
 
 # from collections import Counter, OrderedDict
 import correlationPlus as cP
