@@ -1,0 +1,41 @@
+.eggs
+
+######################
+# Logs and databases #
+######################
+*\.log
+.DS_Store
+
+#########################
+# Eclipse metadata_path #
+#########################
+\.project
+\.pydevproject
+\.settings/
+
+#############
+# vim files #
+#############
+*\.swp
+*~
+\#*\#
+
+################# 
+# pycharm files #
+#################
+\.idea
+
+#################
+# visual studio #
+#################
+\.vscode/
+
+
+##########################
+# Python complied source #
+##########################
+*\.pyc
+*\.pyo
+build/
+dist/
+doc/_build/
