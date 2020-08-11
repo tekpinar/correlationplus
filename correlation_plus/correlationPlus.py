@@ -40,6 +40,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import sys
 import matplotlib
+from matplotlib.cm import get_cmap
 
 from prody import writePDB
 from prody import buildDistMatrix
