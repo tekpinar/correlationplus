@@ -1,3 +1,27 @@
+###############################################################################
+# correlationPlus - Python module to plot dynamical correlations maps         #
+#                   for proteins.                                             #
+# Authors: Mustafa Tekpinar                                                   #
+# Copyright Mustafa Tekpinar 2017-2018                                        #
+# Copyright CNRS-UMR3528, 2019                                                #
+# Copyright Institut Pasteur Paris, 2020                                       #
+#                                                                             #
+# This file is part of correlationPlus.                                       #
+#                                                                             #
+# correlationPlus is free software: you can redistribute it and/or modify     #
+# it under the terms of the GNU Lesser General Public License as published by #
+# the Free Software Foundation, either version 3 of the License, or           #
+# (at your option) any later version.                                         #
+#                                                                             #
+# correlationPlus is distributed in the hope that it will be useful,          #
+# but WITHOUT ANY WARRANTY; without even the implied warranty of              #
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the               #
+# GNU LESSER General Public License for more details.                         #
+#                                                                             #
+# You should have received a copy of the GNU Lesser General Public License    #
+# along with correlationPlus.  If not, see <https://www.gnu.org/licenses/>.   #
+###############################################################################
+
 import sys
 import getopt
 from collections import Counter
@@ -16,7 +40,7 @@ def usage_diffMaps():
     """
     print("""
 Example minimal usage:
-diffMap.py -i 4z90-cross-correlations.txt -j 4z91-cross-correlations.txt -p 4z90.pdb
+correlationPlus diffMap -i 4z90-cross-correlations.txt -j 4z91-cross-correlations.txt -p 4z90.pdb
 
 Arguments: -i: The first file containing normalized dynamical cross correlations or LMI in matrix format. (Mandatory)
            -j: The second file containing normalized dynamical cross correlations or LMI in matrix format. (Mandatory)
@@ -37,7 +61,7 @@ def handle_arguments_diffMaps():
     sel_type = None
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hi:j:o:t:p:q:", ["inp1=", "inp2=", "out=", "type=", "pdb=", "pdb2="])
+        opts, args = getopt.getopt(sys.argv[2:], "hi:j:o:t:p:q:", ["inp1=", "inp2=", "out=", "type=", "pdb=", "pdb2="])
     except getopt.GetoptError:
         usage_diffMaps()
     for opt, arg in opts:
@@ -84,8 +108,16 @@ def diffMapApp():
     Please, beware that the program does not do any sequence alignment.
     Therefore, if one of the proteins contains a mutation, the app won't work.
     """
-    print("@> Running 'Difference Map App'")
     inp_file1, inp_file2, out_file, sel_type, pdb_file1, pdb_file2 = handle_arguments_diffMaps()
+    print(f"""
+@> Running 'Difference Map App'
+
+@> Input file   : {inp_file1}
+@> Input file   : {inp_file2}
+@> PDB file 1   : {pdb_file1}
+@> PDB file 2   : {pdb_file2}
+@> Data type    : {sel_type}
+@> Output       : {out_file}""")
 
     selectedAtomSet1 = parsePDB(pdb_file1, subset='ca')
 

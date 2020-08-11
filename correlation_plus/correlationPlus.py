@@ -1,10 +1,32 @@
-#!/usr/bin/env python
+###############################################################################
+# correlationPlus - Python module to plot dynamical correlations maps         #
+#                   for proteins.                                             #
+# Authors: Mustafa Tekpinar                                                   #
+# Copyright Mustafa Tekpinar 2017-2018                                        #
+# Copyright CNRS-UMR3528, 2019                                                #
+# Copyright Institut Pasteur Paris, 2020                                       #
+#                                                                             #
+# This file is part of correlationPlus.                                       #
+#                                                                             #
+# correlationPlus is free software: you can redistribute it and/or modify     #
+# it under the terms of the GNU Lesser General Public License as published by #
+# the Free Software Foundation, either version 3 of the License, or           #
+# (at your option) any later version.                                         #
+#                                                                             #
+# correlationPlus is distributed in the hope that it will be useful,          #
+# but WITHOUT ANY WARRANTY; without even the implied warranty of              #
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the               #
+# GNU LESSER General Public License for more details.                         #
+#                                                                             #
+# You should have received a copy of the GNU Lesser General Public License    #
+# along with correlationPlus.  If not, see <https://www.gnu.org/licenses/>.   #
+###############################################################################
+
+
 """
 Program Name: Cross-correlation Plotting Program (I'll find a fancy name later!)
 Author      : Mustafa TEKPINAR
 Email       : tekpinar@buffalo.edu
-Copyright   : Mustafa Tekpinar - 2020
-License     : MIT License
 
 Purpose     : This is a small program to automatize plotting of normalized 
 dynamical cross-correlations obtained from molecular dynamics simulations or 
@@ -16,11 +38,9 @@ doing it and I wrote something for myself. I hope it may help the others also!
 
 import matplotlib.pyplot as plt
 import numpy as np
-import getopt
 import sys
 import matplotlib
 
-from prody import parsePDB
 from prody import writePDB
 from prody import buildDistMatrix
 from collections import Counter, OrderedDict
@@ -28,7 +48,6 @@ from collections import Counter, OrderedDict
 import networkx as nx
 from math import fabs
 from math import log
-
 
 
 def cmap_discretize(cmap, N):
@@ -49,13 +68,15 @@ def cmap_discretize(cmap, N):
     colors_rgba = cmap(colors_i)
     indices = np.linspace(0, 1., N+1)
     cdict = {}
-    for ki,key in enumerate(('red','green','blue')):
-        cdict[key] = [ (indices[i], colors_rgba[i-1,ki], colors_rgba[i,ki]) for i in range(N+1) ]
+    for ki, key in enumerate(('red', 'green', 'blue')):
+        cdict[key] = [(indices[i], colors_rgba[i-1, ki], colors_rgba[i, ki]) for i in range(N + 1)]
     # Return colormap object.
-    return matplotlib.colors.LinearSegmentedColormap(cmap.name + "_%d"%N, cdict, 1024)
+    return matplotlib.colors.LinearSegmentedColormap(cmap.name + "_%d" % N, cdict, 1024)
 
 
-def overallCorrelationMap(ccMatrix, minColorBarLimit, maxColorBarLimit, out_file, title, selectedAtoms):
+def overallCorrelationMap(ccMatrix,
+                          minColorBarLimit, maxColorBarLimit,
+                          out_file, title, selectedAtoms):
     """
         Plots nDCC maps for the whole structure.
 
@@ -150,14 +171,14 @@ def overallCorrelationMap(ccMatrix, minColorBarLimit, maxColorBarLimit, out_file
     #print(np.argmin(ccMatrix_sub, 1))
 
     #Set colorbar features here!  
-    jet=plt.get_cmap('jet') 
+    jet = plt.get_cmap('jet')
     djet = cmap_discretize(jet, 8)
 
     plt.imshow(np.matrix(ccMatrix), cmap=djet)
     plt.clim(minColorBarLimit, maxColorBarLimit)
 
-    position=fig.add_axes([0.85, 0.15, 0.03, 0.70])
-    cbar=plt.colorbar(cax=position)
+    position = fig.add_axes([0.85, 0.15, 0.03, 0.70])
+    cbar = plt.colorbar(cax=position)
 
     cbar.set_ticks([-1.00, -0.75, -0.50, -0.25, 0.00, 0.25, 0.50, 0.75, 1.00])
 
@@ -165,7 +186,7 @@ def overallCorrelationMap(ccMatrix, minColorBarLimit, maxColorBarLimit, out_file
         t.set_horizontalalignment('right')   
         t.set_x(4.0)
 
-    if(len(myList)>1):
+    if len(myList) > 1:
         #Add chain borders to the plot
         for i in range(len(selection_reorder)-1):
             beginningPoint = selection_reorder[i]/selection_reorder[-1]
@@ -173,24 +194,28 @@ def overallCorrelationMap(ccMatrix, minColorBarLimit, maxColorBarLimit, out_file
             middlePoint = (float(beginningPoint)+float(endingPoint))/2.0
             if(i%2==0):
                 #x axis
-                ax.annotate('', xy=(beginningPoint, 1.03), xycoords='axes fraction', \
-                            xytext=(endingPoint, 1.03), arrowprops=dict(linewidth = 2., arrowstyle="-", color='black'))
+                ax.annotate('', xy=(beginningPoint, 1.03), xycoords='axes fraction',
+                            xytext=(endingPoint, 1.03),
+                            arrowprops=dict(linewidth=2., arrowstyle="-", color='black'))
 
                 #y axis
-                ax.annotate('', xy=(1.04, beginningPoint), xycoords='axes fraction', \
-                            xytext=(1.04, endingPoint), arrowprops=dict(linewidth = 2., arrowstyle="-", color='black'))  
+                ax.annotate('', xy=(1.04, beginningPoint), xycoords='axes fraction',
+                            xytext=(1.04, endingPoint),
+                            arrowprops=dict(linewidth=2., arrowstyle="-", color='black'))
 
-            elif(i%2==1):
+            elif i % 2 == 1:
                 #x axis
-                ax.annotate('', xy=(beginningPoint, 1.03), xycoords='axes fraction', \
-                            xytext=(endingPoint, 1.03), arrowprops=dict(linewidth = 2., arrowstyle="-", color='gray'))
+                ax.annotate('', xy=(beginningPoint, 1.03), xycoords='axes fraction',
+                            xytext=(endingPoint, 1.03), arrowprops=dict(linewidth=2., arrowstyle="-", color='gray'))
                 
                 #y axis
-                ax.annotate('', xy=(1.04, beginningPoint), xycoords='axes fraction', \
-                            xytext=(1.04, endingPoint), arrowprops=dict(linewidth = 2., arrowstyle="-", color='gray')) 
+                ax.annotate('', xy=(1.04, beginningPoint), xycoords='axes fraction',
+                            xytext=(1.04, endingPoint), arrowprops=dict(linewidth=2., arrowstyle="-", color='gray'))
 
-            ax.annotate(myList[i], xy=(0, 1.04), xycoords='axes fraction', xytext=(middlePoint-0.015, 1.04), size=14, color='black')
-            ax.annotate(myList[i], xy=(1.05, 0), xycoords='axes fraction', xytext=(1.05, middlePoint-0.015), rotation=90, size=14, color='black')
+            ax.annotate(myList[i], xy=(0, 1.04), xycoords='axes fraction',
+                        xytext=(middlePoint-0.015, 1.04), size=14, color='black')
+            ax.annotate(myList[i], xy=(1.05, 0), xycoords='axes fraction',
+                        xytext=(1.05, middlePoint-0.015), rotation=90, size=14, color='black')
             #print(middlePoint)
 
     #plt.tight_layout()       
@@ -198,7 +223,9 @@ def overallCorrelationMap(ccMatrix, minColorBarLimit, maxColorBarLimit, out_file
     #plt.show()
 
 
-def intraChainCorrelationMaps(ccMatrix, minColorBarLimit, maxColorBarLimit, out_file, title, selectedAtoms, saveMatrix):
+def intraChainCorrelationMaps(ccMatrix,
+                              minColorBarLimit, maxColorBarLimit,
+                              out_file, title, selectedAtoms, saveMatrix):
     """
     Plot intra-chain correlations if there are at least two chains!
     """
@@ -224,7 +251,8 @@ def intraChainCorrelationMaps(ccMatrix, minColorBarLimit, maxColorBarLimit, out_
         major_nums=[]
         major_labels=[]
         realTicsList = np.linspace(selection_reorder[j], selection_reorder[j+1], 6, dtype=int)
-        ticsList = np.linspace(selection_reorder[j]-selection_reorder[j], selection_reorder[j+1]-selection_reorder[j], 6, dtype=int)
+        ticsList = np.linspace(selection_reorder[j]-selection_reorder[j],
+                               selection_reorder[j+1]-selection_reorder[j], 6, dtype=int)
         #selection_reorder[j+1]-
         major_nums = ticsList
         #major_nums = major_nums[0:-1]
@@ -240,10 +268,10 @@ def intraChainCorrelationMaps(ccMatrix, minColorBarLimit, maxColorBarLimit, out_
         #Set plotting parameters
         ##########################################################################
         #Set residue interface definitions
-        fig=plt.figure()
+        fig = plt.figure()
         fig.set_size_inches(8.0, 5.5, forward=True)
         plt.rcParams['font.size'] = 16
-        ax=fig.add_subplot(1,1,1)
+        ax = fig.add_subplot(1,1,1)
 
         plt.xlabel('Residue indices')
         plt.ylabel('Residue indices')
@@ -273,16 +301,17 @@ def intraChainCorrelationMaps(ccMatrix, minColorBarLimit, maxColorBarLimit, out_
         #print(np.argmin(ccMatrix_sub, 1))
 
         #Set colorbar features here!
-        jet=plt.get_cmap('jet')
+        jet = plt.get_cmap('jet')
         djet = cmap_discretize(jet, 8)
         plt.axis([0, (selection_reorder[j+1]-selection_reorder[j]), 0, (selection_reorder[j+1]-selection_reorder[j])])
-        sub_nDCC_matrix = ccMatrix[(selection_reorder[j]) : (selection_reorder[j+1]), (selection_reorder[j]) : (selection_reorder[j+1])]
+        sub_nDCC_matrix = ccMatrix[selection_reorder[j] : selection_reorder[j+1],
+                          selection_reorder[j] : selection_reorder[j+1]]
         plt.imshow(np.matrix(sub_nDCC_matrix), cmap=djet)
         plt.clim(minColorBarLimit, maxColorBarLimit)
 
-        position=fig.add_axes([0.85, 0.15, 0.03, 0.70])
+        position = fig.add_axes([0.85, 0.15, 0.03, 0.70])
         
-        cbar=plt.colorbar(cax=position)
+        cbar = plt.colorbar(cax=position)
         cbar.set_ticks([-1.00, -0.75, -0.50, -0.25, 0.00, 0.25, 0.50, 0.75, 1.00])
 
         for t in cbar.ax.get_yticklabels():
@@ -294,7 +323,9 @@ def intraChainCorrelationMaps(ccMatrix, minColorBarLimit, maxColorBarLimit, out_
         #plt.show()
         plt.close('all')
 
-def interChainCorrelationMaps(ccMatrix, minColorBarLimit, maxColorBarLimit, out_file, title, selectedAtoms, saveMatrix):
+
+def interChainCorrelationMaps(ccMatrix, minColorBarLimit,
+                              maxColorBarLimit, out_file, title, selectedAtoms, saveMatrix):
     """
     Plot inter-chain correlations if there are at least two chains!
     """
@@ -353,10 +384,10 @@ def interChainCorrelationMaps(ccMatrix, minColorBarLimit, maxColorBarLimit, out_
             #Set plotting parameters
             ##########################################################################
             #Set residue interface definitions
-            fig=plt.figure()
+            fig = plt.figure()
             fig.set_size_inches(8.0, 5.5, forward=True)
             plt.rcParams['font.size'] = 16
-            ax=fig.add_subplot(1,1,1)
+            ax = fig.add_subplot(1,1,1)
 
             plt.xlabel('Residue indices - Chain '+myList[l])
             plt.ylabel('Residue indices - Chain '+myList[k])
@@ -386,7 +417,7 @@ def interChainCorrelationMaps(ccMatrix, minColorBarLimit, maxColorBarLimit, out_
             #print(np.argmin(ccMatrix_sub, 1))
 
             #Set colorbar features here!
-            jet=plt.get_cmap('jet')
+            jet = plt.get_cmap('jet')
             djet = cmap_discretize(jet, 8)
             plt.axis([0, n, 0, n])
             plt.axis([0, (selection_reorder[l+1]-selection_reorder[l]), 0, \
@@ -401,7 +432,7 @@ def interChainCorrelationMaps(ccMatrix, minColorBarLimit, maxColorBarLimit, out_
             
             divider = make_axes_locatable(plt.gca())
             position = divider.append_axes("right", "5%", pad="25%")
-            cbar=plt.colorbar(cax=position)
+            cbar = plt.colorbar(cax=position)
             cbar.set_ticks([-1.00, -0.75, -0.50, -0.25, 0.00, 0.25, 0.50, 0.75, 1.00])
 
             for t in cbar.ax.get_yticklabels():
@@ -413,10 +444,11 @@ def interChainCorrelationMaps(ccMatrix, minColorBarLimit, maxColorBarLimit, out_
             #plt.tight_layout()
             #plt.show()
 
-def distanceDistribution(ccMatrix, out_file, title, selectedAtoms, \
-    absoluteValues: bool, writeAllOutput: bool):
+
+def distanceDistribution(ccMatrix, out_file, title, selectedAtoms,
+                         absoluteValues: bool, writeAllOutput: bool):
     #Calculate distance matrix
-    dist_matrix=buildDistMatrix(selectedAtoms)
+    dist_matrix = buildDistMatrix(selectedAtoms)
     
     #Plot the figure
     #print("@> Min. distance: {0:.2f} Angstrom.".format(np.min(dist_matrix)))
@@ -435,16 +467,16 @@ def distanceDistribution(ccMatrix, out_file, title, selectedAtoms, \
     plt.yticks(fontsize=16)
     plt.xlabel("Distance ($\AA$)", fontsize=20)
     plt.ylabel(title, fontsize=20)
-    if(absoluteValues):
+    if absoluteValues:
         plt.ylim([0.0, 1.0])
         dst_file = out_file+'-absolute-correlation-vs-distance'
 
     else:
         plt.ylim([-1.0, 1.0])
-        plt.axhline(0,color='k',lw=0.5)
-        dst_file = out_file+'-correlation-vs-distance'
+        plt.axhline(0, color='k', lw=0.5)
+        dst_file = out_file + '-correlation-vs-distance'
 
-    plt.plot(x,y, '.', color='k')
+    plt.plot(x, y, '.', color='k')
     plt.tight_layout()
     #plt.xlim(xmin=0) #xmin will be removed in matplotlib 3.2
     plt.xlim(left=0)
@@ -455,19 +487,19 @@ def distanceDistribution(ccMatrix, out_file, title, selectedAtoms, \
     #Write output
     #Writing the output is very important for further analyses such as 
     #inter-chain (inter-domain) or intra-chain (intra-domain) distributions etc.
-    if(writeAllOutput):
+    if writeAllOutput:
         DATA_FILE = open(dst_file+'.dat', 'w')
         for i in range(0, len(ccMatrix)):
             for j in range(i+1, len(ccMatrix)):
-                DATA_FILE.write("{0:d}\t{1:s}\t{2:d}\t{3:s}\t{4:.3f}\t{5:.3f}\n".\
-                                format(selectedAtoms.getResnums()[i],\
-                                        selectedAtoms.getChids()[i],\
-                                        selectedAtoms.getResnums()[j],\
-                                        selectedAtoms.getChids()[j],\
-                                        dist_matrix[i][j],\
-                                        ccMatrix[i][j]))
+                DATA_FILE.write("{0:d}\t{1:s}\t{2:d}\t{3:s}\t{4:.3f}\t{5:.3f}\n".format(selectedAtoms.getResnums()[i],
+                                                                                        selectedAtoms.getChids()[i],
+                                                                                        selectedAtoms.getResnums()[j],
+                                                                                        selectedAtoms.getChids()[j],
+                                                                                        dist_matrix[i][j],
+                                                                                        ccMatrix[i][j]))
         DATA_FILE.close()
-    
+
+
 def convertLMIdata2Matrix(inp_file, writeAllOutput: bool):
     data_file=open(inp_file, 'r')
 
@@ -479,8 +511,8 @@ def convertLMIdata2Matrix(inp_file, writeAllOutput: bool):
                 data_list.append(i)
 
     data_list = data_list[4:-1]
-    n=int(np.sqrt(len(data_list)))
-    data_array=np.array(data_list, dtype=float)
+    n = int(np.sqrt(len(data_list)))
+    data_array = np.array(data_list, dtype=float)
 
     cc=np.reshape(data_array, (n, n))
     #print (cc.dtype)
@@ -495,8 +527,8 @@ def convertLMIdata2Matrix(inp_file, writeAllOutput: bool):
     #print (maximum)
     #np.fill_diagonal(cc, 1.0)
 
-    if(writeAllOutput):
-        np.savetxt(inp_file[:-4]+"_modif.dat", cc, fmt='%.6f')
+    if writeAllOutput:
+        np.savetxt(inp_file[:-4] + "_modif.dat", cc, fmt='%.6f')
     return cc
 
 # def readForceConstantsMatrix(inp_file, writeAllOutput: bool):
@@ -534,7 +566,9 @@ def convertLMIdata2Matrix(inp_file, writeAllOutput: bool):
 #         np.savetxt(inp_file[:-4]+"_modif.dat", cc, fmt='%.6f')
 #     return cc
 
-def overallUniformDifferenceMap(ccMatrix1, ccMatrix2, minColorBarLimit, maxColorBarLimit, out_file, title, selectedAtoms):
+
+def overallUniformDifferenceMap(ccMatrix1, ccMatrix2,
+                                minColorBarLimit, maxColorBarLimit, out_file, title, selectedAtoms):
     """
     Plots the difference map between correlation maps for the entire structure. 
     Sizes of ccMatrix1 and ccMatrix2 are identical. Only one atom set is 
@@ -574,8 +608,8 @@ def overallUniformDifferenceMap(ccMatrix1, ccMatrix2, minColorBarLimit, maxColor
 
     #print(selection_reorder)
 
-    major_nums=[]
-    major_labels=[]
+    major_nums = []
+    major_labels = []
     major_nums.extend(selection_reorder)
     major_labels.extend(selection_tick_labels)
 
@@ -605,14 +639,14 @@ def overallUniformDifferenceMap(ccMatrix1, ccMatrix2, minColorBarLimit, maxColor
     #print(np.argmin(ccMatrix1_sub, 1))
 
     #Set colorbar features here!  
-    jet=plt.get_cmap('jet') 
+    jet = plt.get_cmap('jet')
     djet = cmap_discretize(jet, 8)
 
     plt.imshow(np.matrix(diffMap), cmap=djet)
     plt.clim(minColorBarLimit, maxColorBarLimit)
 
-    position=fig.add_axes([0.85, 0.15, 0.03, 0.70])
-    cbar=plt.colorbar(cax=position)
+    position = fig.add_axes([0.85, 0.15, 0.03, 0.70])
+    cbar = plt.colorbar(cax=position)
 
     cbar.set_ticks([-1.00, -0.75, -0.50, -0.25, 0.00, 0.25, 0.50, 0.75, 1.00])
 
@@ -625,31 +659,35 @@ def overallUniformDifferenceMap(ccMatrix1, ccMatrix2, minColorBarLimit, maxColor
         beginningPoint = selection_reorder[i]/selection_reorder[-1]
         endingPoint = selection_reorder[i+1]/selection_reorder[-1]
         middlePoint = (float(beginningPoint)+float(endingPoint))/2.0
-        if(i%2==0):
+        if i % 2 == 0:
             #x axis
-            ax.annotate('', xy=(beginningPoint, 1.03), xycoords='axes fraction', \
-                        xytext=(endingPoint, 1.03), arrowprops=dict(linewidth = 2., arrowstyle="-", color='black'))
+            ax.annotate('', xy=(beginningPoint, 1.03), xycoords='axes fraction',
+                        xytext=(endingPoint, 1.03), arrowprops=dict(linewidth=2., arrowstyle="-", color='black'))
 
             #y axis
-            ax.annotate('', xy=(1.04, beginningPoint), xycoords='axes fraction', \
-                        xytext=(1.04, endingPoint), arrowprops=dict(linewidth = 2., arrowstyle="-", color='black'))  
+            ax.annotate('', xy=(1.04, beginningPoint), xycoords='axes fraction',
+                        xytext=(1.04, endingPoint), arrowprops=dict(linewidth=2., arrowstyle="-", color='black'))
 
-        elif(i%2==1):
+        elif i % 2 == 1:
             #x axis
-            ax.annotate('', xy=(beginningPoint, 1.03), xycoords='axes fraction', \
-                        xytext=(endingPoint, 1.03), arrowprops=dict(linewidth = 2., arrowstyle="-", color='gray'))
+            ax.annotate('', xy=(beginningPoint, 1.03), xycoords='axes fraction',
+                        xytext=(endingPoint, 1.03), arrowprops=dict(linewidth=2., arrowstyle="-", color='gray'))
             
             #y axis
-            ax.annotate('', xy=(1.04, beginningPoint), xycoords='axes fraction', \
-                        xytext=(1.04, endingPoint), arrowprops=dict(linewidth = 2., arrowstyle="-", color='gray')) 
+            ax.annotate('', xy=(1.04, beginningPoint), xycoords='axes fraction',
+                        xytext=(1.04, endingPoint), arrowprops=dict(linewidth=2., arrowstyle="-", color='gray'))
 
-        ax.annotate(myList[i], xy=(0, 1.04), xycoords='axes fraction', xytext=(middlePoint-0.015, 1.04), size=14, color='black')
-        ax.annotate(myList[i], xy=(1.05, 0), xycoords='axes fraction', xytext=(1.05, middlePoint-0.015), rotation=90, size=14, color='black')
+        ax.annotate(myList[i], xy=(0, 1.04), xycoords='axes fraction', xytext=(middlePoint-0.015, 1.04),
+                    size=14, color='black')
+        ax.annotate(myList[i], xy=(1.05, 0), xycoords='axes fraction', xytext=(1.05, middlePoint-0.015),
+                    rotation=90, size=14, color='black')
         #print(middlePoint)
 
     #plt.tight_layout()       
     plt.savefig(out_file+'-overall-difference.png', bbox_inches='tight', dpi=200)
     #plt.show()
+
+
 def findCommonCorePDB(selectedAtomSet1, selectedAtomSet2):
     """
     This function assumes that two structures are obtained 
@@ -672,21 +710,19 @@ def findCommonCorePDB(selectedAtomSet1, selectedAtomSet2):
     #the items in the dictionary!
     commonCoreDictionary = OrderedDict()
     # if (lengthSet1 > lengthSet2):
-    for i in range (0, lengthSet1):
-        for j in range (0, lengthSet2):
-            if((selectedAtomSet1.getResnums()[i] == \
-                    selectedAtomSet2.getResnums()[j]) and 
-                (selectedAtomSet1.getResnames()[i] == \
-                    selectedAtomSet2.getResnames()[j]) and \
-                (selectedAtomSet1.getChids()[i] == \
-                    selectedAtomSet2.getChids()[j])):
+    for i in range(0, lengthSet1):
+        for j in range(0, lengthSet2):
+            if (selectedAtomSet1.getResnums()[i] == selectedAtomSet2.getResnums()[j]) and \
+                    (selectedAtomSet1.getResnames()[i] == selectedAtomSet2.getResnames()[j]) and \
+                    (selectedAtomSet1.getChids()[i] == selectedAtomSet2.getChids()[j]):
                 commonCoreDictionary[i] = j
     #print(commonCoreDictionary)
     return commonCoreDictionary
 
-def overallNonUniformDifferenceMap(ccMatrix1, ccMatrix2, minColorBarLimit, \
-                                    maxColorBarLimit, out_file, title, \
-                                    selectedAtomSet1, selectedAtomSet2):
+
+def overallNonUniformDifferenceMap(ccMatrix1, ccMatrix2, minColorBarLimit,
+                                   maxColorBarLimit, out_file, title,
+                                   selectedAtomSet1, selectedAtomSet2):
     """
     Plots the difference map between correlation maps for the entire structure. 
     Sizes of ccMatrix1 and ccMatrix2 are not identical. A mapping for matching 
@@ -701,21 +737,21 @@ def overallNonUniformDifferenceMap(ccMatrix1, ccMatrix2, minColorBarLimit, \
 
     items = list(commonCoreDictionary.items())
 
-    for i in range (0, len(commonCoreDictionary)):
+    for i in range(0, len(commonCoreDictionary)):
         key1, value1 = items[i]
-        for j in range (i, len(commonCoreDictionary)):
+        for j in range(i, len(commonCoreDictionary)):
             key2, value2 = items[j]
             diffMap[i][j] = ccMatrix1[key1][key2]-ccMatrix2[value1][value2]
             diffMap[j][i] = diffMap[i][j]  
     #diffMap = np.subtract(ccMatrix1, ccMatrix2)
 
-    n=len(commonCoreDictionary)
+    n = len(commonCoreDictionary)
     ##########################################################################
     #Set residue interface definitions
-    fig=plt.figure()
+    fig = plt.figure()
     fig.set_size_inches(8.0, 5.5, forward=True)
     plt.rcParams['font.size'] = 16
-    ax=fig.add_subplot(1,1,1)
+    ax = fig.add_subplot(1, 1, 1)
 
     plt.xlabel('Residue indices')
     plt.ylabel('Residue indices')
@@ -739,8 +775,8 @@ def overallNonUniformDifferenceMap(ccMatrix1, ccMatrix2, minColorBarLimit, \
 
     #print(selection_reorder)
 
-    major_nums=[]
-    major_labels=[]
+    major_nums = []
+    major_labels = []
     major_nums.extend(selection_reorder)
     major_labels.extend(selection_tick_labels)
 
@@ -787,39 +823,47 @@ def overallNonUniformDifferenceMap(ccMatrix1, ccMatrix2, minColorBarLimit, \
     ###########################################################################
     #Add chain borders to the plot
     for i in range(len(selection_reorder)-1):
-        beginningPoint = selection_reorder[i]/selection_reorder[-1]
-        endingPoint = selection_reorder[i+1]/selection_reorder[-1]
-        middlePoint = (float(beginningPoint)+float(endingPoint))/2.0
+        beginningPoint = selection_reorder[i] / selection_reorder[-1]
+        endingPoint = selection_reorder[i+1] / selection_reorder[-1]
+        middlePoint = (float(beginningPoint) + float(endingPoint))/2.0
         if(i%2==0):
             #x axis
-            ax.annotate('', xy=(beginningPoint, 1.03), xycoords='axes fraction', \
-                        xytext=(endingPoint, 1.03), arrowprops=dict(linewidth = 2., arrowstyle="-", color='black'))
+            ax.annotate('', xy=(beginningPoint, 1.03), xycoords='axes fraction',
+                        xytext=(endingPoint, 1.03), arrowprops=dict(linewidth=2., arrowstyle="-", color='black'))
 
             #y axis
-            ax.annotate('', xy=(1.04, beginningPoint), xycoords='axes fraction', \
-                        xytext=(1.04, endingPoint), arrowprops=dict(linewidth = 2., arrowstyle="-", color='black'))  
+            ax.annotate('', xy=(1.04, beginningPoint), xycoords='axes fraction',
+                        xytext=(1.04, endingPoint), arrowprops=dict(linewidth=2., arrowstyle="-", color='black'))
 
-        elif(i%2==1):
+        elif i % 2 == 1:
             #x axis
-            ax.annotate('', xy=(beginningPoint, 1.03), xycoords='axes fraction', \
-                        xytext=(endingPoint, 1.03), arrowprops=dict(linewidth = 2., arrowstyle="-", color='gray'))
+            ax.annotate('', xy=(beginningPoint, 1.03), xycoords='axes fraction',
+                        xytext=(endingPoint, 1.03), arrowprops=dict(linewidth=2., arrowstyle="-", color='gray'))
             
             #y axis
-            ax.annotate('', xy=(1.04, beginningPoint), xycoords='axes fraction', \
-                        xytext=(1.04, endingPoint), arrowprops=dict(linewidth = 2., arrowstyle="-", color='gray')) 
+            ax.annotate('', xy=(1.04, beginningPoint), xycoords='axes fraction',
+                        xytext=(1.04, endingPoint), arrowprops=dict(linewidth=2., arrowstyle="-", color='gray'))
 
-        ax.annotate(myList[i], xy=(0, 1.04), xycoords='axes fraction', xytext=(middlePoint-0.015, 1.04), size=14, color='black')
-        ax.annotate(myList[i], xy=(1.05, 0), xycoords='axes fraction', xytext=(1.05, middlePoint-0.015), rotation=90, size=14, color='black')
+        ax.annotate(myList[i], xy=(0, 1.04),
+                    xycoords='axes fraction',
+                    xytext=(middlePoint-0.015, 1.04),
+                    size=14, color='black')
+        ax.annotate(myList[i], xy=(1.05, 0),
+                    xycoords='axes fraction',
+                    xytext=(1.05, middlePoint-0.015),
+                    rotation=90,
+                    size=14, color='black')
         #print(middlePoint)
     ###########################################################################
     #plt.tight_layout()       
     plt.savefig(out_file+'-overall-difference.png', bbox_inches='tight', dpi=200)
     #plt.show()
 
-def projectCorrelationsOntoProteinVMD(ccMatrix, vmd_out_file, \
-                                        selectedAtoms, valueFilter,\
-                                        absoluteValues: bool, \
-                                        writeAllOutput: bool):
+
+def projectCorrelationsOntoProteinVMD(ccMatrix, vmd_out_file,
+                                      selectedAtoms, valueFilter,
+                                      absoluteValues: bool,
+                                      writeAllOutput: bool):
     """
     This function writes tcl files that contains the correlations between
     residues i and j. It produces three output files: 
@@ -842,8 +886,8 @@ def projectCorrelationsOntoProteinVMD(ccMatrix, vmd_out_file, \
     #print("@> Min. distance: {0:.2f} Angstrom.".format(np.min(dist_matrix)))
     print("@> Max. distance: {0:.2f} Angstrom.".format(np.max(dist_matrix)))
 
-    x=dist_matrix.flatten()
-    y=ccMatrix.flatten()
+    x = dist_matrix.flatten()
+    y = ccMatrix.flatten()
 
     #print(len(y))
 
@@ -853,17 +897,16 @@ def projectCorrelationsOntoProteinVMD(ccMatrix, vmd_out_file, \
     #Writing the output is very important for further analyses such as 
     #inter-chain (inter-domain) or intra-chain (intra-domain) distributions etc.
     #
-    draw_string = "draw cylinder"+\
-                " [lindex [[atomselect top \"chain {0:s} and resid {1:d} and name CA\"] get {{x y z}}] 0]"+\
-                " [lindex [[atomselect top \"chain {2:s} and resid {3:d} and name CA\"] get {{x y z}}] 0]"+\
-                " radius {4:.3f}\n"
-    vdw_representation_string = "mol representation VDW 0.750000 50.000000\n"+\
-                                "mol material Glossy\n"+\
-                                "#mol color ColorID 7\n"+\
-                                "mol selection \"chain {0:s} and resid {1:d} and name CA\"\n"+\
+    draw_string = "draw cylinder " \
+                  "[lindex [[atomselect top \"chain {0:s} and resid {1:d} and name CA\"] get {{x y z}}] 0]" \
+                  "[lindex [[atomselect top \"chain {2:s} and resid {3:d} and name CA\"] get {{x y z}}] 0]" \
+                  "radius {4:.3f}\n"
+    vdw_representation_string = "mol representation VDW 0.750000 50.000000\n" + \
+                                "mol material Glossy\n" + \
+                                "#mol color ColorID 7\n" + \
+                                "mol selection \"chain {0:s} and resid {1:d} and name CA\"\n" + \
                                 "mol addrep 0\n"
     DATA_FILE = open(vmd_out_file+'-general.tcl', 'w')
-
 
     DATA_FILE.write("mol modstyle 0 0 NewCartoon 0.300000 50.000000 3.250000 0\n")
     DATA_FILE.write("mol modcolor 0 0 Chain\n")
@@ -871,53 +914,51 @@ def projectCorrelationsOntoProteinVMD(ccMatrix, vmd_out_file, \
     for i in range(0, len(ccMatrix)):
         for j in range(i+1, len(ccMatrix)):
             if(np.absolute(ccMatrix[i][j])>valueFilter):
-                DATA_FILE.write(vdw_representation_string.\
-                format(selectedAtoms.getChids()[i],\
-                        selectedAtoms.getResnums()[i]))
-                DATA_FILE.write(vdw_representation_string.\
-                format(selectedAtoms.getChids()[j],\
-                        selectedAtoms.getResnums()[j]))
-                DATA_FILE.write(draw_string.format(selectedAtoms.getChids()[i],\
-                        selectedAtoms.getResnums()[i],\
-                        selectedAtoms.getChids()[j],\
-                        selectedAtoms.getResnums()[j],\
-                        #The radius of the connecting cylinder is proportional to the correlation value.
-                        #However, it is necessary to multiply the radius with 0.5 to make it look better.
-                        ccMatrix[i][j]*0.5))
+                DATA_FILE.write(vdw_representation_string.format(selectedAtoms.getChids()[i],
+                                                                 selectedAtoms.getResnums()[i]))
+                DATA_FILE.write(vdw_representation_string.format(selectedAtoms.getChids()[j],
+                                                                 selectedAtoms.getResnums()[j]))
+                DATA_FILE.write(draw_string.format(selectedAtoms.getChids()[i],
+                                                   selectedAtoms.getResnums()[i],
+                                                   selectedAtoms.getChids()[j],
+                                                   selectedAtoms.getResnums()[j],
+                                                   # The radius of the connecting cylinder is proportional
+                                                   # to the correlation value.
+                                                   # However, it is necessary to multiply the radius
+                                                   # with 0.5 to make it look better.
+                                                   ccMatrix[i][j]*0.5))
     DATA_FILE.close()
 
     chains = Counter(selectedAtoms.getChids()).keys()
 
     plotChains = True
-    if((len(chains)>1) & (plotChains)):
+    if (len(chains) > 1) & plotChains:
         #Inter-chain
         for chainI in chains:
             for chainJ in chains:
-                if(chainI != chainJ):                
+                if chainI != chainJ:
                     DATA_FILE = open(vmd_out_file+'-interchain-chains'+chainI+'-'+chainJ+'.tcl', 'w')
                     DATA_FILE.write("mol modstyle 0 0 NewCartoon 0.300000 50.000000 3.250000 0\n")
                     DATA_FILE.write("mol modcolor 0 0 Chain\n")
                     DATA_FILE.write("mol modmaterial 0 0 MetallicPastel\n")
                     for i in range(0, len(ccMatrix)):
                         for j in range(i+1, len(ccMatrix)):
-                            if(np.absolute(ccMatrix[i][j])>valueFilter):
-                                if((selectedAtoms.getChids()[i] == chainI) and \
-                                    (selectedAtoms.getChids()[j] == chainJ)):
-                                    DATA_FILE.write(vdw_representation_string.\
-                                    format(selectedAtoms.getChids()[i],\
-                                            selectedAtoms.getResnums()[i]))
-                                    DATA_FILE.write(vdw_representation_string.\
-                                    format(selectedAtoms.getChids()[j],\
-                                            selectedAtoms.getResnums()[j]))
+                            if np.absolute(ccMatrix[i][j])>valueFilter:
+                                if (selectedAtoms.getChids()[i] == chainI) and (selectedAtoms.getChids()[j] == chainJ):
+                                    DATA_FILE.write(vdw_representation_string.format(selectedAtoms.getChids()[i],
+                                                                                     selectedAtoms.getResnums()[i]))
+                                    DATA_FILE.write(vdw_representation_string.format(selectedAtoms.getChids()[j],
+                                                                                     selectedAtoms.getResnums()[j]))
                                     
-                                    DATA_FILE.write(draw_string.\
-                                    format(selectedAtoms.getChids()[i],\
-                                            selectedAtoms.getResnums()[i],\
-                                            selectedAtoms.getChids()[j],\
-                                            selectedAtoms.getResnums()[j],\
-                                            #The radius of the connecting cylinder is proportional to the correlation value.
-                                            #However, it is necessary to multiply the radius with 0.5 to make it look better.
-                                            ccMatrix[i][j]*0.5))
+                                    DATA_FILE.write(draw_string.format(selectedAtoms.getChids()[i],
+                                                                       selectedAtoms.getResnums()[i],
+                                                                       selectedAtoms.getChids()[j],
+                                                                       selectedAtoms.getResnums()[j],\
+                                                                       # The radius of the connecting cylinder is
+                                                                       # proportional to the correlation value.
+                                                                       # However, it is necessary to multiply
+                                                                       # the radius with 0.5 to make it look better.
+                                                                       ccMatrix[i][j]*0.5))
                     DATA_FILE.close()
 
         #Intra-chain
@@ -938,9 +979,11 @@ def projectCorrelationsOntoProteinVMD(ccMatrix, vmd_out_file, \
                                                                selectedAtoms.getResnums()[i],
                                                                selectedAtoms.getChids()[j],
                                                                selectedAtoms.getResnums()[j],
-                #The radius of the connecting cylinder is proportional to the correlation value.
-                #However, it is necessary to multiply the radius with 0.5 to make it look better.
-                                    ccMatrix[i][j]*0.5))
+                                                               # The radius of the connecting cylinder is proportional
+                                                               # to the correlation value.
+                                                               # However, it is necessary to multiply the radius
+                                                               # with 0.5 to make it look better.
+                                                               ccMatrix[i][j]*0.5))
             DATA_FILE.close()
 
 
@@ -955,22 +998,22 @@ def filterCorrelationMapByDistance(ccMatrix, out_file, title,
     """
     print("@> Filtering correlations lower than "+str(distanceValue)+" Angstrom")
     #Calculate distance matrix
-    dist_matrix=buildDistMatrix(selectedAtoms)
+    dist_matrix = buildDistMatrix(selectedAtoms)
     
     #print("@> Min. distance: {0:.2f} Angstrom.".format(np.min(dist_matrix)))
     #print("@> Max. distance: {0:.2f} Angstrom.".format(np.max(dist_matrix)))
 
     for i in range(0, len(ccMatrix)):
         for j in range(i+1, len(ccMatrix)):
-            if(dist_matrix[i][j]<distanceValue):
+            if dist_matrix[i][j] < distanceValue:
                 ccMatrix[i][j] = 0.0
                 ccMatrix[j][i] = 0.0
 
-    if(absoluteValues):
-        dst_file = out_file+'-absolute-correlation-filtered'
+    if absoluteValues:
+        dst_file = out_file + '-absolute-correlation-filtered'
 
     else:
-        dst_file = out_file+'-correlation-filtered'
+        dst_file = out_file + '-correlation-filtered'
     
     #Write output
     #Writing the output is very important for further analyses such as 
@@ -979,19 +1022,17 @@ def filterCorrelationMapByDistance(ccMatrix, out_file, title,
         DATA_FILE = open(dst_file+'filtered.dat', 'w')
         for i in range(0, len(ccMatrix)):
             for j in range(i+1, len(ccMatrix)):
-                DATA_FILE.write("{0:d}\t{1:s}\t{2:d}\t{3:s}\t{4:.3f}\t{5:.3f}\n".\
-                                format(selectedAtoms.getResnums()[i],\
-                                        selectedAtoms.getChids()[i],\
-                                        selectedAtoms.getResnums()[j],\
-                                        selectedAtoms.getChids()[j],\
-                                        dist_matrix[i][j],\
-                                        ccMatrix[i][j]))
+                DATA_FILE.write("{0:d}\t{1:s}\t{2:d}\t{3:s}\t{4:.3f}\t{5:.3f}\n".format(selectedAtoms.getResnums()[i],
+                                                                                        selectedAtoms.getChids()[i],
+                                                                                        selectedAtoms.getResnums()[j],
+                                                                                        selectedAtoms.getChids()[j],
+                                                                                        dist_matrix[i][j],
+                                                                                        ccMatrix[i][j]))
         DATA_FILE.close()
     return ccMatrix
 
-def projectCentralitiesOntoProteinVMD(centrality, centralityArray, \
-                                    out_file, \
-                                    selectedAtoms, scalingFactor):
+
+def projectCentralitiesOntoProteinVMD(centrality, centralityArray, out_file, selectedAtoms, scalingFactor):
     """
     Produces VMD output files for visualizing protein centralities.  
     This function writes a tcl file and a PDB file that can be viewed in
@@ -1033,26 +1074,25 @@ def projectCentralitiesOntoProteinVMD(centrality, centralityArray, \
     #inter-chain (inter-domain) or intra-chain (intra-domain) distributions etc.
     #
     percentage = 0.10
-    numKeyResidues = int(percentage*len(selectedAtoms))
+    numKeyResidues = int(percentage * len(selectedAtoms))
     VMD_FILE = open(out_file+'_'+centrality+'.tcl', 'w')
 
-    VMD_FILE.write("mol new "+out_file+"_"+centrality+".pdb"+"\n")
+    VMD_FILE.write("mol new " + out_file+"_" + centrality+".pdb" + "\n")
     VMD_FILE.write("mol modstyle 0 0 Tube 0.5 25\n")
     VMD_FILE.write("mol modcolor 0 0 Beta\n")
     VMD_FILE.write("mol modmaterial 0 0 Glossy\n")
 
 
-    vdw_representation_string = "mol representation VDW 0.750000 25.000000\n"+\
-                                "mol material Glossy\n"+\
-                                "mol color Beta\n"+\
-                                "mol selection \"chain {0:s} and resid {1:d} and name CA\"\n"+\
+    vdw_representation_string = "mol representation VDW 0.750000 25.000000\n" + \
+                                "mol material Glossy\n" + \
+                                "mol color Beta\n" + \
+                                "mol selection \"chain {0:s} and resid {1:d} and name CA\"\n" + \
                                 "mol addrep 0\n"
     sortedList = np.flip(np.argsort(centralityArray))
-    for i in range (0, numKeyResidues):
+    for i in range(0, numKeyResidues):
         #print(centralityArray[sortedList[i]])
-        VMD_FILE.write(vdw_representation_string.\
-        format(selectedAtoms.getChids()[sortedList[i]],\
-                selectedAtoms.getResnums()[sortedList[i]]))
+        VMD_FILE.write(vdw_representation_string.format(selectedAtoms.getChids()[sortedList[i]],
+                                                        selectedAtoms.getResnums()[sortedList[i]]))
 
     selectedAtoms.setBetas([scalingFactor*i for i in centralityArray])
     
@@ -1061,9 +1101,7 @@ def projectCentralitiesOntoProteinVMD(centrality, centralityArray, \
     VMD_FILE.close()
 
 
-def plotCentralities(centrality, centralityArray, \
-                                    out_file, \
-                                    selectedAtoms, scalingFactor):
+def plotCentralities(centrality, centralityArray, out_file, selectedAtoms, scalingFactor):
     """
     Plots the centrality values on a 2D graph. 
     The centrality values are plotted on a 2D png file.
@@ -1094,14 +1132,14 @@ def plotCentralities(centrality, centralityArray, \
 
     chains = Counter(selectedAtoms.getChids()).keys()
 
-    if((len(chains)>1)):
+    if len(chains) > 1:
         #Intra-chain
         for chain in chains:
             x = []
             y = []
             dst_file = out_file+'_' + centrality + '_chain'+chain
             for i in range(0, len(selectedAtoms.getResnums())):
-                if((selectedAtoms.getChids()[i] == chain)):
+                if selectedAtoms.getChids()[i] == chain:
                     x.append(selectedAtoms[i].getResnum())
                     y.append(centralityArray[i])
         
@@ -1140,7 +1178,6 @@ def plotCentralities(centrality, centralityArray, \
         plt.close('all')
 
 
-
 def centralityAnalysis(ccMatrix, valueFilter, out_file, centrality, selectedAtoms):
     """
     This function calculates various network (graph) centralities of a protein.
@@ -1173,7 +1210,6 @@ def centralityAnalysis(ccMatrix, valueFilter, out_file, centrality, selectedAtom
     """
     #Create your  graph
     dynNetwork = nx.Graph()
-    
 
     n = selectedAtoms.numAtoms()
 
@@ -1184,12 +1220,12 @@ def centralityAnalysis(ccMatrix, valueFilter, out_file, centrality, selectedAtom
     #Add all pairwise interactions greater than the valueFilter as edges.
     for i in range(n):
         for j in range(n):
-            if(fabs(ccMatrix[i][j])>valueFilter):
+            if fabs(ccMatrix[i][j]) > valueFilter:
                 dynNetwork.add_edge(i, j, weight=-log(fabs(ccMatrix[i][j])))
                 #dynNetwork.add_edge(i, j, weight=fabs(correlationArray[i][j]))
 
     ##########################Calculate degrees of all nodes
-    if ((centrality == 'degree')):
+    if centrality == 'degree':
         degreeResult = dynNetwork.degree(weight='weight')
         degreeResultList = []
         for i in range (0, len(degreeResult)):
@@ -1201,50 +1237,50 @@ def centralityAnalysis(ccMatrix, valueFilter, out_file, centrality, selectedAtom
         degreeFile = open(out_file+"_degree_value_filter"+"{:.2f}".format(valueFilter)+'.dat', "w") 
         for i in range(n): 
         #    print(str(i)+" "+(str(dynNetwork.degree(i, weight='weight'))))
-            degreeFile.write("{0:d}\t{1:.6f}\t{2:s}\n".\
-                format(selectedAtoms[i].getResnum(), degreeResult[i], selectedAtoms[i].getChid()))
+            degreeFile.write("{0:d}\t{1:.6f}\t{2:s}\n".format(selectedAtoms[i].getResnum(),
+                                                              degreeResult[i],
+                                                              selectedAtoms[i].getChid()))
         degreeFile.close()
         projectCentralitiesOntoProteinVMD(centrality, 
-                        degreeResultList, \
-                        out_file, \
-                        selectedAtoms, scalingFactor=1)
-        plotCentralities(centrality, \
-                        degreeResultList, \
-                        out_file, \
-                        selectedAtoms, scalingFactor=1)
+                                          degreeResultList,
+                                          out_file,
+                                          selectedAtoms,
+                                          scalingFactor=1)
+        plotCentralities(centrality,
+                         degreeResultList,
+                         out_file,
+                         selectedAtoms,
+                         scalingFactor=1)
 
 
     ##########################Calculate betweenness
-    elif ((centrality == 'betweenness')):
-        betweennessResult = nx.betweenness_centrality(dynNetwork, k=None, \
-            normalized=True, weight='weight', endpoints=False, seed=None)
+    elif centrality == 'betweenness':
+        betweennessResult = nx.betweenness_centrality(dynNetwork, k=None,
+                                                      normalized=True, weight='weight',
+                                                      endpoints=False, seed=None)
         print("@> Betweenness calculation finished!")
         # print(betweennessResult)
 
         #open a file for betweenness
-        betweennessFile = open(out_file+"_betweenness_value_filter"+"{:.2f}".\
-            format(valueFilter)+'.dat', "w") 
+        betweennessFile = open(out_file+"_betweenness_value_filter"+"{:.2f}".format(valueFilter)+'.dat', "w")
         
         for i in range(n): 
         #    print(str(i)+" "+(str(dynNetwork.betweenness(i, weight='weight'))))
-            betweennessFile.write("{0:d}\t{1:.6f}\t{2:s}\n".\
-                format(selectedAtoms[i].getResnum(), \
-                        betweennessResult[i], \
-                        selectedAtoms[i].getChid()))
+            betweennessFile.write("{0:d}\t{1:.6f}\t{2:s}\n".format(selectedAtoms[i].getResnum(),
+                                                                   betweennessResult[i],
+                                                                   selectedAtoms[i].getChid()))
         betweennessFile.close()
         # print(list(betweennessResult.values()))
         # print(len(list(betweennessResult.values())))
-        projectCentralitiesOntoProteinVMD(centrality, 
-                                list(betweennessResult.values()), \
-                                out_file, \
-                                selectedAtoms, scalingFactor=1000)
-        plotCentralities(centrality, \
-                        list(betweennessResult.values()), \
-                        out_file, \
-                        selectedAtoms, scalingFactor=1)
+        projectCentralitiesOntoProteinVMD(centrality,
+                                          list(betweennessResult.values()),
+                                          out_file, selectedAtoms, scalingFactor=1000)
+        plotCentralities(centrality,
+                         list(betweennessResult.values()),
+                         out_file, selectedAtoms, scalingFactor=1)
 
     ##########################Calculate closeness
-    elif ((centrality == 'closeness')):
+    elif centrality == 'closeness':
         closenessResult = nx.closeness_centrality(dynNetwork, u=None, distance='weight')
         print("@> Closeness calculation finished!")
 
@@ -1253,68 +1289,76 @@ def centralityAnalysis(ccMatrix, valueFilter, out_file, centrality, selectedAtom
 
         for i in range(n): 
         #    print(str(i)+" "+(str(dynNetwork.closeness(i, weight='weight'))))
-            closenessFile.write("{0:d}\t{1:.6f}\t{2:s}\n".\
-                format(selectedAtoms[i].getResnum(), closenessResult[i], selectedAtoms[i].getChid()))
+            closenessFile.write("{0:d}\t{1:.6f}\t{2:s}\n".format(selectedAtoms[i].getResnum(),
+                                                                 closenessResult[i],
+                                                                 selectedAtoms[i].getChid()))
         closenessFile.close()
 
-        projectCentralitiesOntoProteinVMD(centrality, 
-                        list(closenessResult.values()), \
-                        out_file, \
-                        selectedAtoms, scalingFactor=1)
-        plotCentralities(centrality, \
-                        list(closenessResult.values()), \
-                        out_file, \
-                        selectedAtoms, scalingFactor=1)
+        projectCentralitiesOntoProteinVMD(centrality,
+                                          list(closenessResult.values()),
+                                          out_file,
+                                          selectedAtoms, scalingFactor=1)
+        plotCentralities(centrality,
+                         list(closenessResult.values()),
+                         out_file,
+                         selectedAtoms, scalingFactor=1)
         
 
     ##########################Calculate current_flow_betweenness
-    elif ((centrality == 'current_flow_betweenness')):
-        current_flow_betweennessResult = nx.current_flow_betweenness_centrality(dynNetwork, normalized=True, weight='weight')
+    elif centrality == 'current_flow_betweenness':
+        current_flow_betweennessResult = nx.current_flow_betweenness_centrality(dynNetwork, normalized=True,
+                                                                                weight='weight')
         
         print("@> Current flow betweenness calculation finished!")
 
 
         #open a file for current_flow betweenness
-        current_flow_betweennessFile = open(out_file+"_current_flow_betweenness_value_filter"+"{:.2f}".format(valueFilter)+'.dat', "w") 
+        current_flow_betweennessFile = open(f"{out_file}_current_flow_betweenness_value_filter{valueFilter:.2f}.dat",
+                                            "w")
         
         for i in range(n): 
         #    print(str(i)+" "+(str(dynNetwork.betweenness(i, weight='weight'))))
-            current_flow_betweennessFile.write("{0:d}\t{1:.6f}\t{2:s}\n".format(selectedAtoms[i].getResnum(), current_flow_betweennessResult[i], selectedAtoms[i].getChid()))
+            current_flow_betweennessFile.write("{0:d}\t{1:.6f}\t{2:s}\n".format(selectedAtoms[i].getResnum(),
+                                                                                current_flow_betweennessResult[i],
+                                                                                selectedAtoms[i].getChid()))
         current_flow_betweennessFile.close()
 
-        projectCentralitiesOntoProteinVMD(centrality, 
-                        list(current_flow_betweennessResult.values()), \
-                        out_file, \
-                        selectedAtoms, scalingFactor=1000)
-        plotCentralities(centrality, \
-                        list(current_flow_betweennessResult.values()), \
-                        out_file, \
-                        selectedAtoms, scalingFactor=1)
+        projectCentralitiesOntoProteinVMD(centrality,
+                                          list(current_flow_betweennessResult.values()),
+                                          out_file,
+                                          selectedAtoms, scalingFactor=1000)
+        plotCentralities(centrality,
+                         list(current_flow_betweennessResult.values()),
+                         out_file,
+                         selectedAtoms, scalingFactor=1)
     ##########################Calculate closeness
-    elif ((centrality == 'current_flow_closeness')):
+    elif centrality == 'current_flow_closeness':
         current_flow_closenessResult = nx.current_flow_closeness_centrality(dynNetwork, weight='weight')
         
         print("@> Current flow closeness calculation finished!")
 
 
         #open a file for current_flow closeness
-        current_flow_closenessFile = open(out_file+"_current_flow_closeness_value_filter"+"{:.2f}".format(valueFilter)+'.dat', "w") 
+        current_flow_closenessFile = open(f"{out_file}_current_flow_closeness_value_filter{valueFilter:.2f}.dat",
+                                          "w")
         
         for i in range(n): 
         #    print(str(i)+" "+(str(dynNetwork.closeness(i, weight='weight'))))
-            current_flow_closenessFile.write("{0:d}\t{1:.6f}\t{2:s}\n".format(selectedAtoms[i].getResnum(), current_flow_closenessResult[i], selectedAtoms[i].getChid()))
+            current_flow_closenessFile.write("{0:d}\t{1:.6f}\t{2:s}\n".format(selectedAtoms[i].getResnum(),
+                                                                              current_flow_closenessResult[i],
+                                                                              selectedAtoms[i].getChid()))
         current_flow_closenessFile.close()
 
-        projectCentralitiesOntoProteinVMD(centrality, 
-                        list(current_flow_closenessResult.values()), \
-                        out_file, \
-                        selectedAtoms, scalingFactor=1000)
-        plotCentralities(centrality, \
-                        list(current_flow_closenessResult.values()), \
-                        out_file, \
+        projectCentralitiesOntoProteinVMD(centrality,
+                                          list(current_flow_closenessResult.values()),
+                                          out_file,
+                                          selectedAtoms, scalingFactor=1000)
+        plotCentralities(centrality,
+                        list(current_flow_closenessResult.values()),
+                        out_file,
                         selectedAtoms, scalingFactor=1)
     ##########################Calculate eigenvector centrality
-    elif ((centrality == 'eigenvector')):
+    elif centrality == 'eigenvector':
         eigenvectorResult = nx.eigenvector_centrality_numpy(dynNetwork, weight='weight')
         print("@> Eigenvector calculation finished!")
 
@@ -1323,94 +1367,21 @@ def centralityAnalysis(ccMatrix, valueFilter, out_file, centrality, selectedAtom
 
         for i in range(n): 
         #    print(str(i)+" "+(str(dynNetwork.closeness(i, weight='weight'))))
-            eigenvectorFile.write("{0:d}\t{1:.6f}\t{2:s}\n".\
-                format(selectedAtoms[i].getResnum(), eigenvectorResult[i], selectedAtoms[i].getChid()))
+            eigenvectorFile.write("{0:d}\t{1:.6f}\t{2:s}\n".format(selectedAtoms[i].getResnum(),
+                                                                   eigenvectorResult[i],
+                                                                   selectedAtoms[i].getChid()))
         eigenvectorFile.close()
 
         projectCentralitiesOntoProteinVMD(centrality, 
-                        list(eigenvectorResult.values()), \
-                        out_file, \
-                        selectedAtoms, scalingFactor=1)
-        plotCentralities(centrality, \
-                        list(eigenvectorResult.values()), \
-                        out_file, \
-                        selectedAtoms, scalingFactor=1)
+                                          list(eigenvectorResult.values()),
+                                          out_file,
+                                          selectedAtoms, scalingFactor=1)
+        plotCentralities(centrality,
+                         list(eigenvectorResult.values()),
+                         out_file,
+                         selectedAtoms, scalingFactor=1)
     else:
         print("ERROR: Unknown centrality selected! It can only be")
         print("       'degree', 'betweenness', 'closeness',")
         print("       'current_flow_betweenness' or 'current_flow_closeness'!")
         sys.exit(-1)
-
-
-def centralityAnalysisApp():
-    print("@> Running 'Network Analysis App'")
-    (inp_file, out_file, sel_type, pdb_file) = handle_arguments_mapAnalysisApp()
-    print("\n@> Input file   :", inp_file)
-    print("@> PDB file     :", pdb_file)
-    print("@> Data type    :", sel_type)    
-    print("@> Output       :", out_file)
-
-    ##########################################################################
-    #Read PDB file 
-    #TODO: This is the only place where I use Prody.
-    #Maybe, I can replace it with a library that only parses 
-    #PDB files. Prody does a lot more!
-    selectedAtoms = parsePDB(pdb_file, subset='ca')
-    
-    ##########################################################################
-    #Read data file and assign to a numpy array
-    if(sel_type=="dcc"):
-        ccMatrix=np.loadtxt(inp_file, dtype=float)
-    elif(sel_type=="absdcc"):
-        ccMatrix=np.absolute(np.loadtxt(inp_file, dtype=float))
-    elif(sel_type=="lmi"):
-        ccMatrix = convertLMIdata2Matrix(inp_file, writeAllOutput=True)
-    else:
-        print("Unknown matrix format!\n")
-        sys.exit(-1)
-
-    valueFilter=0.3
-    centralityAnalysis(ccMatrix, valueFilter, out_file, "degree", selectedAtoms)
-    centralityAnalysis(ccMatrix, valueFilter, out_file, "betweenness", selectedAtoms)
-    centralityAnalysis(ccMatrix, valueFilter, out_file, "closeness", selectedAtoms)
-    centralityAnalysis(ccMatrix, valueFilter, out_file, "current_flow_betweenness", selectedAtoms)
-    centralityAnalysis(ccMatrix, valueFilter, out_file, "current_flow_closeness", selectedAtoms)
-    centralityAnalysis(ccMatrix, valueFilter, out_file, "eigenvector", selectedAtoms)
-
-if __name__ == "__main__":
-    #TODO:
-    # There are a bunch of things one can add to this script:
-    # 1-Plot nDCC maps or normalized linear mutual information maps!: Done!
-    # 2-Project (high) correlations onto PDB structure.
-    #   a) as a Pymol script output
-    #   b) as a VMD script output: Done!
-    # 3-Project secondary structures on x and y axes of a correlation map.
-    # 4-Difference maps: Done!
-    # 5-Combining two correlation plots as upper triangle and lower triangle. 
-    # 6-Filter correlations lower than a certain (absolute) value.: Done!
-    # 7-Filter correlations for residues that are very close.: Done!
-    # 8-Add centrality calculations: Done
-    # 9-Add centrality visualizations. 
-    print("\n\n|------------------------------Correlation Plus------------------------------|")
-    print("|                                                                            |")
-    print("|   A set of utility programs to plot and analyze protein correlation maps.  |")
-    print("|               Copyright (c) 2019-2020 Mustafa Tekpinar                     |")
-    print("|                       Email: tekpinar@buffalo.edu                          |")
-    print("|                          Licence: MIT License                              |")
-    print("|--------------------------------------------------------------------------- |\n\n")
-    if((len(sys.argv)>1)):
-        if(sys.argv[1] == "mapAnalysisApp"):
-            mapAnalysisApp()
-        elif(sys.argv[1] == "diffMapApp"):
-            diffMapApp()
-        elif(sys.argv[1] == "centralityAnalysisApp"):
-            centralityAnalysisApp()
-        elif((sys.argv[1] == "-h") or ((sys.argv[1] == "--help"))):
-            usage_main()
-        else:
-            usage_main()
-            sys.exit(-1)
-    else:
-        usage_main()
-        sys.exit(-1)    
-    
