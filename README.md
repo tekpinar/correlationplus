@@ -74,5 +74,5 @@ pip install -e .
 
 ## Licensing
 
-correplationPlus is developed and released under Licence. 
-Please read to the LICENSE file to know more. 
+correplationPlus is developed and released under GNU Lesser GPL Licence. 
+Please read to the COPYING and COPYING.LESSER files to know more. 
