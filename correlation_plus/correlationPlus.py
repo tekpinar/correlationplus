@@ -899,9 +899,9 @@ def projectCorrelationsOntoProteinVMD(ccMatrix, vmd_out_file,
     #inter-chain (inter-domain) or intra-chain (intra-domain) distributions etc.
     #
     draw_string = "draw cylinder " \
-                  "[lindex [[atomselect top \"chain {0:s} and resid {1:d} and name CA\"] get {{x y z}}] 0]" \
-                  "[lindex [[atomselect top \"chain {2:s} and resid {3:d} and name CA\"] get {{x y z}}] 0]" \
-                  "radius {4:.3f}\n"
+                  " [lindex [[atomselect top \"chain {0:s} and resid {1:d} and name CA\"] get {{x y z}}] 0]" \
+                  " [lindex [[atomselect top \"chain {2:s} and resid {3:d} and name CA\"] get {{x y z}}] 0]" \
+                  " radius {4:.3f}\n"
     vdw_representation_string = "mol representation VDW 0.750000 50.000000\n" + \
                                 "mol material Glossy\n" + \
                                 "#mol color ColorID 7\n" + \
