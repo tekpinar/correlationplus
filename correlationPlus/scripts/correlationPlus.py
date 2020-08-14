@@ -27,9 +27,9 @@ import sys
 # cannot use relative imports
 # as it does not work in tests/run_test
 # ImportError: attempted relative import with no known parent package
-from correlation_plus.scripts.mapAnalysis import mapAnalysisApp
-from correlation_plus.scripts.diffMap import diffMapApp
-from correlation_plus.scripts.centralAnalysis import centralityAnalysisApp
+from correlationPlus.scripts.mapAnalysis import mapAnalysisApp
+from correlationPlus.scripts.diffMap import diffMapApp
+from correlationPlus.scripts.centralAnalysis import centralityAnalysisApp
 
 #TODO:
 # There are a bunch of things one can add to this script:

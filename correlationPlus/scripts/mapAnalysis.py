@@ -30,9 +30,9 @@ from collections import Counter
 import numpy as np
 from prody import parsePDB
 
-from correlation_plus.correlationPlus import overallCorrelationMap, convertLMIdata2Matrix, distanceDistribution
-from correlation_plus.correlationPlus import intraChainCorrelationMaps, interChainCorrelationMaps
-from correlation_plus.correlationPlus import filterCorrelationMapByDistance, projectCorrelationsOntoProteinVMD
+from correlationPlus.mapAnalysis import overallCorrelationMap, convertLMIdata2Matrix, distanceDistribution
+from correlationPlus.mapAnalysis import intraChainCorrelationMaps, interChainCorrelationMaps
+from correlationPlus.mapAnalysis import filterCorrelationMapByDistance, projectCorrelationsOntoProteinVMD
 
 
 def usage_mapAnalysisApp():

@@ -22,35 +22,20 @@
 # along with correlationPlus.  If not, see <https://www.gnu.org/licenses/>.   #
 ###############################################################################
 
+"""
+Program Name: Cross-correlation Plotting Program (I'll find a fancy name later!)
+Author      : Mustafa TEKPINAR
+Email       : tekpinar@buffalo.edu
 
-import pkgutil
-import inspect
-from pathlib import Path
-from importlib import import_module
+Purpose     : This is a small program to automatize plotting of normalized
+dynamical cross-correlations obtained from molecular dynamics simulations or
+elastic network models. This script can be useful if you have multiple
+chains in a structure and you want to see intra-chain and inter-chain
+correlations more clearly. I just didn't like the way current programs are
+doing it and I wrote something for myself. I hope it may help the others also!
+"""
 
-
-def _import_public_function():
-    """
-    import all function in al modules (except itself and scripts) from this package
-    and inject them in the package namespace
-    so this function can be used like this:
-        import correlation_plus
-        correlation_plus.findCommonCorePDB(...
-
-    or ::
-
-        from correlation_plus import *
-        findCommonCorePDB(...
-    """
-    for (_, name, _) in pkgutil.iter_modules([Path(__file__).parent]):
-        if not (name.startswith('__') or name == 'scripts'):
-            imported_module = import_module('.' + name, package=__name__)
-            pub_funcs = [(f_name, f) for f_name, f in inspect.getmembers(imported_module, inspect.isfunction)
-                         if not f_name.startswith('_')]
-            for f_name, func in pub_funcs:
-                globals()[f_name] = func
-
+__all__ = ['mapAnalysis', 'diffMap', 'centralityAnalysis']
 
 __version__ = '0.0.5'
 
-_import_public_function()

@@ -28,8 +28,10 @@ import sys
 import numpy as np
 from prody import parsePDB
 
+from correlationPlus.mapAnalysis import convertLMIdata2Matrix
+from correlationPlus.centralityAnalysis import centralityAnalysis
+
 from .mapAnalysis import handle_arguments_mapAnalysisApp
-from correlation_plus.correlationPlus import convertLMIdata2Matrix, centralityAnalysis
 
 
 def centralityAnalysisApp():

@@ -29,9 +29,8 @@ from collections import Counter
 import numpy as np
 from prody import parsePDB
 
-from correlation_plus.correlationPlus import convertLMIdata2Matrix, overallUniformDifferenceMap
-from correlation_plus.correlationPlus import intraChainCorrelationMaps, interChainCorrelationMaps
-from correlation_plus.correlationPlus import overallNonUniformDifferenceMap
+from correlationPlus.mapAnalysis import convertLMIdata2Matrix, intraChainCorrelationMaps, interChainCorrelationMaps
+from correlationPlus.diffMap import overallUniformDifferenceMap, overallNonUniformDifferenceMap
 
 
 def usage_diffMaps():
