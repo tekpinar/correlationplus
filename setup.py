@@ -24,7 +24,7 @@
 
 from setuptools import setup, find_packages
 
-from correlation_plus import __version__ as cp_vers
+from correlationPlus import __version__ as cp_vers
 
 setup(name='correlationPlus',
       version=cp_vers,
@@ -54,7 +54,7 @@ setup(name='correlationPlus',
       # file where some variables must be fixed by install
       entry_points={
           'console_scripts': [
-              'correlationPlus=correlation_plus.scripts.correlationPlus:main'
+              'correlationPlus=correlationPlus.scripts.correlationPlus:main'
           ]
       }
       )
