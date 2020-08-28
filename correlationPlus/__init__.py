@@ -22,43 +22,20 @@
 # along with correlationPlus.  If not, see <https://www.gnu.org/licenses/>.   #
 ###############################################################################
 
-
-import os
-
 """
-Unfortunately, this is not the most systematic way of writing unit tests.
-But I needed a quick and dirty way of checking integrity of the apps.
-So, I will do it here by checking diffs of output images.
+Program Name: Cross-correlation Plotting Program (I'll find a fancy name later!)
+Author      : Mustafa TEKPINAR
+Email       : tekpinar@buffalo.edu
+
+Purpose     : This is a small program to automatize plotting of normalized
+dynamical cross-correlations obtained from molecular dynamics simulations or
+elastic network models. This script can be useful if you have multiple
+chains in a structure and you want to see intra-chain and inter-chain
+correlations more clearly. I just didn't like the way current programs are
+doing it and I wrote something for myself. I hope it may help the others also!
 """
 
+__all__ = ['mapAnalysis', 'diffMap', 'centralityAnalysis']
 
-def runTests():
-    # Test correlationMapApp for nDCC maps
-    prefix = os.path.normpath(os.path.join(__file__, '..', '..'))
-    os.system(f"python {prefix}/correlation_plus/scripts/correlationPlus.py mapAnalysis "
-              f"-i {prefix}/examples/6fl9_just_prot_anm_100_modes_rc_15_cross-correlations.txt "
-              f"-p {prefix}/examples/6fl9_centeredOrientedAligned2Z.pdb "
-              "-s absdcc")
+__version__ = '0.1.0'
 
-    # Test correlationMapApp for absolute nDCC maps
-    # os.system()
-
-    # Test correlationMapApp for LMI maps
-    # os.system()
-
-    # Test diffMapApp for LMI maps
-    os.system(f"python {prefix}/correlation_plus/scripts/correlationPlus.py diffMap "
-              f"-i {prefix}/examples/6fl9_rc15_scalCoeff1_100_modes_lmi_v2.dat "
-              f"-j {prefix}/examples/zacharias_rc15_scalCoeff15_100_modes_lmi.dat "
-              f"-p {prefix}/examples/6fl9_centeredOrientedAligned2Z.pdb "
-              "-t lmi")
-
-
-if __name__ == "__main__":
-    import sys
-    COR_PLUS_HOME = os.path.abspath(os.path.join(__file__, '..', '..'))
-    old_path = sys.path
-    if COR_PLUS_HOME not in sys.path:
-        sys.path.insert(0, COR_PLUS_HOME)
-    runTests()
-    sys.path = old_path
