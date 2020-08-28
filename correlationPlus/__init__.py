@@ -37,5 +37,5 @@ doing it and I wrote something for myself. I hope it may help the others also!
 
 __all__ = ['mapAnalysis', 'diffMap', 'centralityAnalysis']
 
-__version__ = '0.0.5'
+__version__ = '0.1.0'
 
