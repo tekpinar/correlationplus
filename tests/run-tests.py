@@ -35,24 +35,31 @@ So, I will do it here by checking diffs of output images.
 def runTests():
     # Test correlationMapApp for nDCC maps
     prefix = os.path.normpath(os.path.join(__file__, '..', '..'))
-    os.system(f"python {prefix}/correlation_plus/scripts/correlationPlus.py mapAnalysis "
+    # Test mapAnalysisApp for absolute nDCC maps
+    os.system(f"correlationPlus mapAnalysis "
               f"-i {prefix}/examples/6fl9_just_prot_anm_100_modes_rc_15_cross-correlations.txt "
               f"-p {prefix}/examples/6fl9_centeredOrientedAligned2Z.pdb "
-              "-s absdcc")
+               "-t absndcc")
 
-    # Test correlationMapApp for absolute nDCC maps
-    # os.system()
+    # Test mapAnalysisApp for LMI maps
+    os.system(f"correlationPlus mapAnalysis "
+              f"-i {prefix}/examples/6fl9_rc15_scalCoeff1_100_modes_lmi_v2.dat "
+              f"-p {prefix}/examples/6fl9_centeredOrientedAligned2Z.pdb "
+              "-t lmi")
 
-    # Test correlationMapApp for LMI maps
-    # os.system()
-
+ 
     # Test diffMapApp for LMI maps
-    os.system(f"python {prefix}/correlation_plus/scripts/correlationPlus.py diffMap "
+    os.system(f"correlationPlus diffMap "
               f"-i {prefix}/examples/6fl9_rc15_scalCoeff1_100_modes_lmi_v2.dat "
               f"-j {prefix}/examples/zacharias_rc15_scalCoeff15_100_modes_lmi.dat "
               f"-p {prefix}/examples/6fl9_centeredOrientedAligned2Z.pdb "
               "-t lmi")
 
+    # Test centralityAnalysisApp for LMI maps
+    os.system(f"correlationPlus centralityAnalysis "
+              f"-i {prefix}/examples/6fl9_rc15_scalCoeff1_100_modes_lmi_v2.dat "
+              f"-p {prefix}/examples/6fl9_centeredOrientedAligned2Z.pdb "
+              "-t lmi")
 
 if __name__ == "__main__":
     import sys

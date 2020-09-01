@@ -1,40 +1,72 @@
 # CorrelationPlus
 
-A Python script to plot and analyze dynamical correlations of proteins.
+A Python API to plot and analyze dynamical correlations of proteins.
 
-CorrelationPlus is a script that you can use to plot and analyze 
+CorrelationPlus contains three scripts that you can use to plot and analyze 
 dynamical correlations for proteins and biological macromolecules. 
 These correlations can be dynamical cross-correlations or linear mutual
 information. 
 
-This program is more useful if your structure contains multiple
+mapAnalysis app plots and produces analysis scripts for 
+correlation maps. It can be more useful if your structure contains multiple
 chains. The program will produce an output for overall structure 
 and all individual intra-chain correlations, if exist. Moreover,  
 the program will give you inter-chain correlations, if you have 
-more than one chain. 
+more than one chain. The program only requires a pdb file and a 
+correlation data matrix. The correlation data has to be in matrix format, 
+where only A(i,j) values are listed in a square matrix format. You can 
+analyze the correlations with VMD just by loading the tcl files produced by
+mapAnalysis module/ 
 
-The program only requires a pdb file and a correlation data matrix. 
-The correlation data has to be in matrix format, where only A(i,j)
-values are listed in a square matrix format. 
-
-## Quick Start
+## A Quick Start with correlationPlus scripts
 
 To run a simple example, go to examples folder and then run:
-This will produce plot absolute values of dynamical cross correlations.
 
 ```bash
-mapAnalysis -i 6fl9_just_prot_anm_100_modes_rc_15_cross-correlations.txt -p 6fl9_centeredOrientedAligned2Z.pdb -s absdcc
+correlationPlus mapAnalysis -i 6fl9_just_prot_anm_100_modes_rc_15_cross-correlations.txt -p 6fl9_centeredOrientedAligned2Z.pdb -t absndcc
+```
+This will produce plots of absolute values of dynamical cross correlations.
+
+Sometimes, we may need to plot difference map of two correlation maps. 
+For example, you may want to see the differences of linear mutual information 
+maps of produced with two different methods, conditions etc.
+This can be produced with diffMap app as follows:  
+
+```bash
+correlationPlus diffMap -i 6fl9_rc15_scalCoeff1_100_modes_lmi_v2.dat -j zacharias_rc15_scalCoeff15_100_modes_lmi.dat -p 6fl9_centeredOrientedAligned2Z.pdb -t lmi
 ```
 
-Sometimes, we may need to plot difference map of two correlation maps:
+Finally, correlationPlus can do centrality analysis for your protein
+via its centralityAnalysis app.
 
-Finally, correlationPlus can do centrality analysis for your protein.
 It computes degree, closeness, betweenness, current flow closeness, 
 current flow betweenness and eigenvector centrality.
 
 ```bash
-centralityAnalysis -i 6fl9_just_prot_anm_100_modes_rc_15_cross-correlations.txt -p 6fl9_centeredOrientedAligned2Z.pdb -s absdcc
+correlationPlus centralityAnalysis -i 6fl9_just_prot_anm_100_modes_rc_15_cross-correlations.txt -p 6fl9_centeredOrientedAligned2Z.pdb -t absndcc
 ```
+
+## Ipython Interface
+For a detailed analysis, script interfaces provided by mapAnalysis, diffMap and 
+centralityAnalysis apps may not be sufficient. Therefore, you can use IPython 
+to load the functions and do a detailed analysis as follows. 
+
+```
+from correlationPlus.mapAnalysis import *
+```
+ 
+
+You can get help for individual functions with
+
+```
+help(intraChainCorrelationMaps) 
+
+```
+You can different valueFilters, distanceFilters for your analysis. 
+Even you can scan a range of values by calling the functions in a 
+loop. 
+
+
 
 ## Installation
 
