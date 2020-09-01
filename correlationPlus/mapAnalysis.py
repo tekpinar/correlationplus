@@ -32,12 +32,21 @@ from prody import buildDistMatrix
 
 
 def cmap_discretize(cmap, N):
-    """Return a discrete colormap from the continuous colormap cmap.
+    """
+        Creates a discrete colormap from the continuous colormap cmap.
 
-        cmap: colormap instance, eg. cm.jet.
-        N: number of colors.
+    Parameters
+    ----------
 
+    cmap: colormap instance, eg. cm.jet.
+    N: number of colors.
+
+    Returns
+    -------
+    cmap: A discrete color map.     
+    
     Example
+    -------
         x = resize(arange(100), (5,100))
         djet = cmap_discretize(cm.jet, 5)
         imshow(x, cmap=djet)
@@ -56,6 +65,26 @@ def cmap_discretize(cmap, N):
 
 
 def convertLMIdata2Matrix(inp_file, writeAllOutput: bool):
+    """
+        This function parses LMI matrix produced in g_correlation
+        and returns a numpy array.
+
+    Parameters
+    ----------
+
+    inp_file: string
+        LMI file to read.
+ 
+    writeAllOutput: bool
+        If True, an output file for the LMI values will be written in matrix 
+        format. The matrix does not contain residue names etc.  
+
+    Returns
+    -------
+    cc: A numpy array of float value arrays.
+        LMI values in matrix format.  
+
+    """
     data_file = open(inp_file, 'r')
 
     allLines = data_file.readlines()
@@ -90,13 +119,41 @@ def convertLMIdata2Matrix(inp_file, writeAllOutput: bool):
 def filterCorrelationMapByDistance(ccMatrix, out_file, title,
                                    selectedAtoms, distanceValue,
                                    absoluteValues: bool, writeAllOutput: bool):
+
+    
     """
-    If residues are closer to each other than a certain distance
+        If residues are closer to each other than a certain distance
     (distanceValue), make these correlations zero. This filter can be useful
-    to get rid of short distance correlation for visualization purposes.
+    to get rid of high short distance correlations for visualization purposes.
     This function returns a filtered ccMatrix.
+
+    Parameters
+    ----------
+    ccMatrix: A numpy square matrix of floats
+        Cross-correlation matrix.
+    out_file: string
+        prefix for the output png files.
+        This prefix will get _overall.png extension.
+    title: string
+        Title of the figure.
+    selectedAtoms: prody object
+        A list of -typically CA- atoms selected from the parsed PDB file.
+    distanceValue: float
+        A distance value in Angstrom unit. For example, it is good to remove 
+        high correlations for residues within less 5.0 Angstrom distance 
+        to have a clear visualization.
+    absoluteValues: bool
+        If True, an absolute values file will be written. 
+    writeAllOutput: bool
+        If True, an output file for distances and correlation values can
+        be written. This can be useful to see their distribution as well as 
+        individual values. 
+
+    Returns
+    -------
+    Nothing
     """
-    print("@> Filtering correlations lower than " + str(distanceValue) + " Angstrom")
+    print("@> Filtering correlations lower than " + str(distanceValue) + " Angstrom.")
     # Calculate distance matrix
     dist_matrix = buildDistMatrix(selectedAtoms)
 
@@ -141,7 +198,7 @@ def overallCorrelationMap(ccMatrix,
     Parameters
     ----------
     ccMatrix: A numpy square matrix of floats
-    minColorBarLimit: unsigned int
+    minColorBarLimit: signed int
         Mostly, -1 or 0.
     maxColorBarLimit: unsigned int
         Mostly, 1.
@@ -285,13 +342,36 @@ def intraChainCorrelationMaps(ccMatrix,
                               minColorBarLimit, maxColorBarLimit,
                               out_file, title, selectedAtoms, saveMatrix):
     """
-    Plot intra-chain correlations if there are at least two chains!
+        Plot intra-chain correlations to different png files,
+        if there are at least two chains!
+
+    Parameters
+    ----------
+    ccMatrix: A numpy square matrix of floats
+        Cross-correlation matrix.
+    minColorBarLimit: signed int
+        Mostly, -1 or 0.
+    maxColorBarLimit: unsigned int
+        Mostly, 1.
+    out_file: string
+        prefix for the output png files.
+        This prefix will get _overall.png extension.
+    title: string
+        Title of the figure.
+    selectedAtoms: prody object
+        A list of -typically CA- atoms selected from the parsed PDB file.
+    saveMatrix: bool
+        If True, an output file for the correlations will be written
+        be written. 
+
+    Returns
+    -------
+    Nothing
     """
 
     myList = list(Counter(selectedAtoms.getChids()).keys())
     # print(myList)
 
-    # selection_tick_labels=[]
     selection_reorder = []
     selection_tick_labels = []
     selection_tick_labels.append(str(selectedAtoms.getResnums()[0]))
@@ -383,16 +463,40 @@ def intraChainCorrelationMaps(ccMatrix,
         plt.close('all')
 
 
-def interChainCorrelationMaps(ccMatrix, minColorBarLimit,
-                              maxColorBarLimit, out_file, title, selectedAtoms, saveMatrix):
+def interChainCorrelationMaps(ccMatrix, 
+                              minColorBarLimit, maxColorBarLimit, 
+                              out_file, title, selectedAtoms, saveMatrix):
     """
-    Plot inter-chain correlations if there are at least two chains!
+        Plot inter-chain correlations to different png files,
+        if there are at least two chains!
+
+    Parameters
+    ----------
+    ccMatrix: A numpy square matrix of floats
+        Cross-correlation matrix.
+    minColorBarLimit: signed int
+        Mostly, -1 or 0.
+    maxColorBarLimit: unsigned int
+        Mostly, 1.
+    out_file: string
+        prefix for the output png files.
+        This prefix will get _overall.png extension.
+    title: string
+        Title of the figure.
+    selectedAtoms: prody object
+        A list of -typically CA- atoms selected from the parsed PDB file.
+    saveMatrix: bool
+        If True, an output file for the correlations will be written
+        be written. 
+
+    Returns
+    -------
+    Nothing
     """
     from mpl_toolkits.axes_grid1 import make_axes_locatable
     myList = list(Counter(selectedAtoms.getChids()).keys())
     # print(myList)
     n = len(ccMatrix)
-    # selection_tick_labels=[]
     selection_reorder = []
     selection_tick_labels = []
     selection_tick_labels.append(str(selectedAtoms.getResnums()[0]))
@@ -505,6 +609,35 @@ def interChainCorrelationMaps(ccMatrix, minColorBarLimit,
 
 def distanceDistribution(ccMatrix, out_file, title, selectedAtoms,
                          absoluteValues: bool, writeAllOutput: bool):
+    """
+        Plot inter-chain correlations vs distances to a png files.
+
+    Parameters
+    ----------
+    ccMatrix: A numpy square matrix of floats
+        Cross-correlation matrix.
+    minColorBarLimit: signed int
+        Mostly, -1 or 0.
+    maxColorBarLimit: unsigned int
+        Mostly, 1.
+    out_file: string
+        prefix for the output png files.
+        This prefix will get _overall.png extension.
+    title: string
+        Title of the figure.
+    selectedAtoms: prody object
+        A list of -typically CA- atoms selected from the parsed PDB file.
+    absoluteValues: bool
+        If True, an absolute values of correlations will be consideered. 
+    writeAllOutput: bool
+        If True, an output file for distances and correlations. 
+        This can be useful to see their distribution as well as 
+        individual values.  
+
+    Returns
+    -------
+    Nothing
+    """
     # Calculate distance matrix
     dist_matrix = buildDistMatrix(selectedAtoms)
 
@@ -514,8 +647,6 @@ def distanceDistribution(ccMatrix, out_file, title, selectedAtoms,
 
     x = dist_matrix.flatten()
     y = ccMatrix.flatten()
-
-    # print(len(y))
 
     # fig, ax = plt.subplots()
     plt.subplots()
@@ -563,19 +694,42 @@ def projectCorrelationsOntoProteinVMD(ccMatrix, vmd_out_file,
                                       absoluteValues: bool,
                                       writeAllOutput: bool):
     """
-    This function writes tcl files that contains the correlations between
+        This function writes tcl files that contains the correlations between
     residues i and j. It produces three output files:
     1-A general file that contains all correlation.
-    2-(If there are at least two chains) A file that contains interchain
+    2-(If there are at least two chains) Files that contain interchain
       correlations.
-    3-(If there are at least two chains) A file that contains intrachain
-      correlations.
+    3-(If there are at least two chains) Files that contain intrachain
+      correlations of individual chains.
     The output files can be visualized with VMD (Visual Molecular
     dynamics) program as follows.
     i) Load your pdb file, whether via command line or graphical interface.
     ii) Go to Extemsions -> Tk Console and then
     iii) source vmd-output-general.tcl
     It can take some to load the general script.
+
+    Parameters
+    ----------
+    ccMatrix: A numpy square matrix of floats
+        Cross-correlation matrix.
+    vmd_out_file: string
+        prefix for the output tcl files.
+    selectedAtoms: prody object
+        A list of -typically CA- atoms selected from the parsed PDB file.
+    valueFilter: float
+        Correlation values smaller than this threshold will not be written
+        for visualization. For example, 0.3 is a good threshold for normalized
+        dynamical cross-correlation data. 
+    absoluteValues: bool
+        If True, an absolute values of correlations will be consideered. 
+    writeAllOutput: bool
+        If True, an output file for distances and correlations. 
+        This can be useful to see their distribution as well as 
+        individual values.  
+
+    Returns
+    -------
+    Nothing
     """
     # Calculate distance matrix
     dist_matrix = buildDistMatrix(selectedAtoms)
@@ -590,7 +744,7 @@ def projectCorrelationsOntoProteinVMD(ccMatrix, vmd_out_file,
     # print(len(y))
 
     distanceFilter = 0.5
-    # valueFilter = 0.5
+
     # Write output in VMD format
     # Writing the output is very important for further analyses such as
     # inter-chain (inter-domain) or intra-chain (intra-domain) distributions etc.
