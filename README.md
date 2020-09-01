@@ -10,15 +10,14 @@ information.
 mapAnalysis app plots and produces analysis scripts for 
 correlation maps. It can be more useful if your structure contains multiple
 chains. The program will produce an output for overall structure 
-and all individual intra-chain correlations, if exist. Moreover,  
-the program will give you inter-chain correlations, if you have 
-more than one chain. The program only requires a pdb file and a 
-correlation data matrix. The correlation data has to be in matrix format, 
-where only A(i,j) values are listed in a square matrix format. You can 
-analyze the correlations with VMD just by loading the tcl files produced by
-mapAnalysis module/ 
+and all individual intra-chain correlations, if exist. Moreover, the program 
+will give you inter-chain correlations, if you have more than one chain. 
+The program only requires a pdb file and a correlation data matrix. 
+The correlation data has to be in matrix format, where only A(i,j) values are 
+listed in a square matrix format. You can analyze the correlations with VMD 
+just by loading the tcl files produced by mapAnalysis module. 
 
-## A Quick Start with correlationPlus scripts
+## A Quick Start with correlationPlus Scripts
 
 To run a simple example, go to examples folder and then run:
 
@@ -62,10 +61,9 @@ You can get help for individual functions with
 help(intraChainCorrelationMaps) 
 
 ```
-You can different valueFilters, distanceFilters for your analysis. 
+You can check different valueFilters, distanceFilters for your analysis. 
 Even you can scan a range of values by calling the functions in a 
 loop. 
-
 
 
 ## Installation
@@ -99,7 +97,7 @@ cd correlationPlus
 source bin/activate
 mkdir src
 cd src
-git clone git@github.com:tekpinar/correlationPlus.git # or https://github.com/tekpinar/correlationPlus.git
+git clone https://github.com/tekpinar/correlationPlus.git # or git@github.com:tekpinar/correlationPlus.git
 cd correlationPlus
 pip install -e .
 ```
