@@ -23,19 +23,18 @@
 ###############################################################################
 
 """
-Program Name: Cross-correlation Plotting Program (I'll find a fancy name later!)
+Program Name: correlationPlus
 Author      : Mustafa TEKPINAR
 Email       : tekpinar@buffalo.edu
 
-Purpose     : This is a small program to automatize plotting of normalized
+Purpose     : This is a Python API to automatize plotting of normalized
 dynamical cross-correlations obtained from molecular dynamics simulations or
-elastic network models. This script can be useful if you have multiple
+elastic network models. This script can be more useful if you have multiple
 chains in a structure and you want to see intra-chain and inter-chain
-correlations more clearly. I just didn't like the way current programs are
-doing it and I wrote something for myself. I hope it may help the others also!
+correlations more clearly. 
 """
 
 __all__ = ['mapAnalysis', 'diffMap', 'centralityAnalysis']
 
-__version__ = '0.1.0'
+__version__ = '0.1.1'
 

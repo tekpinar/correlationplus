@@ -4,7 +4,7 @@
 # Authors: Mustafa Tekpinar                                                   #
 # Copyright Mustafa Tekpinar 2017-2018                                        #
 # Copyright CNRS-UMR3528, 2019                                                #
-# Copyright Institut Pasteur Paris, 2020                                       #
+# Copyright Institut Pasteur Paris, 2020                                      #
 #                                                                             #
 # This file is part of correlationPlus.                                       #
 #                                                                             #
@@ -46,7 +46,7 @@ Arguments: -i: The first file containing normalized dynamical cross correlations
            -p: PDB file of the protein. (Mandatory)")
            -q: A second PDB file for the other conformation if residues numbers are not same in two conformations. (Optional)
            -t: It can be ndcc, lmi or absndcc (absolute values of ndcc). Default value is ndcc (Optional)
-           -o: This will be your output file. Output figures are in png format. (Optional)
+           -o: This will be your output file prefix. Output figures are in png format. (Optional)
 
 """)
 

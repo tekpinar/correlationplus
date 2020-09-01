@@ -43,7 +43,7 @@ from correlationPlus.scripts.centralAnalysis import centralityAnalysisApp
 # 6-Filter correlations lower than a certain (absolute) value.: Done!
 # 7-Filter correlations for residues that are very close.: Done!
 # 8-Add centrality calculations: Done
-# 9-Add centrality visualizations.
+# 9-Add centrality visualizations: Done
 
 
 def usage_main():
