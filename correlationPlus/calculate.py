@@ -2,8 +2,6 @@ from prody import calcANM, calcGNM
 from prody import calcCrossCorr
 from numpy import savetxt
 
-
-
 def calcENMnDCC(selectedAtoms, saveMatrix=True, out_file="nDCC.dat", method="ANM", nmodes=100):
     """
         Calculate normalized dynamical cross-correlations based on elastic 

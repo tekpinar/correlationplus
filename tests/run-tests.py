@@ -1,10 +1,10 @@
 ###############################################################################
-# correlationPlus - Python module to plot dynamical correlations maps         #
-#                   for proteins.                                             #
+# correlationPlus - A Python package to calculate, visualize and analyze      #
+#                    dynamical correlations maps of proteins.                 #
 # Authors: Mustafa Tekpinar                                                   #
 # Copyright Mustafa Tekpinar 2017-2018                                        #
 # Copyright CNRS-UMR3528, 2019                                                #
-# Copyright Institut Pasteur Paris, 2020                                       #
+# Copyright Institut Pasteur Paris, 2020                                      #
 #                                                                             #
 # This file is part of correlationPlus.                                       #
 #                                                                             #
@@ -22,7 +22,6 @@
 # along with correlationPlus.  If not, see <https://www.gnu.org/licenses/>.   #
 ###############################################################################
 
-
 import os
 
 """
@@ -35,6 +34,18 @@ So, I will do it here by checking diffs of output images.
 def runTests():
     # Test correlationMapApp for nDCC maps
     prefix = os.path.normpath(os.path.join(__file__, '..', '..'))
+
+    # Test calculate module to produce nDCC maps with GNM.
+    os.system(f"correlationPlus calculate "
+              f"-p {prefix}/examples/6fl9_centeredOrientedAligned2Z.pdb "
+               "-m GNM -o gnm-ndcc.dat")
+
+    # Test calculate module to produce nDCC maps with ANM.
+    os.system(f"correlationPlus calculate "
+              f"-p {prefix}/examples/6fl9_centeredOrientedAligned2Z.pdb "
+               "-m ANM -o anm-ndcc.dat")
+
+
     # Test mapAnalysisApp for absolute nDCC maps
     os.system(f"correlationPlus mapAnalysis "
               f"-i {prefix}/examples/6fl9_just_prot_anm_100_modes_rc_15_cross-correlations.txt "

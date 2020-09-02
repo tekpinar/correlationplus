@@ -105,7 +105,7 @@ def calculateApp():
 
     #Read pdb file
     selectedAtoms = parsePDB(pdb_file, subset='ca')
-    calcENMnDCC(selectedAtoms, saveMatrix=True, out_file="correlationMap.dat", method=method, nmodes=100)
+    calcENMnDCC(selectedAtoms, saveMatrix=True, out_file=out_file, method=method, nmodes=100)
     print("@> Correlation calculation finished succesfully!")
 
 if __name__ == "__main__":

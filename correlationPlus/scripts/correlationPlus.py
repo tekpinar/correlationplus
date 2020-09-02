@@ -1,10 +1,10 @@
 ###############################################################################
-# correlationPlus - Python module to plot dynamical correlations maps         #
-#                   for proteins.                                             #
+# correlationPlus - A Python package to calculate, visualize and analyze      #
+#                    dynamical correlations maps of proteins.                 #
 # Authors: Mustafa Tekpinar                                                   #
 # Copyright Mustafa Tekpinar 2017-2018                                        #
 # Copyright CNRS-UMR3528, 2019                                                #
-# Copyright Institut Pasteur Paris, 2020                                       #
+# Copyright Institut Pasteur Paris, 2020                                      #
 #                                                                             #
 # This file is part of correlationPlus.                                       #
 #                                                                             #
@@ -56,8 +56,8 @@ Example usage:
 
 correlationPlus -h
 
-CorrelationPlus contains three/two analysis apps:
-
+CorrelationPlus contains four analysis apps:
+ - calculate
  - mapAnalysis
  - diffMap
  - centralityAnalysis
@@ -74,7 +74,7 @@ def main():
 
 |------------------------------Correlation Plus------------------------------|
 |                                                                            |
-|   A set of utility programs to calculate, visualize and analyze protein    |
+|        A Python package to calculate, visualize and analyze protein        |
 |                           correlation maps.                                |
 |                   Copyright Mustafa Tekpinar 2017-2018                     |
 |                   Copyright CNRS-UMR3528, 2019                             |
@@ -89,7 +89,7 @@ def main():
     if len(sys.argv) > 1:
         if sys.argv[1] == "calculate":
             calculateApp()
-        if sys.argv[1] == "mapAnalysis":
+        elif sys.argv[1] == "mapAnalysis":
             mapAnalysisApp()
         elif sys.argv[1] == "diffMap":
             diffMapApp()
