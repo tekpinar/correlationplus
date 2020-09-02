@@ -27,6 +27,7 @@ import sys
 # cannot use relative imports
 # as it does not work in tests/run_test
 # ImportError: attempted relative import with no known parent package
+from correlationPlus.scripts.calculate import calculateApp
 from correlationPlus.scripts.mapAnalysis import mapAnalysisApp
 from correlationPlus.scripts.diffMap import diffMapApp
 from correlationPlus.scripts.centralAnalysis import centralityAnalysisApp
@@ -73,7 +74,8 @@ def main():
 
 |------------------------------Correlation Plus------------------------------|
 |                                                                            |
-|   A set of utility programs to plot and analyze protein correlation maps.  |
+|   A set of utility programs to calculate, visualize and analyze protein    |
+|                           correlation maps.                                |
 |                   Copyright Mustafa Tekpinar 2017-2018                     |
 |                   Copyright CNRS-UMR3528, 2019                             |
 |                   Copyright Institut Pasteur Paris, 2020                   |
@@ -85,6 +87,8 @@ def main():
 """)
 
     if len(sys.argv) > 1:
+        if sys.argv[1] == "calculate":
+            calculateApp()
         if sys.argv[1] == "mapAnalysis":
             mapAnalysisApp()
         elif sys.argv[1] == "diffMap":

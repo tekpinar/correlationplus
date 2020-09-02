@@ -1,6 +1,6 @@
 ###############################################################################
-# correlationPlus - Python module to plot dynamical correlations maps         #
-#                   for proteins.                                             #
+# correlationPlus - A Python package to calculate, visualize and analyze      #
+#                    dynamical correlations maps of proteins.                 #
 # Authors: Mustafa Tekpinar                                                   #
 # Copyright Mustafa Tekpinar 2017-2018                                        #
 # Copyright CNRS-UMR3528, 2019                                                #

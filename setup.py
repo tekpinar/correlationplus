@@ -1,10 +1,10 @@
 ###############################################################################
-# correlationPlus - Python module to plot dynamical correlations maps         #
-#                   for proteins.                                             #
+# correlationPlus - A Python package to calculate, visualize and analyze      #
+#                    dynamical correlations maps of proteins.                 #
 # Authors: Mustafa Tekpinar                                                   #
 # Copyright Mustafa Tekpinar 2017-2018                                        #
 # Copyright CNRS-UMR3528, 2019                                                #
-# Copyright Institut Pasteur Paris, 2020                                       #
+# Copyright Institut Pasteur Paris, 2020                                      #
 #                                                                             #
 # This file is part of correlationPlus.                                       #
 #                                                                             #
@@ -28,7 +28,7 @@ from correlationPlus import __version__ as cp_vers
 
 setup(name='correlationPlus',
       version=cp_vers,
-      description=" Python module to plot dynamical correlations maps for proteins.",
+      description=" Python package to plot and analyze dynamical correlations maps of proteins.",
       long_description=open('README.md').read(),
       author="Mustafa Tekpinar",
       author_email="tekpinar@buffalo.edu",
