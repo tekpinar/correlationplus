@@ -1,3 +1,4 @@
+biopython==1.77
 numpy==1.19.1
 matplotlib==3.3.0
 prody==1.10.11
