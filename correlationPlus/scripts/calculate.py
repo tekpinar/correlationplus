@@ -29,6 +29,7 @@ from prody import parsePDB
 
 from correlationPlus.calculate import calcENMnDCC
 
+
 def usage_calculateApp():
     """                                                                                                                                                                                       
     Show how to use this program!                                                                                                                                                             
@@ -43,6 +44,7 @@ Arguments:
            -t: Type of the matrix. It can be ndcc, lmi or absndcc (absolute values of ndcc). Default value is ndcc (Optional)                                                                 
            -o: This will be your output data file. Default is correlationMap.dat. (Optional)                                                                                                    
 """)
+
 
 def handle_arguments_calculateApp():
     method   = None
@@ -92,6 +94,8 @@ def handle_arguments_calculateApp():
         sel_type = "ndcc"
 
     return method, out_file, sel_type, pdb_file
+
+
 def calculateApp():
     method, out_file, sel_type, pdb_file = handle_arguments_calculateApp()
     print(f"""                                                                                                                                                                                
@@ -106,7 +110,8 @@ def calculateApp():
     #Read pdb file
     selectedAtoms = parsePDB(pdb_file, subset='ca')
     calcENMnDCC(selectedAtoms, saveMatrix=True, out_file=out_file, method=method, nmodes=100)
-    print("@> Correlation calculation finished succesfully!")
+    print("@> Correlation calculation finished successfully!")
+
 
 if __name__ == "__main__":
     calculateApp()
