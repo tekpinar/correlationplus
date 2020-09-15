@@ -34,5 +34,5 @@ models.
 
 __all__ = ['calculate', 'mapAnalysis', 'diffMap', 'centralityAnalysis']
 
-__version__ = '0.1.3rc2'
+__version__ = '0.1.3'
 
