@@ -45,7 +45,7 @@ correlationPlus mapAnalysis -i 4z90-cross-correlations.txt -p 4z90.pdb
 
 Arguments: -i: A file containing normalized dynamical cross correlations in matrix format. (Mandatory)
            -p: PDB file of the protein. (Mandatory)
-           -s: It can be ndcc, lmi or absndcc (absolute values of ndcc). Default value is ndcc (Optional)
+           -t: Type of the matrix. It can be ndcc, lmi or absndcc (absolute values of ndcc). Default value is ndcc (Optional)
            -o: This will be your output file. Output figures are in png format. (Optional)
 """)
 
@@ -57,7 +57,7 @@ def handle_arguments_mapAnalysisApp():
     sel_type = None
 
     try:
-        opts, args = getopt.getopt(sys.argv[2:], "hi:o:s:p:", ["help", "inp=", "out=", "sel=", "pdb="])
+        opts, args = getopt.getopt(sys.argv[2:], "hi:o:t:p:", ["help", "inp=", "out=", "type=", "pdb="])
     except getopt.GetoptError:
         usage_mapAnalysisApp()
     for opt, arg in opts:
@@ -68,7 +68,7 @@ def handle_arguments_mapAnalysisApp():
             inp_file = arg
         elif opt in ("-o", "--out"):
             out_file = arg
-        elif opt in ("-s", "--sel"):
+        elif opt in ("-t", "--type"):
             sel_type = arg
         elif opt in ("-p", "--pdb"):
             pdb_file = arg
@@ -94,7 +94,7 @@ def handle_arguments_mapAnalysisApp():
 def mapAnalysisApp():
     inp_file, out_file, sel_type, pdb_file = handle_arguments_mapAnalysisApp()
     print(f"""
-@> Running 'Correlation Map App'
+@> Running 'mapAnalysis App'
     
 @> Input file   : {inp_file}
 @> PDB file     : {pdb_file}
@@ -110,14 +110,14 @@ def mapAnalysisApp():
 
     ##########################################################################
     # Read data file and assign to a numpy array
-    if sel_type == "dcc":
+    if sel_type == "ndcc":
         ccMatrix = np.loadtxt(inp_file, dtype=float)
-    elif sel_type == "absdcc":
+    elif sel_type == "absndcc":
         ccMatrix = np.absolute(np.loadtxt(inp_file, dtype=float))
     elif sel_type == "lmi":
         ccMatrix = convertLMIdata2Matrix(inp_file, writeAllOutput=True)
     else:
-        print("Unknown matrix format!\n")
+        print("Unknown matrix data type: The type can only be ndcc, absndcc or lmi!\n")
         sys.exit(-1)
 
     # Check the data type in the matrix.
@@ -144,11 +144,11 @@ def mapAnalysisApp():
 
     plotDistributions = True
     if (plotDistributions):
-        if (sel_type == "dcc"):
+        if (sel_type == "ndcc"):
             distanceDistribution(ccMatrix, out_file, "nDCC", selectedAtoms,
                                  absoluteValues=False, writeAllOutput=True)
 
-        elif (sel_type == "absdcc"):
+        elif (sel_type == "absndcc"):
             distanceDistribution(ccMatrix, out_file, "Abs(nDCC)",
                                  selectedAtoms, absoluteValues=True, writeAllOutput=False)
 

@@ -1,10 +1,10 @@
 ###############################################################################
-# correlationPlus - Python module to plot dynamical correlations maps         #
-#                   for proteins.                                             #
+# correlationPlus - A Python package to calculate, visualize and analyze      #
+#                    dynamical correlations maps of proteins.                 #
 # Authors: Mustafa Tekpinar                                                   #
 # Copyright Mustafa Tekpinar 2017-2018                                        #
 # Copyright CNRS-UMR3528, 2019                                                #
-# Copyright Institut Pasteur Paris, 2020                                       #
+# Copyright Institut Pasteur Paris, 2020                                      #
 #                                                                             #
 # This file is part of correlationPlus.                                       #
 #                                                                             #
@@ -27,6 +27,7 @@ import sys
 # cannot use relative imports
 # as it does not work in tests/run_test
 # ImportError: attempted relative import with no known parent package
+from correlationPlus.scripts.calculate import calculateApp
 from correlationPlus.scripts.mapAnalysis import mapAnalysisApp
 from correlationPlus.scripts.diffMap import diffMapApp
 from correlationPlus.scripts.centralAnalysis import centralityAnalysisApp
@@ -43,7 +44,7 @@ from correlationPlus.scripts.centralAnalysis import centralityAnalysisApp
 # 6-Filter correlations lower than a certain (absolute) value.: Done!
 # 7-Filter correlations for residues that are very close.: Done!
 # 8-Add centrality calculations: Done
-# 9-Add centrality visualizations.
+# 9-Add centrality visualizations: Done
 
 
 def usage_main():
@@ -55,8 +56,8 @@ Example usage:
 
 correlationPlus -h
 
-CorrelationPlus contains three/two analysis apps:
-
+CorrelationPlus contains four analysis apps:
+ - calculate
  - mapAnalysis
  - diffMap
  - centralityAnalysis
@@ -73,7 +74,8 @@ def main():
 
 |------------------------------Correlation Plus------------------------------|
 |                                                                            |
-|   A set of utility programs to plot and analyze protein correlation maps.  |
+|        A Python package to calculate, visualize and analyze protein        |
+|                           correlation maps.                                |
 |                   Copyright Mustafa Tekpinar 2017-2018                     |
 |                   Copyright CNRS-UMR3528, 2019                             |
 |                   Copyright Institut Pasteur Paris, 2020                   |
@@ -85,7 +87,9 @@ def main():
 """)
 
     if len(sys.argv) > 1:
-        if sys.argv[1] == "mapAnalysis":
+        if sys.argv[1] == "calculate":
+            calculateApp()
+        elif sys.argv[1] == "mapAnalysis":
             mapAnalysisApp()
         elif sys.argv[1] == "diffMap":
             diffMapApp()

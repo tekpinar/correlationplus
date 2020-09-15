@@ -4,7 +4,7 @@
 # Authors: Mustafa Tekpinar                                                   #
 # Copyright Mustafa Tekpinar 2017-2018                                        #
 # Copyright CNRS-UMR3528, 2019                                                #
-# Copyright Institut Pasteur Paris, 2020                                       #
+# Copyright Institut Pasteur Paris, 2020                                      #
 #                                                                             #
 # This file is part of correlationPlus.                                       #
 #                                                                             #
@@ -30,11 +30,34 @@ import numpy as np
 from .mapAnalysis import cmap_discretize
 
 def overallUniformDifferenceMap(ccMatrix1, ccMatrix2,
-                                minColorBarLimit, maxColorBarLimit, out_file, title, selectedAtoms):
+                                minColorBarLimit, maxColorBarLimit, 
+                                out_file, title, selectedAtoms):
     """
-    Plots the difference map between correlation maps for the entire structure.
-    Sizes of ccMatrix1 and ccMatrix2 are identical. Only one atom set is
-    sufficient to plot the difference map.
+        Plots the difference map between correlation maps for the entire structure.
+        Sizes of ccMatrix1 and ccMatrix2 are identical. Only one atom set is
+        sufficient to plot the difference map.
+        
+    Parameters
+    ----------
+    ccMatrix1: A numpy square matrix of floats
+        The first correlation matrix.
+    ccMatrix2: A numpy square matrix of floats
+        The second correlation matrix.
+    minColorBarLimit: signed int
+        If nDCC maps -2. If absndcc or lmi, -1.  
+    maxColorBarLimit: unsigned int
+        If nDCC maps 2. If absndcc or lmi, 1.
+    out_file: string
+        prefix for the output png files.
+        This prefix will get _overall.png extension.
+    title: string
+        Title of the figure.
+    selectedAtoms: prody object
+        A list of -typically CA- atoms selected from the parsed PDB file.
+
+    Returns
+    -------
+    Nothing
     """
 
     # selectedAtoms = parsePDB(pdb_file, subset='ca')
@@ -153,10 +176,35 @@ def overallUniformDifferenceMap(ccMatrix1, ccMatrix2,
 def overallNonUniformDifferenceMap(ccMatrix1, ccMatrix2, minColorBarLimit,
                                    maxColorBarLimit, out_file, title,
                                    selectedAtomSet1, selectedAtomSet2):
+
     """
-    Plots the difference map between correlation maps for the entire structure.
-    Sizes of ccMatrix1 and ccMatrix2 are not identical. A mapping for matching
-    residues is performed before difference map plotting.
+        Plots the difference map between correlation maps for the entire structure.
+        Sizes of ccMatrix1 and ccMatrix2 are not identical. A mapping for matching
+        residues is performed before difference map plotting.
+
+    Parameters
+    ----------
+    ccMatrix1: A numpy square matrix of floats
+        The first correlation matrix.
+    ccMatrix2: A numpy square matrix of floats
+        The second correlation matrix.
+    minColorBarLimit: signed int
+        If nDCC maps -2. If absndcc or lmi, -1.  
+    maxColorBarLimit: unsigned int
+        If nDCC maps 2. If absndcc or lmi, 1.
+    out_file: string
+        prefix for the output png files.
+        This prefix will get _overall.png extension.
+    title: string
+        Title of the figure.
+    selectedAtomSet1: prody object
+        A list of -typically CA- atoms selected from the first PDB file.
+    selectedAtomSet2: prody object
+        A list of -typically CA- atoms selected from the second PDB file.
+
+    Returns
+    -------
+    Nothing
     """
 
     # selectedAtoms = parsePDB(pdb_file, subset='ca')
@@ -292,14 +340,44 @@ def overallNonUniformDifferenceMap(ccMatrix1, ccMatrix2, minColorBarLimit,
 
 def findCommonCorePDB(selectedAtomSet1, selectedAtomSet2):
     """
-    This function assumes that two structures are obtained
-    exactly from the same species and there is not any mutation in any one
-    of them. This can happen when two conformations of a protein are obtained
-    with different number of missing atoms.
-    Under these conditions, we are trying to match two structures and find
-    the common core of two structures that have different number of CA atoms.
-    We will use this information to subtract two correlation maps!
-    Here, the output will be a dictonary of indices matching in two structures.
+        Finds a common set of residues between different conformations of a 
+        protein.
+        
+        This function assumes that two structures are obtained
+        exactly from the same species and there is not any mutation in any one
+        of them. This can happen when two conformations of a protein are obtained
+        with different number of missing atoms.
+        Under these conditions, we are trying to match two structures and find
+        the common core of two structures that have different number of CA atoms.
+        We will use this information to subtract two correlation maps!
+        
+    Parameters
+    ----------
+    ccMatrix1: A numpy square matrix of floats
+        The first correlation matrix.
+    ccMatrix2: A numpy square matrix of floats
+        The second correlation matrix.
+    minColorBarLimit: signed int
+        If nDCC maps -2. If absndcc or lmi, -1.  
+    maxColorBarLimit: unsigned int
+        If nDCC maps 2. If absndcc or lmi, 1.
+    out_file: string
+        prefix for the output png files.
+        This prefix will get _overall.png extension.
+    title: string
+        Title of the figure.
+    selectedAtomSet1: prody object
+        A list of -typically CA- atoms selected from the first PDB file.
+    selectedAtomSet2: prody object
+        A list of -typically CA- atoms selected from the second PDB file.
+
+    Returns
+    -------
+    commonCoreDictionary: dictionary
+        A dictionary of residues in conformation A and corresponding residue in 
+        conformation B. 
+    
+    
     """
     print("@> Calculating a common core for two structures.")
     lengthSet1 = len(selectedAtomSet1)

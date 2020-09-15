@@ -38,7 +38,7 @@ def centralityAnalysisApp():
     inp_file, out_file, sel_type, pdb_file = handle_arguments_mapAnalysisApp()
 
     print(f"""
-@> Running 'Network Analysis App
+@> Running 'CentralityAnalysis app
 
 @> Input file   : {inp_file}
 @> PDB file     : {pdb_file}
@@ -54,14 +54,14 @@ def centralityAnalysisApp():
 
     ##########################################################################
     # Read data file and assign to a numpy array
-    if sel_type == "dcc":
+    if sel_type == "ndcc":
         ccMatrix = np.loadtxt(inp_file, dtype=float)
-    elif sel_type == "absdcc":
+    elif sel_type == "absndcc":
         ccMatrix = np.absolute(np.loadtxt(inp_file, dtype=float))
     elif sel_type == "lmi":
         ccMatrix = convertLMIdata2Matrix(inp_file, writeAllOutput=True)
     else:
-        print("Unknown matrix format!\n")
+        print("Unknown data type: Type can only be ndcc, absndcc or lmi!\n")
         sys.exit(-1)
 
     valueFilter = 0.3

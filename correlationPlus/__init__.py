@@ -1,10 +1,10 @@
 ###############################################################################
-# correlationPlus - Python module to plot dynamical correlations maps         #
-#                   for proteins.                                             #
+# correlationPlus - A Python package to calculate, visualize and analyze      #
+#                    dynamical correlations maps of proteins.                 #
 # Authors: Mustafa Tekpinar                                                   #
 # Copyright Mustafa Tekpinar 2017-2018                                        #
 # Copyright CNRS-UMR3528, 2019                                                #
-# Copyright Institut Pasteur Paris, 2020                                       #
+# Copyright Institut Pasteur Paris, 2020                                      #
 #                                                                             #
 # This file is part of correlationPlus.                                       #
 #                                                                             #
@@ -23,19 +23,16 @@
 ###############################################################################
 
 """
-Program Name: Cross-correlation Plotting Program (I'll find a fancy name later!)
+Program Name: correlationPlus
 Author      : Mustafa TEKPINAR
 Email       : tekpinar@buffalo.edu
 
-Purpose     : This is a small program to automatize plotting of normalized
-dynamical cross-correlations obtained from molecular dynamics simulations or
-elastic network models. This script can be useful if you have multiple
-chains in a structure and you want to see intra-chain and inter-chain
-correlations more clearly. I just didn't like the way current programs are
-doing it and I wrote something for myself. I hope it may help the others also!
+Purpose     : This is a Python package to automatize plotting and analysis of 
+correlations obtained from molecular dynamics simulations or elastic network 
+models.
 """
 
-__all__ = ['mapAnalysis', 'diffMap', 'centralityAnalysis']
+__all__ = ['calculate', 'mapAnalysis', 'diffMap', 'centralityAnalysis']
 
 __version__ = '0.1.3'
 
