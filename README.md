@@ -102,6 +102,34 @@ cd correlationPlus
 pip install -e .
 ```
 
+### Docker
+
+Docker images are also available from Docker Hub
+
+```bash
+mkdir shared_dir
+cp 6fl9_just_prot_anm_100_modes_rc_15_cross-correlations.txt 6fl9_centeredOrientedAligned2Z.pdb shared_dir
+chmod 777 shared_dir
+cd shared_dir
+docker run -v $PWD:/correlationPlus bneron/correlation_plus diffMap -i 6fl9_rc15_scalCoeff1_100_modes_lmi_v2.dat -j zacharias_rc15_scalCoeff15_100_modes_lmi.dat -p 6fl9_centeredOrientedAligned2Z.pdb -t lmi
+```
+### Singularity
+
+As the docker image is registered in dockerhub you can also use it directly with Singularity
+
+```bash
+singularity run docker://bneron/correlation_plus diffMap -i 6fl9_rc15_scalCoeff1_100_modes_lmi_v2.dat -j zacharias_rc15_scalCoeff15_100_modes_lmi.dat -p 6fl9_centeredOrientedAligned2Z.pdb -t lmi
+```
+or in 2 steps
+
+```bash
+singularity pull correlation_plus.simg docker://bneron/correlation_plus
+./correlation_plus.simg -i 6fl9_rc15_scalCoeff1_100_modes_lmi_v2.dat -j zacharias_rc15_scalCoeff15_100_modes_lmi.dat -p 6fl9_centeredOrientedAligned2Z.pdb -t lmi
+```
+
+Unlike docker you have not to worry about shared directory, your home and /tmp are automatically shared.
+
+
 ## Licensing
 
 correplationPlus is developed and released under GNU Lesser GPL Licence. 
