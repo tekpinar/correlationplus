@@ -1,14 +1,13 @@
 # CorrelationPlus
 
-A Python API to plot and analyze dynamical correlations of proteins.
+A Python package to calculate, visualize and analyze dynamical correlations of proteins.
 
-CorrelationPlus contains three scripts that you can use to plot and analyze 
-dynamical correlations for proteins and biological macromolecules. 
+CorrelationPlus contains four scripts that you can use to calculate, visualize
+and analyze dynamical correlations for proteins and biological macromolecules. 
 These correlations can be dynamical cross-correlations or linear mutual
 information. 
 
-mapAnalysis app plots and produces analysis scripts for 
-correlation maps. It can be more useful if your structure contains multiple
+The package can be more useful if your structure contains multiple
 chains. The program will produce an output for overall structure 
 and all individual intra-chain correlations, if exist. Moreover, the program 
 will give you inter-chain correlations, if you have more than one chain. 
@@ -18,8 +17,20 @@ listed in a square matrix format. You can analyze the correlations with VMD
 just by loading the tcl files produced by mapAnalysis module. 
 
 ## A Quick Start with correlationPlus Scripts
+Go to examples folder. 
+To calculate dynamical cross-correlations with Gaussian network model:
 
-To run a simple example, go to examples folder and then run:
+```bash
+correlationPlus calculate -p 6fl9_centeredOrientedAligned2Z.pdb -m GNM -o gnm-ndcc.dat
+```
+
+To calculate dynamical cross-correlations with Anisotropic network model:
+
+```bash
+correlationPlus calculate -p 6fl9_centeredOrientedAligned2Z.pdb -m ANM -o anm-ndcc.dat
+```
+
+To run a simple example of visualization, go to examples folder and then run:
 
 ```bash
 correlationPlus mapAnalysis -i 6fl9_just_prot_anm_100_modes_rc_15_cross-correlations.txt -p 6fl9_centeredOrientedAligned2Z.pdb -t absndcc
