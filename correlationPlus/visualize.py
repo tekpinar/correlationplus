@@ -21,14 +21,15 @@
 # You should have received a copy of the GNU Lesser General Public License    #
 # along with correlationPlus.  If not, see <https://www.gnu.org/licenses/>.   #
 ###############################################################################
+import sys
 
-#from collections import Counter
 from collections import Counter, OrderedDict
 import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.cm import get_cmap
 import numpy as np
 from prody import buildDistMatrix
+
 
 
 def cmap_discretize(cmap, N):
@@ -875,113 +876,9 @@ def overallUniformDifferenceMap(ccMatrix1, ccMatrix2,
     diffMap = np.subtract(ccMatrix1, ccMatrix2)
 
     n = len(ccMatrix1)
-    ##########################################################################
-    # Set residue interface definitions
-    fig = plt.figure()
-    fig.set_size_inches(8.0, 5.5, forward=True)
-    plt.rcParams['font.size'] = 16
-    ax = fig.add_subplot(1, 1, 1)
-
-    plt.xlabel('Residue indices')
-    plt.ylabel('Residue indices')
-    plt.title(title, y=1.08)
-    plt.grid(color='w', linestyle='--', linewidth=1)
-
-    # print(selectedAtoms.getChids())
-
-    myList = list(Counter(selectedAtoms.getChids()).keys())
-
-    selection_reorder = []
-    selection_tick_labels = []
-    selection_tick_labels.append(str(selectedAtoms.getResnums()[0]))
-    selection_reorder.append(0)
-    tempVal = 0
-    for i in Counter(selectedAtoms.getChids()).values():
-        tempVal = tempVal + i
-        selection_reorder.append(tempVal)
-        selection_tick_labels.append(str(selectedAtoms.getResnums()[tempVal - 1]))
-
-    # print(selection_reorder)
-
-    major_nums = []
-    major_labels = []
-    major_nums.extend(selection_reorder)
-    major_labels.extend(selection_tick_labels)
-
-    ##########################################################################
-    # Set plotting parameters
-
-    # plt.rcParams['axes.titlepad'] = 20
-    ax.autoscale(False)
-    ax.set_aspect('equal')
-
-    # ax.set_xticks(major_nums, major_labels, rotation=45, minor=False)
-    plt.xticks(major_nums, major_labels, size=12, rotation=45)
-    plt.yticks(major_nums, major_labels, size=12)
-
-    # ax.xaxis.set_tick_params(width=2, length=5, labelsize=12, minor=False)
-    # ax.yaxis.set_tick_params(width=2, length=5)
-
-    plt.axis([0, n, 0, n])
-    ax.tick_params(which='major', width=2, length=5)
-    ax.tick_params(which='minor', width=1, length=3)
-
-    # print("Min value")
-    # print("Row Index of min value")
-    # print(np.argmin(ccMatrix1_sub, 0))
-
-    # print("Column Index of min value")
-    # print(np.argmin(ccMatrix1_sub, 1))
-
-    # Set colorbar features here!
-    jet = plt.get_cmap('jet')
-    djet = cmap_discretize(jet, 8)
-
-    plt.imshow(np.matrix(diffMap), cmap=djet)
-    plt.clim(minColorBarLimit, maxColorBarLimit)
-
-    position = fig.add_axes([0.85, 0.15, 0.03, 0.70])
-    cbar = plt.colorbar(cax=position)
-
-    cbar.set_ticks([-1.00, -0.75, -0.50, -0.25, 0.00, 0.25, 0.50, 0.75, 1.00])
-
-    for t in cbar.ax.get_yticklabels():
-        t.set_horizontalalignment('right')
-        t.set_x(4.0)
-
-    # Add chain borders to the plot
-    for i in range(len(selection_reorder) - 1):
-        beginningPoint = selection_reorder[i] / selection_reorder[-1]
-        endingPoint = selection_reorder[i + 1] / selection_reorder[-1]
-        middlePoint = (float(beginningPoint) + float(endingPoint)) / 2.0
-        if i % 2 == 0:
-            # x axis
-            ax.annotate('', xy=(beginningPoint, 1.03), xycoords='axes fraction',
-                        xytext=(endingPoint, 1.03), arrowprops=dict(linewidth=2., arrowstyle="-", color='black'))
-
-            # y axis
-            ax.annotate('', xy=(1.04, beginningPoint), xycoords='axes fraction',
-                        xytext=(1.04, endingPoint), arrowprops=dict(linewidth=2., arrowstyle="-", color='black'))
-
-        elif i % 2 == 1:
-            # x axis
-            ax.annotate('', xy=(beginningPoint, 1.03), xycoords='axes fraction',
-                        xytext=(endingPoint, 1.03), arrowprops=dict(linewidth=2., arrowstyle="-", color='gray'))
-
-            # y axis
-            ax.annotate('', xy=(1.04, beginningPoint), xycoords='axes fraction',
-                        xytext=(1.04, endingPoint), arrowprops=dict(linewidth=2., arrowstyle="-", color='gray'))
-
-        ax.annotate(myList[i], xy=(0, 1.04), xycoords='axes fraction', xytext=(middlePoint - 0.015, 1.04),
-                    size=14, color='black')
-        ax.annotate(myList[i], xy=(1.05, 0), xycoords='axes fraction', xytext=(1.05, middlePoint - 0.015),
-                    rotation=90, size=14, color='black')
-        # print(middlePoint)
-
-    # plt.tight_layout()
-    plt.savefig(out_file + '-overall-difference.png', bbox_inches='tight', dpi=200)
-    # plt.show()
-
+    numOfLabels=9
+    generatePNG(diffMap, minColorBarLimit, maxColorBarLimit, numOfLabels,
+                            out_file+"-overall-difference.png", title, selectedAtoms)
 
 def overallNonUniformDifferenceMap(ccMatrix1, ccMatrix2, minColorBarLimit,
                                    maxColorBarLimit, out_file, title,
@@ -1034,6 +931,7 @@ def overallNonUniformDifferenceMap(ccMatrix1, ccMatrix2, minColorBarLimit,
             # diffMap = np.subtract(ccMatrix1, ccMatrix2)
 
     n = len(commonCoreDictionary)
+
     ##########################################################################
     # Set residue interface definitions
     fig = plt.figure()
@@ -1208,3 +1106,183 @@ def findCommonCorePDB(selectedAtomSet1, selectedAtomSet2):
                 commonCoreDictionary[i] = j
     # print(commonCoreDictionary)
     return commonCoreDictionary
+
+def triangulateMaps(ccMatrix1, ccMatrix2,
+                                minColorBarLimit, maxColorBarLimit, 
+                                out_file, title, selectedAtoms):
+    """
+        Given two correlation maps, it puts them into upper and lower triangles.
+        Sizes of ccMatrix1 and ccMatrix2 are identical. Only one atom set is
+        sufficient to identify the residue IDs.
+        
+    Parameters
+    ----------
+    ccMatrix1: A numpy square matrix of floats
+        The first correlation matrix.
+    ccMatrix2: A numpy square matrix of floats
+        The second correlation matrix.
+    minColorBarLimit: signed int
+        If nDCC maps -1. If absndcc or lmi, 0.  
+    maxColorBarLimit: unsigned int
+        If nDCC maps 1. If absndcc or lmi, 1.
+    out_file: string
+        prefix for the output png files.
+        This prefix will get _overall.png extension.
+    title: string
+        Title of the figure.
+    selectedAtoms: prody object
+        A list of -typically CA- atoms selected from the parsed PDB file.
+
+    Returns
+    -------
+    ccMatrixCombined: A numpy square matrix of floats
+        This is a matrix that contain ccMatrix1 in the upper triangle
+        and the ccMatrix2 in the lower triangle. 
+    """
+
+    n = len(ccMatrix1)
+    if (len(ccMatrix2) != n):
+        print("Two matrices have to have same dimensions!")
+        sys.exit(-1)
+
+    ccMatrixCombined = np.zeros((n, n), np.double)
+    ccMatrixCombined = np.triu(ccMatrix2, k=0) + np.tril(ccMatrix1, k=0)                                                                                                                                             
+    np.fill_diagonal(ccMatrixCombined, 1.0)
+    
+    numOfLabels=5
+    generatePNG(ccMatrixCombined, minColorBarLimit, maxColorBarLimit,
+                numOfLabels, out_file+"-triangulated.png", title, selectedAtoms)
+    return ccMatrixCombined
+
+def generatePNG(ccMatrix, minColorBarLimit, maxColorBarLimit,
+                numOfLabels, out_file, title, selectedAtoms):
+    """
+        Generates a heatmap in PNG format from the ccMatrix. 
+        
+    Parameters
+    ----------
+    ccMatrix: A numpy square matrix of floats
+        The first correlation matrix.
+    minColorBarLimit: signed int
+        If nDCC maps -1. If absndcc or lmi, 0.  
+    maxColorBarLimit: unsigned int
+        If nDCC maps 1. If absndcc or lmi, 1.
+    numOfLabels: int
+        Number of labels on colorbar. 
+    out_file: string
+        prefix for the output png files.
+    title: string
+        Title of the figure.
+    selectedAtoms: prody object
+        A list of -typically CA- atoms selected from the parsed PDB file.
+
+    Returns
+    -------
+    Nothing 
+    """
+    fig = plt.figure()
+    fig.set_size_inches(8.0, 5.5, forward=True)
+    plt.rcParams['font.size'] = 16
+    ax = fig.add_subplot(1, 1, 1)
+
+    plt.xlabel('Residue indices')
+    plt.ylabel('Residue indices')
+    plt.title(title, y=1.08)
+    plt.grid(color='w', linestyle='--', linewidth=1)
+
+    # print(selectedAtoms.getChids())
+
+    myList = list(Counter(selectedAtoms.getChids()).keys())
+
+    selection_reorder = []
+    selection_tick_labels = []
+    selection_tick_labels.append(str(selectedAtoms.getResnums()[0]))
+    selection_reorder.append(0)
+    tempVal = 0
+    for i in Counter(selectedAtoms.getChids()).values():
+        tempVal = tempVal + i
+        selection_reorder.append(tempVal)
+        selection_tick_labels.append(str(selectedAtoms.getResnums()[tempVal - 1]))
+
+    # print(selection_reorder)
+
+    major_nums = []
+    major_labels = []
+    major_nums.extend(selection_reorder)
+    major_labels.extend(selection_tick_labels)
+
+    ##########################################################################
+    # Set plotting parameters
+
+    # plt.rcParams['axes.titlepad'] = 20
+    ax.autoscale(False)
+    ax.set_aspect('equal')
+
+    # ax.set_xticks(major_nums, major_labels, rotation=45, minor=False)
+    plt.xticks(major_nums, major_labels, size=12, rotation=45)
+    plt.yticks(major_nums, major_labels, size=12)
+
+    # ax.xaxis.set_tick_params(width=2, length=5, labelsize=12, minor=False)
+    # ax.yaxis.set_tick_params(width=2, length=5)
+    n = len(ccMatrix)
+    plt.axis([0, n, 0, n])
+    ax.tick_params(which='major', width=2, length=5)
+    ax.tick_params(which='minor', width=1, length=3)
+
+    # print("Min value")
+    # print("Row Index of min value")
+    # print(np.argmin(ccMatrix1_sub, 0))
+
+    # print("Column Index of min value")
+    # print(np.argmin(ccMatrix1_sub, 1))
+
+    # Set colorbar features here!
+    jet = plt.get_cmap('jet')
+    djet = cmap_discretize(jet, 8)
+
+    plt.imshow(np.matrix(ccMatrix), cmap=djet)
+    plt.clim(minColorBarLimit, maxColorBarLimit)
+
+    position = fig.add_axes([0.85, 0.15, 0.03, 0.70])
+    cbar = plt.colorbar(cax=position, format='%.2f')
+
+    #cbar.set_ticks([-1.00, -0.75, -0.50, -0.25, 0.00, 0.25, 0.50, 0.75, 1.00])
+    
+    cbar.set_ticks(np.linspace(minColorBarLimit, maxColorBarLimit, num=numOfLabels))
+    for t in cbar.ax.get_yticklabels():
+        t.set_horizontalalignment('right')
+        t.set_x(4.0)
+
+    # Add chain borders to the plot
+    for i in range(len(selection_reorder) - 1):
+        beginningPoint = selection_reorder[i] / selection_reorder[-1]
+        endingPoint = selection_reorder[i + 1] / selection_reorder[-1]
+        middlePoint = (float(beginningPoint) + float(endingPoint)) / 2.0
+        if i % 2 == 0:
+            # x axis
+            ax.annotate('', xy=(beginningPoint, 1.03), xycoords='axes fraction',
+                        xytext=(endingPoint, 1.03), arrowprops=dict(linewidth=2., arrowstyle="-", color='black'))
+
+            # y axis
+            ax.annotate('', xy=(1.04, beginningPoint), xycoords='axes fraction',
+                        xytext=(1.04, endingPoint), arrowprops=dict(linewidth=2., arrowstyle="-", color='black'))
+
+        elif i % 2 == 1:
+            # x axis
+            ax.annotate('', xy=(beginningPoint, 1.03), xycoords='axes fraction',
+                        xytext=(endingPoint, 1.03), arrowprops=dict(linewidth=2., arrowstyle="-", color='gray'))
+
+            # y axis
+            ax.annotate('', xy=(1.04, beginningPoint), xycoords='axes fraction',
+                        xytext=(1.04, endingPoint), arrowprops=dict(linewidth=2., arrowstyle="-", color='gray'))
+
+        ax.annotate(myList[i], xy=(0, 1.04), xycoords='axes fraction', xytext=(middlePoint - 0.015, 1.04),
+                    size=14, color='black')
+        ax.annotate(myList[i], xy=(1.05, 0), xycoords='axes fraction', xytext=(1.05, middlePoint - 0.015),
+                    rotation=90, size=14, color='black')
+        # print(middlePoint)
+
+    # plt.tight_layout()
+    plt.savefig(out_file, bbox_inches='tight', dpi=200)
+    # plt.show()
+
