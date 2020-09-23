@@ -32,7 +32,7 @@ correlations obtained from molecular dynamics simulations or elastic network
 models.
 """
 
-__all__ = ['calculate', 'mapAnalysis', 'diffMap', 'centralityAnalysis']
+__all__ = ['calculate', 'mapAnalysis', 'centralityAnalysis']
 
 __version__ = '0.1.3'
 
