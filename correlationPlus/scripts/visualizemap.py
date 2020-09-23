@@ -30,18 +30,18 @@ from collections import Counter
 import numpy as np
 from prody import parsePDB
 
-from correlationPlus.mapAnalysis import overallCorrelationMap, convertLMIdata2Matrix, distanceDistribution
-from correlationPlus.mapAnalysis import intraChainCorrelationMaps, interChainCorrelationMaps
-from correlationPlus.mapAnalysis import filterCorrelationMapByDistance, projectCorrelationsOntoProteinVMD
+from correlationPlus.visualize import overallCorrelationMap, convertLMIdata2Matrix, distanceDistribution
+from correlationPlus.visualize import intraChainCorrelationMaps, interChainCorrelationMaps
+from correlationPlus.visualize import filterCorrelationMapByDistance, projectCorrelationsOntoProteinVMD
 
 
-def usage_mapAnalysisApp():
+def usage_visualizemapApp():
     """
     Show how to use this program!
     """
     print("""
 Example usage:
-correlationPlus mapAnalysis -i 4z90-cross-correlations.txt -p 4z90.pdb
+correlationPlus visualizemap -i 4z90-cross-correlations.txt -p 4z90.pdb
 
 Arguments: -i: A file containing normalized dynamical cross correlations in matrix format. (Mandatory)
            -p: PDB file of the protein. (Mandatory)
@@ -50,7 +50,7 @@ Arguments: -i: A file containing normalized dynamical cross correlations in matr
 """)
 
 
-def handle_arguments_mapAnalysisApp():
+def handle_arguments_visualizemapApp():
     inp_file = None
     pdb_file = None
     out_file = None
@@ -59,10 +59,10 @@ def handle_arguments_mapAnalysisApp():
     try:
         opts, args = getopt.getopt(sys.argv[2:], "hi:o:t:p:", ["help", "inp=", "out=", "type=", "pdb="])
     except getopt.GetoptError:
-        usage_mapAnalysisApp()
+        usage_visualizemapApp()
     for opt, arg in opts:
         if opt in ('-h', "--help"):
-            usage_mapAnalysisApp()
+            usage_visualizemapApp()
             sys.exit(-1)
         elif opt in ("-i", "--inp"):
             inp_file = arg
@@ -73,11 +73,11 @@ def handle_arguments_mapAnalysisApp():
         elif opt in ("-p", "--pdb"):
             pdb_file = arg
         else:
-            assert False, usage_mapAnalysisApp()
+            assert False, usage_visualizemapApp()
 
     # Input data matrix and PDB file are mandatory!
     if inp_file is None or pdb_file is None:
-        usage_mapAnalysisApp()
+        usage_visualizemapApp()
         sys.exit(-1)
 
     # Assign a default name if the user forgets the output file prefix.
@@ -91,10 +91,10 @@ def handle_arguments_mapAnalysisApp():
     return inp_file, out_file, sel_type, pdb_file
 
 
-def mapAnalysisApp():
-    inp_file, out_file, sel_type, pdb_file = handle_arguments_mapAnalysisApp()
+def visualizemapApp():
+    inp_file, out_file, sel_type, pdb_file = handle_arguments_visualizemapApp()
     print(f"""
-@> Running 'mapAnalysis App'
+@> Running 'visualizemap App'
     
 @> Input file   : {inp_file}
 @> PDB file     : {pdb_file}
@@ -192,4 +192,4 @@ def mapAnalysisApp():
 
 
 if __name__ == "__main__":
-    mapAnalysisApp()
+    visualizemapApp()

@@ -14,7 +14,7 @@ will give you inter-chain correlations, if you have more than one chain.
 The program only requires a pdb file and a correlation data matrix. 
 The correlation data has to be in matrix format, where only A(i,j) values are 
 listed in a square matrix format. You can analyze the correlations with VMD 
-just by loading the tcl files produced by mapAnalysis module. 
+just by loading the tcl files produced by visualizemap script. 
 
 ## A Quick Start with correlationPlus Scripts
 Go to examples folder. 
@@ -33,7 +33,7 @@ correlationPlus calculate -p 6fl9_centeredOrientedAligned2Z.pdb -m ANM -o anm-nd
 To run a simple example of visualization, go to examples folder and then run:
 
 ```bash
-correlationPlus mapAnalysis -i 6fl9_just_prot_anm_100_modes_rc_15_cross-correlations.txt -p 6fl9_centeredOrientedAligned2Z.pdb -t absndcc
+correlationPlus visualizemap -i 6fl9_just_prot_anm_100_modes_rc_15_cross-correlations.txt -p 6fl9_centeredOrientedAligned2Z.pdb -t absndcc
 ```
 This will produce plots of absolute values of dynamical cross correlations.
 
@@ -57,12 +57,12 @@ correlationPlus centralityAnalysis -i 6fl9_just_prot_anm_100_modes_rc_15_cross-c
 ```
 
 ## Ipython Interface
-For a detailed analysis, script interfaces provided by mapAnalysis, diffMap and 
+For a detailed analysis, script interfaces provided by visualizemap, diffMap and 
 centralityAnalysis apps may not be sufficient. Therefore, you can use IPython 
 to load the functions and do a detailed analysis as follows. 
 
 ```
-from correlationPlus.mapAnalysis import *
+from correlationPlus.visualize import *
 ```
  
 
