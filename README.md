@@ -3,21 +3,50 @@
 A Python package to calculate, visualize and analyze dynamical correlations of proteins.
 
 CorrelationPlus contains four scripts that you can use to calculate, visualize
-and analyze dynamical correlations for proteins and biological macromolecules. 
+and analyze dynamical correlations for proteins. 
 These correlations can be dynamical cross-correlations or linear mutual
 information. 
 
-The package can be more useful if your structure contains multiple
-chains. The program will produce an output for overall structure 
-and all individual intra-chain correlations, if exist. Moreover, the program 
-will give you inter-chain correlations, if you have more than one chain. 
-The program only requires a pdb file and a correlation data matrix. 
-The correlation data has to be in matrix format, where only A(i,j) values are 
-listed in a square matrix format. You can analyze the correlations with VMD 
-just by loading the tcl files produced by visualizemap script. 
+## Installation
+
+### for users
+
+We recommend to use pip
+```bash
+pip install correlationPlus
+```
+
+or if you do not have administration rights
+```bash
+pip install --user correlationPlus
+```
+
+If you prefer to use a virtualenv
+```bash
+python3 -m venv correlationPlus
+cd correlationPlus
+source bin/activate
+pip install correlationPlus
+```
+
+### for developers
+
+We recommend to use pip and a virtualenv
+```bash
+python3.8 -m venv correlationPlus
+cd correlationPlus
+source bin/activate
+mkdir src
+cd src
+git clone https://github.com/tekpinar/correlationPlus.git # or git@github.com:tekpinar/correlationPlus.git
+cd correlationPlus
+pip install -e .
+```
 
 ## A Quick Start with correlationPlus Scripts
-Go to examples folder. 
+### Calculating dynamical cross-correlations
+Download examples folder and go there. 
+
 To calculate dynamical cross-correlations with Gaussian network model:
 
 ```bash
@@ -30,31 +59,63 @@ To calculate dynamical cross-correlations with Anisotropic network model:
 correlationPlus calculate -p 6fl9_centeredOrientedAligned2Z.pdb -m ANM -o anm-ndcc.dat
 ```
 
-To run a simple example of visualization, go to examples folder and then run:
+### Visualization of correlation maps
+To run a simple example of visualization, you can use data and pdb files in the examples folder:
 
 ```bash
 correlationPlus visualizemap -i 6fl9_just_prot_anm_100_modes_rc_15_cross-correlations.txt -p 6fl9_centeredOrientedAligned2Z.pdb -t absndcc
 ```
 This will produce plots of absolute values of dynamical cross correlations.
 
+The visualizemap will produce an output for overall structure 
+and all individual intra-chain correlations, if exist. Moreover, the program 
+will give you inter-chain correlations, if you have more than one chain. 
+The correlation data has to be in matrix format, where only A(i,j) values are 
+listed in a square matrix format. LMI matrices produced by g_correlation 
+program of Lange and Grubmuller can also be parsed. 
+
+You can analyze the correlations with VMD just by loading the tcl files produced by 
+visualizemap script. For this purpose, you have to load your pdb file first. Then,
+you can call the tcl script within Extensions->Tk Console and write the following command:
+```bash
+source correlation-interchain-chainsA-B.tcl
+```
+Please, beware that the loading can take some time depending on your protein size
+and number of correlations. 
+
+If you prefer to do the tcl loading in a single command:
+```bash
+vmd 6fl9_centeredOrientedAligned2Z.pdb -e correlation-interchain-chainsA-B.tcl
+```
+Please note that vmd command has to be in your path if you want to do this 
+with the command above.
+ 
 Sometimes, we may need to plot difference map of two correlation maps. 
-For example, you may want to see the differences of linear mutual information 
-maps of produced with two different methods, conditions etc.
-This can be produced with diffMap app as follows:  
+You may want to see the differences of linear mutual information 
+maps of produced with two different methods, conditions etc. The correlations
+of ligated vs unligated simulations are some common examples.  
+The difference maps can be produced with diffMap app as follows:  
 
 ```bash
 correlationPlus diffMap -i 6fl9_rc15_scalCoeff1_100_modes_lmi_v2.dat -j zacharias_rc15_scalCoeff15_100_modes_lmi.dat -p 6fl9_centeredOrientedAligned2Z.pdb -t lmi
 ```
 
-Finally, correlationPlus can do centrality analysis for your protein
+### Centraliy analysis of the correlation maps
+Centrality analysis can be used to deduce active sites, binding sites, 
+key mutation sites and allosteric residues. 
+correlationPlus can do centrality analysis for your protein
 via its centralityAnalysis app.
 
-It computes degree, closeness, betweenness, current flow closeness, 
-current flow betweenness and eigenvector centrality.
+It can compute degree, closeness, betweenness, current flow closeness, 
+current flow betweenness and eigenvector centrality. The following command 
+will do all of the above analysis:
 
 ```bash
 correlationPlus centralityAnalysis -i 6fl9_just_prot_anm_100_modes_rc_15_cross-correlations.txt -p 6fl9_centeredOrientedAligned2Z.pdb -t absndcc
 ```
+After the calculation, the centrality values will be inserted into Bfactor
+ column of a pdb file. In addition, the app will produce a tcl fileso that
+you can visualize the key residues with VMD.
 
 ## Ipython Interface
 For a detailed analysis, script interfaces provided by visualizemap, diffMap and 
@@ -75,43 +136,6 @@ help(intraChainCorrelationMaps)
 You can check different valueFilters, distanceFilters for your analysis. 
 Even you can scan a range of values by calling the functions in a 
 loop. 
-
-
-## Installation
-
-### for users
-
-We recommend to use pip
-```bash
-pip install correlationPlus
-```
-
-or if you do not have administration rights
-```bash
-pip install --user correlationPlus
-```
-
-If you prefer to use a virtualenv
-```bash
-python3.8 -m venv correlationPlus
-cd correlationPlus
-source bin/activate
-pip install correlationPlus
-```
-
-### for developers
-
-We recommend to use pip and a virtualenv
-```bash
-python3.8 -m venv correlationPlus
-cd correlationPlus
-source bin/activate
-mkdir src
-cd src
-git clone https://github.com/tekpinar/correlationPlus.git # or git@github.com:tekpinar/correlationPlus.git
-cd correlationPlus
-pip install -e .
-```
 
 ## Licensing
 
