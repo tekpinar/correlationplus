@@ -3,9 +3,9 @@
 A Python package to calculate, visualize and analyze dynamical correlations of proteins.
 
 CorrelationPlus contains four scripts that you can use to calculate, visualize
-and analyze dynamical correlations for proteins. 
-These correlations can be dynamical cross-correlations or linear mutual
-information. 
+and analyze dynamical correlations of proteins. 
+These correlations can be dynamical cross-correlations, linear mutual
+information or generalized correlations. 
 
 ## Installation
 
@@ -33,7 +33,7 @@ pip install correlationPlus
 
 We recommend to use pip and a virtualenv
 ```bash
-python3.8 -m venv correlationPlus
+python3 -m venv correlationPlus
 cd correlationPlus
 source bin/activate
 mkdir src
@@ -75,19 +75,20 @@ listed in a square matrix format. LMI matrices produced by g_correlation
 program of Lange and Grubmuller can also be parsed. 
 
 You can analyze the correlations with VMD just by loading the tcl files produced by 
-visualizemap script. For this purpose, you have to load your pdb file first. Then,
-you can call the tcl script within Extensions->Tk Console and write the following command:
+visualizemap script. You can call VMD and go to Extensions->Tk Console menu. 
+Write the following command to see the correlations:
 ```bash
 source correlation-interchain-chainsA-B.tcl
 ```
-Please, beware that the loading can take some time depending on your protein size
-and number of correlations. 
 
 If you prefer to do the tcl loading in a single command:
 ```bash
-vmd 6fl9_centeredOrientedAligned2Z.pdb -e correlation-interchain-chainsA-B.tcl
+vmd -e correlation-interchain-chainsA-B.tcl
 ```
-Please note that vmd command has to be in your path if you want to do this 
+Please, beware that the loading can take some time depending on protein size
+and number of correlations. 
+
+Additionally, vmd command has to be in your path if you want to do this 
 with the command above.
  
 Sometimes, we may need to plot difference map of two correlation maps. 
@@ -114,8 +115,15 @@ will do all of the above analysis:
 correlationPlus centralityAnalysis -i 6fl9_just_prot_anm_100_modes_rc_15_cross-correlations.txt -p 6fl9_centeredOrientedAligned2Z.pdb -t absndcc
 ```
 After the calculation, the centrality values will be inserted into Bfactor
- column of a pdb file. In addition, the app will produce a tcl fileso that
-you can visualize the key residues with VMD.
+ column of a pdb file. You can load the pdb files with your favorite visualization 
+software and color according to Bfactors. If you prefer VMD - as we do-, 
+the app will produces tcl files so that you can visualize the key residues with VMD.
+The tcl script highlights the residues with the highest 10% of the selected centrality
+in VDW representation.
+
+```bash
+vmd -e correlation_degree.tcl
+```
 
 ## Ipython Interface
 For a detailed analysis, script interfaces provided by visualizemap, diffMap and 

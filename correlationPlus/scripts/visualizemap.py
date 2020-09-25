@@ -184,7 +184,7 @@ def visualizemapApp():
                                                   writeAllOutput=False)
 
     # Overall projection
-    projectCorrelationsOntoProteinVMD(ccMatrix, out_file,
+    projectCorrelationsOntoProteinVMD(pdb_file, ccMatrix, out_file,
                                       selectedAtoms, valueFilter=0.75,
                                       absoluteValues=True, writeAllOutput=True)
 

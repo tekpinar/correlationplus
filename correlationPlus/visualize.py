@@ -690,7 +690,7 @@ def distanceDistribution(ccMatrix, out_file, title, selectedAtoms,
         DATA_FILE.close()
 
 
-def projectCorrelationsOntoProteinVMD(ccMatrix, vmd_out_file,
+def projectCorrelationsOntoProteinVMD(pdb_file, ccMatrix, vmd_out_file,
                                       selectedAtoms, valueFilter,
                                       absoluteValues: bool,
                                       writeAllOutput: bool):
@@ -760,7 +760,7 @@ def projectCorrelationsOntoProteinVMD(ccMatrix, vmd_out_file,
                                 "mol selection \"chain {0:s} and resid {1:d} and name CA\"\n" + \
                                 "mol addrep 0\n"
     DATA_FILE = open(vmd_out_file + '-general.tcl', 'w')
-
+    DATA_FILE.write("mol new " + pdb_file + " \n")
     DATA_FILE.write("mol modstyle 0 0 NewCartoon 0.300000 50.000000 3.250000 0\n")
     DATA_FILE.write("mol modcolor 0 0 Chain\n")
     DATA_FILE.write("mol modmaterial 0 0 MetallicPastel\n")
@@ -791,6 +791,7 @@ def projectCorrelationsOntoProteinVMD(ccMatrix, vmd_out_file,
             for chainJ in chains:
                 if chainI != chainJ:
                     DATA_FILE = open(vmd_out_file + '-interchain-chains' + chainI + '-' + chainJ + '.tcl', 'w')
+                    DATA_FILE.write("mol new " + pdb_file + " \n")
                     DATA_FILE.write("mol modstyle 0 0 NewCartoon 0.300000 50.000000 3.250000 0\n")
                     DATA_FILE.write("mol modcolor 0 0 Chain\n")
                     DATA_FILE.write("mol modmaterial 0 0 MetallicPastel\n")
@@ -817,6 +818,7 @@ def projectCorrelationsOntoProteinVMD(ccMatrix, vmd_out_file,
         # Intra-chain
         for chain in chains:
             DATA_FILE = open(vmd_out_file + '-intrachain-chain' + chain + '.tcl', 'w')
+            DATA_FILE.write("mol new " + pdb_file + " \n")
             DATA_FILE.write("mol modstyle 0 0 NewCartoon 0.300000 50.000000 3.250000 0\n")
             DATA_FILE.write("mol modcolor 0 0 Chain\n")
             DATA_FILE.write("mol modmaterial 0 0 MetallicPastel\n")
