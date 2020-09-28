@@ -50,7 +50,7 @@ setup(name='correlationPlus',
           'Topic :: Scientific/Engineering :: Bio-Informatics'
           ],
       python_requires='>=3.6',
-      install_requires=open("requirements.txt").read().split(),
+      install_requires=[i for i in [l.strip() for l in open("requirements.txt").read().split('\n')] if i],
       # zip_safe=False,
       packages=[p for p in find_packages() if p != 'tests'],
       # file where some variables must be fixed by install
