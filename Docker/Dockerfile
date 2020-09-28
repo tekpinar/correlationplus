@@ -9,8 +9,9 @@ USER root
 
 RUN pip3 install numpy==1.19.1 matplotlib==3.3.0 scipy==1.5.2 networkx==2.4 biopython==1.77 prody==1.10.11
 RUN pip3 install correlationplus==0.1.4
-RUN useradd -m correlationplus
+RUN pip3 install ipython
 
+RUN useradd -m correlationplus
 USER correlationplus
 WORKDIR /home/correlationplus
 
