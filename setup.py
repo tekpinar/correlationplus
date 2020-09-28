@@ -37,7 +37,7 @@ setup(name='correlationplus',
       download_url="https://github.com/tekpinar/correlationplus",
       license="LGPL",
       classifiers=[
-          'Development Status :: 4 - Beta',
+          'Development Status :: 5 - Production/Stable',
           'Environment :: Console',
           'Operating System :: POSIX',
           'Operating System :: Microsoft :: Windows',
