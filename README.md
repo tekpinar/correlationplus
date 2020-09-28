@@ -60,13 +60,13 @@ docker run -v $PWD:/home/correlationplus structuraldynamicslab/correlation_plus 
 As the docker image is registered in dockerhub you can also use it directly with [Singularity](https://sylabs.io/docs/) 
 
 ```bash
-singularity run docker://structuraldynamicslab/correlation_plus diffMap -i 6fl9_rc15_scalCoeff1_100_modes_lmi_v2.dat -j zacharias_rc15_scalCoeff15_100_modes_lmi.dat -p 6fl9_centeredOrientedAligned2Z.pdb -t lmi
+singularity run docker://structuraldynamicslab/correlationplus diffMap -i 6fl9_rc15_scalCoeff1_100_modes_lmi_v2.dat -j zacharias_rc15_scalCoeff15_100_modes_lmi.dat -p 6fl9_centeredOrientedAligned2Z.pdb -t lmi
 ```
 or in 2 steps
 
 ```bash
-singularity pull correlation_plus.simg docker://structuraldynamicslab/correlation_plus
-./correlation_plus.simg -i 6fl9_rc15_scalCoeff1_100_modes_lmi_v2.dat -j zacharias_rc15_scalCoeff15_100_modes_lmi.dat -p 6fl9_centeredOrientedAligned2Z.pdb -t lmi
+singularity pull correlationplus.simg docker://structuraldynamicslab/correlation_plus
+./correlationplus.simg -i 6fl9_rc15_scalCoeff1_100_modes_lmi_v2.dat -j zacharias_rc15_scalCoeff15_100_modes_lmi.dat -p 6fl9_centeredOrientedAligned2Z.pdb -t lmi
 ```
 
 Unlike docker you have not to worry about shared directory, your home and /tmp are automatically shared.
@@ -77,13 +77,13 @@ Unlike docker you have not to worry about shared directory, your home and /tmp a
 ### Calculating dynamical cross-correlations
 Download examples folder and go there. 
 
-To calculate dynamical cross-correlations with Gaussian network model:
+To calculate **dynamical cross-correlations** with **Gaussian** network model:
 
 ```bash
 correlationplus calculate -p 6fl9_centeredOrientedAligned2Z.pdb -m GNM -o gnm-ndcc.dat
 ```
 
-To calculate dynamical cross-correlations with Anisotropic network model:
+To calculate **dynamical cross-correlations** with **Anisotropic** network model:
 
 ```bash
 correlationplus calculate -p 6fl9_centeredOrientedAligned2Z.pdb -m ANM -o anm-ndcc.dat
@@ -105,7 +105,7 @@ listed in a square matrix format. LMI matrices produced by g_correlation
 program of Lange and Grubmuller can also be parsed. 
 
 You can analyze the correlations with VMD just by loading the tcl files produced by 
-visualizemap script. You can call VMD and go to Extensions->Tk Console menu. 
+visualizemap script. You can call *VMD* and go to Extensions->Tk Console menu. 
 Write the following command to see the correlations:
 ```bash
 source correlation-interchain-chainsA-B.tcl
@@ -134,8 +134,8 @@ correlationplus diffMap -i 6fl9_rc15_scalCoeff1_100_modes_lmi_v2.dat -j zacharia
 ### Centrality analysis of the correlation maps
 Centrality analysis can be used to deduce active sites, binding sites, 
 key mutation sites and allosteric residues. 
-correlationplus can do centrality analysis for your protein
-via its centralityAnalysis app.
+**correlationplus** can do centrality analysis for your protein
+via its **centralityAnalysis** app.
 
 It can compute degree, closeness, betweenness, current flow closeness, 
 current flow betweenness and eigenvector centrality. The following command 
@@ -144,9 +144,9 @@ will do all of the above analysis:
 ```bash
 correlationplus centralityAnalysis -i 6fl9_just_prot_anm_100_modes_rc_15_cross-correlations.txt -p 6fl9_centeredOrientedAligned2Z.pdb -t absndcc
 ```
-After the calculation, the centrality values will be inserted into Bfactor
+After the calculation, the centrality values will be inserted into *Bfactor*
  column of a pdb file. You can load the pdb files with your favorite visualization 
-software and color according to Bfactors. If you prefer VMD - as we do-, 
+software and color according to *Bfactors*. If you prefer *VMD* - as we do-, 
 the app will produces tcl files so that you can visualize the key residues with VMD.
 The tcl script highlights the residues with the highest 10% of the selected centrality
 in VDW representation.
