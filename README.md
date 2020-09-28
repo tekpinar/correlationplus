@@ -178,5 +178,5 @@ loop.
 
 ## Licensing
 
-correplationPlus is developed and released under (GNU Lesser GPL Licence)[https://www.gnu.org/licenses/lgpl-3.0.en.html]. 
+correplationPlus is developed and released under [GNU Lesser GPL Licence](https://www.gnu.org/licenses/lgpl-3.0.en.html). 
 Please read to the COPYING and COPYING.LESSER files to know more. 
