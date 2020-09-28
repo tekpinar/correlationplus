@@ -28,7 +28,7 @@ import sys
 # as it does not work in tests/run_test
 # ImportError: attempted relative import with no known parent package
 from correlationPlus.scripts.calculate import calculateApp
-from correlationPlus.scripts.mapAnalysis import mapAnalysisApp
+from correlationPlus.scripts.visualizemap import visualizemapApp
 from correlationPlus.scripts.diffMap import diffMapApp
 from correlationPlus.scripts.centralAnalysis import centralityAnalysisApp
 
@@ -58,7 +58,7 @@ correlationPlus -h
 
 CorrelationPlus contains four analysis apps:
  - calculate
- - mapAnalysis
+ - visualizemap
  - diffMap
  - centralityAnalysis
 
@@ -89,8 +89,8 @@ def main():
     if len(sys.argv) > 1:
         if sys.argv[1] == "calculate":
             calculateApp()
-        elif sys.argv[1] == "mapAnalysis":
-            mapAnalysisApp()
+        elif sys.argv[1] == "visualizemap":
+            visualizemapApp()
         elif sys.argv[1] == "diffMap":
             diffMapApp()
         elif sys.argv[1] == "centralityAnalysis":

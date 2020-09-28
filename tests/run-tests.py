@@ -46,14 +46,14 @@ def runTests():
                "-m ANM -o anm-ndcc.dat")
 
 
-    # Test mapAnalysisApp for absolute nDCC maps
-    os.system(f"correlationPlus mapAnalysis "
+    # Test visualizemapApp for absolute nDCC maps
+    os.system(f"correlationPlus visualizemap "
               f"-i {prefix}/examples/6fl9_just_prot_anm_100_modes_rc_15_cross-correlations.txt "
               f"-p {prefix}/examples/6fl9_centeredOrientedAligned2Z.pdb "
                "-t absndcc")
 
-    # Test mapAnalysisApp for LMI maps
-    os.system(f"correlationPlus mapAnalysis "
+    # Test visualizemapApp for LMI maps
+    os.system(f"correlationPlus visualizemap "
               f"-i {prefix}/examples/6fl9_rc15_scalCoeff1_100_modes_lmi_v2.dat "
               f"-p {prefix}/examples/6fl9_centeredOrientedAligned2Z.pdb "
               "-t lmi")

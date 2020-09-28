@@ -28,14 +28,14 @@ import sys
 import numpy as np
 from prody import parsePDB
 
-from correlationPlus.mapAnalysis import convertLMIdata2Matrix
+from correlationPlus.visualize import convertLMIdata2Matrix
 from correlationPlus.centralityAnalysis import centralityAnalysis
 
-from .mapAnalysis import handle_arguments_mapAnalysisApp
+from .visualizemap import handle_arguments_visualizemapApp
 
 
 def centralityAnalysisApp():
-    inp_file, out_file, sel_type, pdb_file = handle_arguments_mapAnalysisApp()
+    inp_file, out_file, sel_type, pdb_file = handle_arguments_visualizemapApp()
 
     print(f"""
 @> Running 'CentralityAnalysis app
