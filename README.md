@@ -46,6 +46,10 @@ pip install -e .
 ### from Docker image
 
 Docker images are also available from [Docker Hub](https://hub.docker.com/r/structuraldynamicslab/correlationplus)
+The computation inside the container will performed under *correlationplus* id in */home/correlationplus* directory.
+So before to run a *correlationplus* container,
+ do not forget to create and mount a shared directory in the container. 
+ This directory must be writable.
 
 ```bash
 mkdir shared_dir
@@ -54,7 +58,14 @@ chmod 777 shared_dir
 cd shared_dir
 docker run -v $PWD:/home/correlationplus structuraldynamicslab/correlation_plus diffMap -i 6fl9_rc15_scalCoeff1_100_modes_lmi_v2.dat -j zacharias_rc15_scalCoeff15_100_modes_lmi.dat -p 6fl9_centeredOrientedAligned2Z.pdb -t lmi
 ```
-
+It is also possible to run an ipython interactive session
+```bash
+docker run -v $PWD:/home/correlationplus --entrypoint /bin/bash -it structuraldynamicslab/correlationplus:0.1.4rc2
+```
+then once in the container
+```bash
+ipython
+```
 ### from Singularity image
 
 As the docker image is registered in dockerhub you can also use it directly with [Singularity](https://sylabs.io/docs/) 
@@ -69,7 +80,11 @@ singularity pull correlationplus.simg docker://structuraldynamicslab/correlation
 ./correlationplus.simg -i 6fl9_rc15_scalCoeff1_100_modes_lmi_v2.dat -j zacharias_rc15_scalCoeff15_100_modes_lmi.dat -p 6fl9_centeredOrientedAligned2Z.pdb -t lmi
 ```
 
-Unlike docker you have not to worry about shared directory, your home and /tmp are automatically shared.
+Unlike docker you have not to worry about shared directory, your *home* and */tmp* are automatically shared.
+You can also run an *ipython* interactive session.
+```bash
+singularity shell correlationplus.simg
+```
 
 
 ## A Quick Start with correlationplus Scripts
@@ -160,6 +175,25 @@ For a detailed analysis, script interfaces provided by visualizemap, diffMap and
 centralityAnalysis apps may not be sufficient. Therefore, you can use IPython 
 to load the functions and do a detailed analysis as follows. 
 
+Do not forget to create and mount a shared directory in the container.
+This directory must be writable
+
+```bash
+mkdir shared_dir
+chmod 777 shared_dir
+cd shared_dir
+```
+and launch a container in interactive mode
+
+```bash
+docker run -v $PWD:/home/correlationplus --entrypoint /bin/bash -it structuraldynamicslab/correlationplus:0.1.4rc2
+```
+
+once inside the container launch an ipython session
+```bash
+ipython
+```
+then commands
 ```
 from correlationplus.visualize import *
 ```
