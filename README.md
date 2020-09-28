@@ -175,30 +175,10 @@ For a detailed analysis, script interfaces provided by visualizemap, diffMap and
 centralityAnalysis apps may not be sufficient. Therefore, you can use IPython 
 to load the functions and do a detailed analysis as follows. 
 
-Do not forget to create and mount a shared directory in the container.
-This directory must be writable
-
-```bash
-mkdir shared_dir
-chmod 777 shared_dir
-cd shared_dir
-```
-and launch a container in interactive mode
-
-```bash
-docker run -v $PWD:/home/correlationplus --entrypoint /bin/bash -it structuraldynamicslab/correlationplus:0.1.4rc2
-```
-
-once inside the container launch an ipython session
-```bash
-ipython
-```
-then commands
-```
+```python
 from correlationplus.visualize import *
 ```
  
-
 You can get help for individual functions with
 
 ```
@@ -212,5 +192,5 @@ loop.
 
 ## Licensing
 
-*correplationplus* is developed and released under [GNU Lesser GPL Licence](https://www.gnu.org/licenses/lgpl-3.0.en.html). 
+*correlationplus* is developed and released under [GNU Lesser GPL Licence](https://www.gnu.org/licenses/lgpl-3.0.en.html). 
 Please read to the **COPYING** and **COPYING.LESSER** files to know more. 
