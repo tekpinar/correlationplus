@@ -1,7 +1,7 @@
 FROM python:3.8.5
 
 LABEL org.label-schema.vcs-url="https://github.com/tekpinar/correlationPlus"
-LABEL org.label-schema.version="1.0.3"
+LABEL org.label-schema.version="1.0.4"
 LABEL org.label-schema.description="A Python API to plot and analyze dynamical correlations of proteins."
 LABEL org.label-schema.docker.cmd="docker run -v ~:/home/correlationplus correlationplus <sub cmd> <args>"
 
