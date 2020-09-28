@@ -1,25 +1,25 @@
 ###############################################################################                                                                                                               
-# correlationPlus - Python package to plot dynamical correlations maps        #                                                                                                               
+# correlationplus - Python package to plot dynamical correlations maps        #
 #                   for proteins.                                             #                                                                                                               
 # Authors: Mustafa Tekpinar                                                   #                                                                                                               
 # Copyright Mustafa Tekpinar 2017-2018                                        #                                                                                                               
 # Copyright CNRS-UMR3528, 2019                                                #                                                                                                               
 # Copyright Institut Pasteur Paris, 2020                                      #                                                                                                              
 #                                                                             #                                                                                                               
-# This file is part of correlationPlus.                                       #                                                                                                               
+# This file is part of correlationplus.                                       #
 #                                                                             #                                                                                                               
-# correlationPlus is free software: you can redistribute it and/or modify     #                                                                                                               
+# correlationplus is free software: you can redistribute it and/or modify     #
 # it under the terms of the GNU Lesser General Public License as published by #                                                                                                               
 # the Free Software Foundation, either version 3 of the License, or           #                                                                                                               
 # (at your option) any later version.                                         #                                                                                                               
 #                                                                             #                                                                                                               
-# correlationPlus is distributed in the hope that it will be useful,          #                                                                                                               
+# correlationplus is distributed in the hope that it will be useful,          #
 # but WITHOUT ANY WARRANTY; without even the implied warranty of              #                                                                                                               
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the               #                                                                                                               
 # GNU LESSER General Public License for more details.                         #                                                                                                               
 #                                                                             #                                                                                                               
 # You should have received a copy of the GNU Lesser General Public License    #                                                                                                               
-# along with correlationPlus.  If not, see <https://www.gnu.org/licenses/>.   #                                                                                                               
+# along with correlationplus.  If not, see <https://www.gnu.org/licenses/>.   #
 ############################################################################### 
 
 import sys
@@ -27,7 +27,7 @@ import getopt
 
 from prody import parsePDB
 
-from correlationPlus.calculate import calcENMnDCC
+from correlationplus.calculate import calcENMnDCC
 
 
 def usage_calculateApp():
@@ -36,13 +36,16 @@ def usage_calculateApp():
     """
     print("""                                                                                                                                                                                 
 Example for basic usage:                                                                                                                                                                                
-correlationPlus calculate -p 4z90.pdb                                                                                                                        
-                                                                                                                                                                                              
+correlationplus calculate -p 4z90.pdb
+
 Arguments:                                                                                         
            -p: PDB file of the protein. (Mandatory)
-           -m: Method to calculate correlations. It can be ANM or GNM (Default is ANM) . (Optional)                                                                                                                                           
-           -t: Type of the matrix. It can be ndcc, lmi or absndcc (absolute values of ndcc). Default value is ndcc (Optional)                                                                 
-           -o: This will be your output data file. Default is correlationMap.dat. (Optional)                                                                                                    
+           -m: Method to calculate correlations. It can be ANM or GNM 
+               Default is ANM . (Optional)
+           -t: Type of the matrix. It can be ndcc, lmi or absndcc (absolute values of ndcc).
+               Default value is ndcc (Optional)
+           -o: This will be your output data file.
+               Default is correlationMap.dat. (Optional)
 """)
 
 

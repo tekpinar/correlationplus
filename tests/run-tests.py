@@ -1,25 +1,25 @@
 ###############################################################################
-# correlationPlus - A Python package to calculate, visualize and analyze      #
+# correlationplus - A Python package to calculate, visualize and analyze      #
 #                    dynamical correlations maps of proteins.                 #
 # Authors: Mustafa Tekpinar                                                   #
 # Copyright Mustafa Tekpinar 2017-2018                                        #
 # Copyright CNRS-UMR3528, 2019                                                #
 # Copyright Institut Pasteur Paris, 2020                                      #
 #                                                                             #
-# This file is part of correlationPlus.                                       #
+# This file is part of correlationplus.                                       #
 #                                                                             #
-# correlationPlus is free software: you can redistribute it and/or modify     #
+# correlationplus is free software: you can redistribute it and/or modify     #
 # it under the terms of the GNU Lesser General Public License as published by #
 # the Free Software Foundation, either version 3 of the License, or           #
 # (at your option) any later version.                                         #
 #                                                                             #
-# correlationPlus is distributed in the hope that it will be useful,          #
+# correlationplus is distributed in the hope that it will be useful,          #
 # but WITHOUT ANY WARRANTY; without even the implied warranty of              #
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the               #
 # GNU LESSER General Public License for more details.                         #
 #                                                                             #
 # You should have received a copy of the GNU Lesser General Public License    #
-# along with correlationPlus.  If not, see <https://www.gnu.org/licenses/>.   #
+# along with correlationplus.  If not, see <https://www.gnu.org/licenses/>.   #
 ###############################################################################
 
 import os
@@ -36,38 +36,38 @@ def runTests():
     prefix = os.path.normpath(os.path.join(__file__, '..', '..'))
 
     # Test calculate module to produce nDCC maps with GNM.
-    os.system(f"correlationPlus calculate "
+    os.system(f"correlationplus calculate "
               f"-p {prefix}/examples/6fl9_centeredOrientedAligned2Z.pdb "
                "-m GNM -o gnm-ndcc.dat")
 
     # Test calculate module to produce nDCC maps with ANM.
-    os.system(f"correlationPlus calculate "
+    os.system(f"correlationplus calculate "
               f"-p {prefix}/examples/6fl9_centeredOrientedAligned2Z.pdb "
                "-m ANM -o anm-ndcc.dat")
 
 
     # Test visualizemapApp for absolute nDCC maps
-    os.system(f"correlationPlus visualizemap "
+    os.system(f"correlationplus visualizemap "
               f"-i {prefix}/examples/6fl9_just_prot_anm_100_modes_rc_15_cross-correlations.txt "
               f"-p {prefix}/examples/6fl9_centeredOrientedAligned2Z.pdb "
                "-t absndcc")
 
     # Test visualizemapApp for LMI maps
-    os.system(f"correlationPlus visualizemap "
+    os.system(f"correlationplus visualizemap "
               f"-i {prefix}/examples/6fl9_rc15_scalCoeff1_100_modes_lmi_v2.dat "
               f"-p {prefix}/examples/6fl9_centeredOrientedAligned2Z.pdb "
               "-t lmi")
 
  
     # Test diffMapApp for LMI maps
-    os.system(f"correlationPlus diffMap "
+    os.system(f"correlationplus diffMap "
               f"-i {prefix}/examples/6fl9_rc15_scalCoeff1_100_modes_lmi_v2.dat "
               f"-j {prefix}/examples/zacharias_rc15_scalCoeff15_100_modes_lmi.dat "
               f"-p {prefix}/examples/6fl9_centeredOrientedAligned2Z.pdb "
               "-t lmi")
 
     # Test centralityAnalysisApp for LMI maps
-    os.system(f"correlationPlus centralityAnalysis "
+    os.system(f"correlationplus centralityAnalysis "
               f"-i {prefix}/examples/6fl9_rc15_scalCoeff1_100_modes_lmi_v2.dat "
               f"-p {prefix}/examples/6fl9_centeredOrientedAligned2Z.pdb "
               "-t lmi")

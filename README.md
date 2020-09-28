@@ -1,8 +1,8 @@
-# CorrelationPlus
+# correlationplus
 
 A Python package to calculate, visualize and analyze dynamical correlations of proteins.
 
-CorrelationPlus contains four scripts that you can use to calculate, visualize
+correlationplus contains four scripts that you can use to calculate, visualize
 and analyze dynamical correlations of proteins. 
 These correlations can be dynamical cross-correlations, linear mutual
 information or generalized correlations. 
@@ -13,46 +13,46 @@ information or generalized correlations.
 
 We recommend to use pip
 ```bash
-pip install correlationPlus
+pip install correlationplus
 ```
 
 or if you do not have administration rights
 ```bash
-pip install --user correlationPlus
+pip install --user correlationplus
 ```
 
 If you prefer to use a virtualenv
 ```bash
-python3 -m venv correlationPlus
-cd correlationPlus
+python3 -m venv correlationplus
+cd correlationplus
 source bin/activate
-pip install correlationPlus
+pip install correlationplus
 ```
 
 ### for developers
 
 We recommend to use pip and a virtualenv
 ```bash
-python3 -m venv correlationPlus
-cd correlationPlus
+python3 -m venv correlationplus
+cd correlationplus
 source bin/activate
 mkdir src
 cd src
-git clone https://github.com/tekpinar/correlationPlus.git # or git@github.com:tekpinar/correlationPlus.git
-cd correlationPlus
+git clone https://github.com/tekpinar/correlationplus.git # or git@github.com:tekpinar/correlationplus.git
+cd correlationplus
 pip install -e .
 ```
 
 ### from Docker image
 
-Docker images are also available from [Docker Hub](https://hub.docker.com/r/structuraldynamicslab/correlation_plus)
+Docker images are also available from [Docker Hub](https://hub.docker.com/r/structuraldynamicslab/correlationplus)
 
 ```bash
 mkdir shared_dir
 cp 6fl9_just_prot_anm_100_modes_rc_15_cross-correlations.txt 6fl9_centeredOrientedAligned2Z.pdb shared_dir
 chmod 777 shared_dir
 cd shared_dir
-docker run -v $PWD:/correlationPlus structuraldynamicslab/correlation_plus diffMap -i 6fl9_rc15_scalCoeff1_100_modes_lmi_v2.dat -j zacharias_rc15_scalCoeff15_100_modes_lmi.dat -p 6fl9_centeredOrientedAligned2Z.pdb -t lmi
+docker run -v $PWD:/correlationplus structuraldynamicslab/correlation_plus diffMap -i 6fl9_rc15_scalCoeff1_100_modes_lmi_v2.dat -j zacharias_rc15_scalCoeff15_100_modes_lmi.dat -p 6fl9_centeredOrientedAligned2Z.pdb -t lmi
 ```
 
 ### from Singularity image
@@ -72,7 +72,7 @@ singularity pull correlation_plus.simg docker://structuraldynamicslab/correlatio
 Unlike docker you have not to worry about shared directory, your home and /tmp are automatically shared.
 
 
-## A Quick Start with correlationPlus Scripts
+## A Quick Start with correlationplus Scripts
 
 ### Calculating dynamical cross-correlations
 Download examples folder and go there. 
@@ -80,20 +80,20 @@ Download examples folder and go there.
 To calculate dynamical cross-correlations with Gaussian network model:
 
 ```bash
-correlationPlus calculate -p 6fl9_centeredOrientedAligned2Z.pdb -m GNM -o gnm-ndcc.dat
+correlationplus calculate -p 6fl9_centeredOrientedAligned2Z.pdb -m GNM -o gnm-ndcc.dat
 ```
 
 To calculate dynamical cross-correlations with Anisotropic network model:
 
 ```bash
-correlationPlus calculate -p 6fl9_centeredOrientedAligned2Z.pdb -m ANM -o anm-ndcc.dat
+correlationplus calculate -p 6fl9_centeredOrientedAligned2Z.pdb -m ANM -o anm-ndcc.dat
 ```
 
 ### Visualization of correlation maps
 To run a simple example of visualization, you can use data and pdb files in the examples folder:
 
 ```bash
-correlationPlus visualizemap -i 6fl9_just_prot_anm_100_modes_rc_15_cross-correlations.txt -p 6fl9_centeredOrientedAligned2Z.pdb -t absndcc
+correlationplus visualizemap -i 6fl9_just_prot_anm_100_modes_rc_15_cross-correlations.txt -p 6fl9_centeredOrientedAligned2Z.pdb -t absndcc
 ```
 This will produce plots of absolute values of dynamical cross correlations.
 
@@ -128,13 +128,13 @@ of ligated vs unligated simulations are some common examples.
 The difference maps can be produced with diffMap app as follows:  
 
 ```bash
-correlationPlus diffMap -i 6fl9_rc15_scalCoeff1_100_modes_lmi_v2.dat -j zacharias_rc15_scalCoeff15_100_modes_lmi.dat -p 6fl9_centeredOrientedAligned2Z.pdb -t lmi
+correlationplus diffMap -i 6fl9_rc15_scalCoeff1_100_modes_lmi_v2.dat -j zacharias_rc15_scalCoeff15_100_modes_lmi.dat -p 6fl9_centeredOrientedAligned2Z.pdb -t lmi
 ```
 
 ### Centrality analysis of the correlation maps
 Centrality analysis can be used to deduce active sites, binding sites, 
 key mutation sites and allosteric residues. 
-correlationPlus can do centrality analysis for your protein
+correlationplus can do centrality analysis for your protein
 via its centralityAnalysis app.
 
 It can compute degree, closeness, betweenness, current flow closeness, 
@@ -142,7 +142,7 @@ current flow betweenness and eigenvector centrality. The following command
 will do all of the above analysis:
 
 ```bash
-correlationPlus centralityAnalysis -i 6fl9_just_prot_anm_100_modes_rc_15_cross-correlations.txt -p 6fl9_centeredOrientedAligned2Z.pdb -t absndcc
+correlationplus centralityAnalysis -i 6fl9_just_prot_anm_100_modes_rc_15_cross-correlations.txt -p 6fl9_centeredOrientedAligned2Z.pdb -t absndcc
 ```
 After the calculation, the centrality values will be inserted into Bfactor
  column of a pdb file. You can load the pdb files with your favorite visualization 
@@ -161,7 +161,7 @@ centralityAnalysis apps may not be sufficient. Therefore, you can use IPython
 to load the functions and do a detailed analysis as follows. 
 
 ```
-from correlationPlus.visualize import *
+from correlationplus.visualize import *
 ```
  
 
