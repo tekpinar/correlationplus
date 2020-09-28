@@ -181,7 +181,7 @@ from correlationplus.visualize import *
  
 You can get help for individual functions with
 
-```
+```python
 help(intraChainCorrelationMaps) 
 
 ```
