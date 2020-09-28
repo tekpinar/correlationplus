@@ -104,8 +104,8 @@ The correlation data has to be in matrix format, where only A(i,j) values are
 listed in a square matrix format. LMI matrices produced by g_correlation 
 program of Lange and Grubmuller can also be parsed. 
 
-You can analyze the correlations with VMD just by loading the tcl files produced by 
-visualizemap script. You can call *VMD* and go to Extensions->Tk Console menu. 
+You can analyze the correlations with [VMD](https://www.ks.uiuc.edu/Research/vmd/) just by loading the tcl files produced by 
+visualizemap script. You can call *VMD* and go to *Extensions->Tk Console menu*. 
 Write the following command to see the correlations:
 ```bash
 source correlation-interchain-chainsA-B.tcl
@@ -147,7 +147,7 @@ correlationplus centralityAnalysis -i 6fl9_just_prot_anm_100_modes_rc_15_cross-c
 After the calculation, the centrality values will be inserted into *Bfactor*
  column of a pdb file. You can load the pdb files with your favorite visualization 
 software and color according to *Bfactors*. If you prefer *VMD* - as we do-, 
-the app will produces tcl files so that you can visualize the key residues with VMD.
+the app will produces tcl files so that you can visualize the key residues with *VMD*.
 The tcl script highlights the residues with the highest 10% of the selected centrality
 in VDW representation.
 
@@ -178,5 +178,5 @@ loop.
 
 ## Licensing
 
-correplationPlus is developed and released under [GNU Lesser GPL Licence](https://www.gnu.org/licenses/lgpl-3.0.en.html). 
-Please read to the COPYING and COPYING.LESSER files to know more. 
+*correplationplus* is developed and released under [GNU Lesser GPL Licence](https://www.gnu.org/licenses/lgpl-3.0.en.html). 
+Please read to the **COPYING** and **COPYING.LESSER** files to know more. 
