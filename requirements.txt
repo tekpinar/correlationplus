@@ -1,6 +1,6 @@
 numpy==1.19.1
-matplotlib==3.3.0
+matplotlib>=3.2.2, <=3.3.2
 scipy==1.5.2
 networkx==2.4
 biopython==1.77
-prody==1.10.11
+prody>=1.10.8, <=1.10.11
