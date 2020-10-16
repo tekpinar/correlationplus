@@ -141,7 +141,8 @@ def plotCentralities(centrality, centralityArray, out_file, selectedAtoms, scali
                 if selectedAtoms.getChids()[i] == chain:
                     x.append(selectedAtoms[i].getResnum())
                     y.append(centralityArray[i])
-
+            
+            plt.title('Chain '+chain)
             plt.subplots()
             plt.locator_params(axis='y', nbins=5)
 
