@@ -27,7 +27,7 @@ import sys
 
 import numpy as np
 from prody import parsePDB
-
+from prody import buildDistMatrix
 from correlationplus.visualize import convertLMIdata2Matrix
 from correlationplus.centralityAnalysis import centralityAnalysis
 
@@ -65,9 +65,11 @@ def centralityAnalysisApp():
         sys.exit(-1)
 
     valueFilter = 0.3
-    centralityAnalysis(ccMatrix, valueFilter, out_file, "degree", selectedAtoms)
-    centralityAnalysis(ccMatrix, valueFilter, out_file, "betweenness", selectedAtoms)
-    centralityAnalysis(ccMatrix, valueFilter, out_file, "closeness", selectedAtoms)
-    centralityAnalysis(ccMatrix, valueFilter, out_file, "current_flow_betweenness", selectedAtoms)
-    centralityAnalysis(ccMatrix, valueFilter, out_file, "current_flow_closeness", selectedAtoms)
-    centralityAnalysis(ccMatrix, valueFilter, out_file, "eigenvector", selectedAtoms)
+    distanceFilter=7.0
+    distanceMatrix=buildDistMatrix(selectedAtoms)
+    centralityAnalysis(ccMatrix, distanceMatrix, valueFilter, distanceFilter, out_file, "degree", selectedAtoms)
+    centralityAnalysis(ccMatrix, distanceMatrix, valueFilter, distanceFilter, out_file, "betweenness", selectedAtoms)
+    centralityAnalysis(ccMatrix, distanceMatrix, valueFilter, distanceFilter, out_file, "closeness", selectedAtoms)
+    centralityAnalysis(ccMatrix, distanceMatrix, valueFilter, distanceFilter, out_file, "current_flow_betweenness", selectedAtoms)
+    centralityAnalysis(ccMatrix, distanceMatrix, valueFilter, distanceFilter, out_file, "current_flow_closeness", selectedAtoms)
+    centralityAnalysis(ccMatrix, distanceMatrix, valueFilter, distanceFilter, out_file, "eigenvector", selectedAtoms)

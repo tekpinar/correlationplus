@@ -177,7 +177,7 @@ def plotCentralities(centrality, centralityArray, out_file, selectedAtoms, scali
         plt.close('all')
 
 
-def centralityAnalysis(ccMatrix, valueFilter, out_file, centrality, selectedAtoms):
+def centralityAnalysis(ccMatrix, distanceMatrix, valueFilter, distanceFilter, out_file, centrality, selectedAtoms):
     """
     This function calculates various network (graph) centralities of a protein.
 
@@ -192,8 +192,17 @@ def centralityAnalysis(ccMatrix, valueFilter, out_file, centrality, selectedAtom
     ----------
     ccMatrix: Numpy matrix
         It is a numpy matrix of typically nDCC, LMI or Generalized Correlations.
+    distanceMatrix: Numpy matrix
+        The distances between Calpha atoms of the protein stored in a matrix.
     valueFilter: float
-        The ccMatrix values than the valueFilter will be ignored.
+        The ccMatrix values lower than the valueFilter will be ignored.
+    distanceFilter: float
+        The distance values higher than the distanceFilter will be ignored
+        and they will not be considered as edges in a network. 
+        This kind of value pruning may work for low conformational change MD
+        simulations or ENM based calculations. However, if there are large
+        scale structural changes, it will be necessary to eliminate the edges 
+        based on contacts and their preservation in during the entire simulation. 
     out_file: string
         Prefix of the output file. According to the centralty measure, it will be
         extended.
@@ -217,9 +226,11 @@ def centralityAnalysis(ccMatrix, valueFilter, out_file, centrality, selectedAtom
         dynNetwork.add_node(i)
 
     # Add all pairwise interactions greater than the valueFilter as edges.
+    # In addition, add only edges which has a distance of lower than the 
+    # distance filter
     for i in range(n):
         for j in range(n):
-            if fabs(ccMatrix[i][j]) > valueFilter:
+            if((fabs(ccMatrix[i][j])>valueFilter) and (distanceMatrix[i][j]<=distanceFilter)):
                 dynNetwork.add_edge(i, j, weight=-log(fabs(ccMatrix[i][j])))
                 # dynNetwork.add_edge(i, j, weight=fabs(correlationArray[i][j]))
 
