@@ -142,8 +142,9 @@ def plotCentralities(centrality, centralityArray, out_file, selectedAtoms, scali
                     x.append(selectedAtoms[i].getResnum())
                     y.append(centralityArray[i])
             
-            plt.title('Chain '+chain)
+
             plt.subplots()
+            plt.title('Chain '+chain)
             plt.locator_params(axis='y', nbins=5)
 
             plt.xticks(fontsize=16)
