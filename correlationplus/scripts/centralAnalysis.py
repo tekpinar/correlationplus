@@ -24,6 +24,7 @@
 
 
 import sys
+import getopt
 
 import numpy as np
 from prody import parsePDB
