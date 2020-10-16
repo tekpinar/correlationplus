@@ -116,12 +116,15 @@ def centralityAnalysisApp():
             distance_cutoff = handle_arguments_centralityAnalysisApp()
 
     print(f"""
-@> Running 'CentralityAnalysis app
+@> Running 'centralityAnalysis' app
 
-@> Input file   : {inp_file}
-@> PDB file     : {pdb_file}
-@> Data type    : {sel_type}
-@> Output       : {out_file}""")
+@> Input file     : {inp_file}
+@> PDB file       : {pdb_file}
+@> Data type      : {sel_type}
+@> Output         : {out_file}
+@> Centrality     : {centrality_type}
+@> Value filter   : {value_cutoff}
+@> Distance filter: {distance_cutoff}""")
 
     ##########################################################################
     # Read PDB file
