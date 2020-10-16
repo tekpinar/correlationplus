@@ -28,6 +28,7 @@ from collections import Counter
 
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.ticker import FormatStrFormatter
 from prody import writePDB
 import networkx as nx
 
@@ -143,12 +144,13 @@ def plotCentralities(centrality, centralityArray, out_file, selectedAtoms, scali
                     y.append(centralityArray[i])
             
 
-            plt.subplots()
+            fig, ax = plt.subplots()
             plt.title('Chain '+chain)
             plt.locator_params(axis='y', nbins=5)
 
             plt.xticks(fontsize=16)
             plt.yticks(fontsize=16)
+            ax.yaxis.set_major_formatter(FormatStrFormatter('%.3f'))
             plt.ylabel(centrality.replace('_', ' '), fontsize=20)
             plt.xlabel("Residue Number", fontsize=20)
 
@@ -160,11 +162,12 @@ def plotCentralities(centrality, centralityArray, out_file, selectedAtoms, scali
             plt.close('all')
     else:
         dst_file = out_file + '_' + centrality
-        plt.subplots()
+        fig, ax = plt.subplots()
         # plt.locator_params(axis='y', nbins=4)
 
         plt.xticks(fontsize=16)
         plt.yticks(fontsize=16)
+        ax.yaxis.set_major_formatter(FormatStrFormatter('%.3f'))
         plt.ylabel(centrality.replace('_', ' '), fontsize=20)
         plt.xlabel("Residue Number", fontsize=20)
 
