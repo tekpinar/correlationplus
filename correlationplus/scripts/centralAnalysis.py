@@ -142,8 +142,8 @@ def centralityAnalysisApp():
         print("Unknown data type: Type can only be ndcc, absndcc or lmi!\n")
         sys.exit(-1)
 
-    valueFilter = value_cutoff
-    distanceFilter=distance_cutoff
+    valueFilter = float(value_cutoff)
+    distanceFilter=float(distance_cutoff)
     distanceMatrix=buildDistMatrix(selectedAtoms)
 
     if centrality_type == "all":
