@@ -28,24 +28,42 @@ import getopt
 from prody import parsePDB
 
 from correlationplus.calculate import calcENMnDCC
+from correlationplus.calculate import calcMDnDCC
 
 
 def usage_calculateApp():
     """                                                                                                                                                                                       
     Show how to use this program!                                                                                                                                                             
     """
-    print("""                                                                                                                                                                                 
-Example for basic usage:                                                                                                                                                                                
+    print("""
+Example usage: 
+
+If you would like to calculate ANM based normalized cross-correlations from a 
+pdb file:                                                                                                                                                                                
 correlationplus calculate -p 4z90.pdb
+
+If you would like to calculate cross-correlations from a reference pdb file 
+and a trajectory file (in dcd, xtc or trr formats):                                                                                                                                                                                
+correlationplus calculate -p 4z90.pdb -f 4z90.xtc
 
 Arguments:                                                                                         
            -p: PDB file of the protein. (Mandatory)
-           -m: Method to calculate correlations. It can be ANM or GNM 
-               Default is ANM . (Optional)
-           -t: Type of the matrix. It can be ndcc, lmi or absndcc (absolute values of ndcc).
-               Default value is ndcc (Optional)
+           -f: A trajectory file in dcd, xtc or trr format. (Optional)
+           -b: Beginning frame in the trajectory to calculate the 
+               correlation map (Valid only if you are using a trajectory).
+           -e: Ending frame in the trajectory to calculate the 
+               correlation map (Valid only if you are using a trajectory).
+           -m: Elastic network model to calculate the correlations. 
+               It can be ANM or GNM. Default is ANM. (Optional)
+               (Valid only when you don't have a trajectory file.)
+           -n: Number of non-zero modes, when ANM or GNM is used. 
+               Default is 100. (Optional)
+               (It can not exceed 3N-6 in ANM and N-1 in GNM, where N 
+               is number of Calpha atoms.)
+           -t: Type of the correlation matrix. It can be ndcc or lmi.
+               Default value is ndcc. (Optional)
            -o: This will be your output data file.
-               Default is correlationMap.dat. (Optional)
+               Default is DCC.dat. (Optional)
 """)
 
 
@@ -54,11 +72,18 @@ def handle_arguments_calculateApp():
     out_file = None
     sel_type = None
     pdb_file = None
+    trj_file = None
+    beg_frm  = 0
+    end_frm  = -1
+    num_mod  = 100
 
     try:
-        opts, args = getopt.getopt(sys.argv[2:], "hm:o:t:p:", ["help", "method=", "out=", "type=", "pdb="])
+        opts, args = getopt.getopt(sys.argv[2:], "hm:o:t:p:f:b:e:n:", \
+        ["help", "method=", "out=", "type=", "pdb=", "frames=", "beg=", "end=", "n_modes="])
     except getopt.GetoptError:
         usage_calculateApp()
+        print("@> ERROR: Unknown option encountered!")
+        sys.exit(-1)
 
     for opt, arg in opts:
         if opt in ('-h', "--help"):
@@ -72,6 +97,14 @@ def handle_arguments_calculateApp():
             sel_type = arg
         elif opt in ("-p", "--pdb"):
             pdb_file = arg
+        elif opt in ("-f", "--frames"):
+            trj_file = arg
+        elif opt in ("-b", "--beg"):
+            beg_frm = int(arg)
+        elif opt in ("-e", "--end"):
+            end_frm = int(arg)
+        elif opt in ("-n", "--n_modes"):
+            num_mod = int(arg)
         else:
             assert False, usage_calculateApp()
 
@@ -80,41 +113,68 @@ def handle_arguments_calculateApp():
         usage_calculateApp()
         sys.exit(-1)
 
-    # Assign a default name if the user forgets the output file prefix.                                                                                                                       
-    if method is None:
-        method = "ANM"
-    if (method != "ANM") and (method != "GNM"):
-        print("ERROR: Unknown elastic network model!")
-        print("       ENM method can only be ANM or GNM!")
-        sys.exit(-1)
-
+    #If the user has not provided a trajectory file:
+    if trj_file is None:
+        # It means that the user wants only ENM-based calculations.                                                                                                                       
+        if method is None:
+            method = "ANM"
+        if (method != "ANM") and (method != "GNM"):
+            print("@> ERROR: Unknown elastic network model!")
+            print("@> ENM method can only be ANM or GNM!")
+            sys.exit(-1)
+    else:
+        if method is None:
+            method = "MD"
+        #Check the file extension.        
+        if (trj_file.lower().endswith(('.dcd', '.xtc', '.trr'))) is False:
+            print("@> ERROR: Unrecognized trajectory type!")
+            print("@> A trajectory file can only be in dcd, xtc or trr format!")
+            usage_calculateApp()
+            sys.exit(-1)
+        
+    
     # Assign a default name if the user forgets the output file prefix.                                                                                                                       
     if out_file is None:
-        out_file = "correlationMap.dat"
+        out_file = "DCC"
 
     # Assign a default matrix type                                                                                                                               
     if sel_type is None:
         sel_type = "ndcc"
 
-    return method, out_file, sel_type, pdb_file
+    return method, out_file, sel_type, pdb_file, trj_file, beg_frm, end_frm, num_mod
+    
+
 
 
 def calculateApp():
-    method, out_file, sel_type, pdb_file = handle_arguments_calculateApp()
+    method, out_file, sel_type, pdb_file, trj_file, beg_frm, end_frm, num_mod = \
+    handle_arguments_calculateApp()
     print(f"""                                                                                                                                                                                
 @> Running 'calculate App'
                                             
-@> Method       : {method}
-@> Output       : {out_file}
-@> Data type    : {sel_type}
-@> PDB File     : {pdb_file}
-    """)
+@> Method          : {method}
+@> Output          : {out_file}
+@> Data type       : {sel_type}
+@> PDB file        : {pdb_file}""")
 
-    #Read pdb file
-    selectedAtoms = parsePDB(pdb_file, subset='ca')
-    calcENMnDCC(selectedAtoms, saveMatrix=True, out_file=out_file, method=method, nmodes=100)
+    if trj_file is None:
+        print("@> Number of modes : "+str(num_mod))
+        #Read pdb file
+        selectedAtoms = parsePDB(pdb_file, subset='ca')
+        calcENMnDCC(selectedAtoms, saveMatrix=True, out_file=out_file+".dat",\
+                    method=method, nmodes=num_mod)
+        
+    else:
+        print("@> Trajectory file : "+trj_file)
+        print("@> Beginning frame : "+str(beg_frm))
+        print("@> Ending frame    : "+str(end_frm))
+        calcMDnDCC(pdb_file, trj_file, \
+                    startingFrame=beg_frm, \
+                    endingFrame=end_frm, \
+                    normalized=True, \
+                    saveMatrix=True, \
+                    out_file=out_file)
+
     print("@> Correlation calculation finished successfully!")
-
-
 if __name__ == "__main__":
     calculateApp()
