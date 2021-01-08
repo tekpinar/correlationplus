@@ -60,6 +60,8 @@ Arguments:
                Default is 100. (Optional)
                (It can not exceed 3N-6 in ANM and N-1 in GNM, where N 
                is number of Calpha atoms.)
+           -c: Cutoff radius in Angstrom for ANM or GNM. (Optional) 
+               Default is 15 for ANM and 10 for GNM. 
            -t: Type of the correlation matrix. It can be ndcc or lmi.
                Default value is ndcc. (Optional)
            -o: This will be your output data file.
@@ -76,10 +78,11 @@ def handle_arguments_calculateApp():
     beg_frm  = 0
     end_frm  = -1
     num_mod  = 100
+    cut_off  = None
 
     try:
-        opts, args = getopt.getopt(sys.argv[2:], "hm:o:t:p:f:b:e:n:", \
-        ["help", "method=", "out=", "type=", "pdb=", "frames=", "beg=", "end=", "n_modes="])
+        opts, args = getopt.getopt(sys.argv[2:], "hm:o:t:p:f:b:e:n:c:", \
+        ["help", "method=", "out=", "type=", "pdb=", "frames=", "beg=", "end=", "n_modes=", "cutoff="])
     except getopt.GetoptError:
         usage_calculateApp()
         print("@> ERROR: Unknown option encountered!")
@@ -105,11 +108,14 @@ def handle_arguments_calculateApp():
             end_frm = int(arg)
         elif opt in ("-n", "--n_modes"):
             num_mod = int(arg)
+        elif opt in ("-c", "--cutoff"):
+            cut_off = int(arg)
         else:
             assert False, usage_calculateApp()
 
     # Input data matrix and PDB file are mandatory!                                                                                                                                           
     if pdb_file is None:
+        print("\n@> ERROR: PDB file is mandatory!\n")
         usage_calculateApp()
         sys.exit(-1)
 
@@ -141,28 +147,40 @@ def handle_arguments_calculateApp():
     if sel_type is None:
         sel_type = "ndcc"
 
-    return method, out_file, sel_type, pdb_file, trj_file, beg_frm, end_frm, num_mod
+    return method, out_file, sel_type, pdb_file, trj_file, beg_frm, end_frm, num_mod, cut_off
     
 
 
 
 def calculateApp():
-    method, out_file, sel_type, pdb_file, trj_file, beg_frm, end_frm, num_mod = \
-    handle_arguments_calculateApp()
+    method, out_file, sel_type, pdb_file, trj_file, beg_frm, end_frm, \
+    num_mod, cut_off = handle_arguments_calculateApp()
     print(f"""                                                                                                                                                                                
 @> Running 'calculate App'
                                             
 @> Method          : {method}
 @> Output          : {out_file}
-@> Data type       : {sel_type}
+@> Correlation     : {sel_type}
 @> PDB file        : {pdb_file}""")
+
+    if (out_file.lower().endswith(('.dat', '.txt'))) is False:
+        out_file = out_file + ".dat"
 
     if trj_file is None:
         print("@> Number of modes : "+str(num_mod))
+        if cut_off is None and method=="ANM":
+            cut_off=15
+        if cut_off is None and method=="GNM":
+            cut_off=10
+        print("@> Cutoff radius   : "+str(cut_off))
         #Read pdb file
         selectedAtoms = parsePDB(pdb_file, subset='ca')
-        calcENMnDCC(selectedAtoms, saveMatrix=True, out_file=out_file+".dat",\
-                    method=method, nmodes=num_mod)
+        calcENMnDCC(selectedAtoms, cut_off, \
+                    method=method, 
+                    nmodes=num_mod, \
+                    normalized=True, \
+                    saveMatrix=True, \
+                    out_file=out_file )
         
     else:
         print("@> Trajectory file : "+trj_file)

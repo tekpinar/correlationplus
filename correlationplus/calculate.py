@@ -32,7 +32,8 @@ from MDAnalysis.analysis import align
 from MDAnalysis.analysis.rms import rmsd
 import numba
 
-def calcENMnDCC(selectedAtoms, saveMatrix=True, out_file="nDCC.dat", method="ANM", nmodes=100):
+def calcENMnDCC(selectedAtoms, cut_off, method="ANM", nmodes=100, \
+                normalized=True, saveMatrix=True, out_file="nDCC.dat"):
     """
         Calculate normalized dynamical cross-correlations based on elastic 
         network model.
@@ -41,29 +42,35 @@ def calcENMnDCC(selectedAtoms, saveMatrix=True, out_file="nDCC.dat", method="ANM
     ----------
     selectedAtoms: prody object
         A list of -typically CA- atoms selected from the parsed PDB file.
+    cut_off: int
+        Cutoff radius in Angstrom unit for ANM or GNM. 
+        Default value is 15 for ANM and 10 for GNM. 
+    method: string
+        This string can only take two values: ANM or GNM
+        ANM us the default value.
+    nmodes: int
+        100 modes are default for normal mode based nDCC calculations.
     saveMatrix: bool
         If True, an output file for the correlations will be written
         be written. 
     out_file: string
         Output file name for the data matrix. 
         Default value is nDCC.dat
-    method: string
-        This string can only take two values: ANM or GNM
-        ANM us the default value.
-    nmodes: int
-        100 modes are default for normal mode based nDCC calculations.
     Returns
     -------
     ccMatrix: A numpy square matrix of floats
         Cross-correlation matrix.
     """
     if(method == "ANM"):
-        modes, sel = calcANM(selectedAtoms, n_modes=nmodes)
+        modes, sel = calcANM(selectedAtoms, cutoff=cut_off, n_modes=nmodes)
     elif (method == "GNM"):
-        modes, sel = calcGNM(selectedAtoms, n_modes=nmodes)
- 
-    ccMatrix = calcCrossCorr(modes, n_cpu=1, norm=True)
-
+        modes, sel = calcGNM(selectedAtoms, cutoff=cut_off, n_modes=nmodes)
+    
+    if(normalized==True):
+        ccMatrix = calcCrossCorr(modes, n_cpu=1, norm=True)
+        out_file = "n"+out_file
+    else:
+        ccMatrix = calcCrossCorr(modes, n_cpu=1, norm=False)
     if(saveMatrix == True):
         np.savetxt(out_file, ccMatrix, fmt='%.6f')
 
@@ -143,7 +150,7 @@ def calcMDnDCC(topology, trajectory, startingFrame=0, endingFrame=(-1),\
                 cc_normalized[j][i]=cc_normalized[i][j]
         
         if(saveMatrix==True):
-            np.savetxt(out_file+"_normalized.dat", cc_normalized, fmt='%.6f')
+            np.savetxt("n"+out_file, cc_normalized, fmt='%.6f')
 
         return cc_normalized
     else:
@@ -151,7 +158,7 @@ def calcMDnDCC(topology, trajectory, startingFrame=0, endingFrame=(-1),\
             for j in range (i+1, N):
                 ccMatrix[j][i] = ccMatrix[i][j]
         if(saveMatrix==True):
-            np.savetxt(out_file+".dat", ccMatrix, fmt='%.6f')
+            np.savetxt(out_file, ccMatrix, fmt='%.6f')
         return ccMatrix
 
 @numba.njit

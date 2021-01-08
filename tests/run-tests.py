@@ -38,13 +38,17 @@ def runTests():
     # Test calculate module to produce nDCC maps with GNM.
     os.system(f"correlationplus calculate "
               f"-p {prefix}/examples/6fl9_centeredOrientedAligned2Z.pdb "
-               "-m GNM -o gnm-ndcc.dat")
+               "-m GNM -o dcc-6fl9-gnm.dat")
 
     # Test calculate module to produce nDCC maps with ANM.
     os.system(f"correlationplus calculate "
               f"-p {prefix}/examples/6fl9_centeredOrientedAligned2Z.pdb "
-               "-m ANM -o anm-ndcc.dat")
+               "-m ANM -o dcc-6fl9-anm.dat")
 
+    # Test calculate module to produce nDCC maps from an MD trajectory.
+    os.system(f"correlationplus calculate "
+              f"-p {prefix}/examples/6lu7_dimer_with_N3_protein_sim1_ca.pdb "
+              f"-f {prefix}/examples/6lu7_dimer_with_N3_protein_sim1_ca_short.trr -o dcc-6lu7-md.dat")
 
     # Test visualizemapApp for absolute nDCC maps
     os.system(f"correlationplus visualizemap "
@@ -68,8 +72,8 @@ def runTests():
 
     # Test centralityAnalysisApp for LMI maps
     os.system(f"correlationplus centralityAnalysis "
-              f"-i {prefix}/examples/6fl9_rc15_scalCoeff1_100_modes_lmi_v2.dat "
-              f"-p {prefix}/examples/6fl9_centeredOrientedAligned2Z.pdb "
+              f"-i {prefix}/examples/6lu7_dimer_with_N3_protein_sim1-lmi.dat "
+              f"-p {prefix}/examples/6lu7_dimer_with_N3_protein_sim1_ca.pdb "
               "-t lmi")
 
 if __name__ == "__main__":
