@@ -67,9 +67,8 @@ def cmap_discretize(cmap, N):
 
 def convertLMIdata2Matrix(inp_file, writeAllOutput: bool):
     """
-        This function parses LMI matrix produced in g_correlation
-        and returns a numpy array.
-
+        This function parses LMI matrix and returns a numpy array. If the 
+        It can handle both full matrix format or g_correlation format.
     Parameters
     ----------
 
@@ -87,33 +86,30 @@ def convertLMIdata2Matrix(inp_file, writeAllOutput: bool):
 
     """
     data_file = open(inp_file, 'r')
-
     allLines = data_file.readlines()
-    data_list = []
-    for line in allLines:
-        words = line.split()
-        for i in words:
-                data_list.append(i)
-
-    data_list = data_list[4:-1]
-    n = int(np.sqrt(len(data_list)))
-    data_array = np.array(data_list, dtype=float)
-
-    cc = np.reshape(data_array, (n, n))
-    #print (cc.dtype)
-
     data_file.close()
-    #Fill diagonal elements with zeros
-    #np.fill_diagonal(cc, 0.0)
+    if(("x" in allLines[0]) and ("[" in allLines[0])):
+        # This is a g_correlation file.
+        data_list = []
+        for line in allLines:
+            words = line.split()
+            for i in words:
+                    data_list.append(i)
 
-    #Find maximum for the remaining matrix
-    #maximum=cc.max()
-    #cc=cc/cc.max()
-    #print (maximum)
-    #np.fill_diagonal(cc, 1.0)
+        data_list = data_list[4:-1]
+        n = int(np.sqrt(len(data_list)))
+        data_array = np.array(data_list, dtype=float)
 
-    if writeAllOutput:
-        np.savetxt(inp_file[:-4] + "_modif.dat", cc, fmt='%.6f')
+        cc = np.reshape(data_array, (n, n))
+
+        if writeAllOutput:
+            np.savetxt(inp_file[:-4] + "_modif.dat", cc, fmt='%.6f')
+    else:
+        # The data is assumed to be in full matrix format.
+        # Please note that correlationplus can not handle upper or lower
+        # triangle matrix format for now.
+        cc = np.loadtxt(inp_file, dtype=float)
+
     return cc
 
 
@@ -761,7 +757,8 @@ def projectCorrelationsOntoProteinVMD(pdb_file, ccMatrix, vmd_out_file,
                                 "mol addrep 0\n"
     DATA_FILE = open(vmd_out_file + '-general.tcl', 'w')
     DATA_FILE.write("mol new " + pdb_file + " \n")
-    DATA_FILE.write("mol modstyle 0 0 NewCartoon 0.300000 50.000000 3.250000 0\n")
+    # DATA_FILE.write("mol modstyle 0 0 NewCartoon 0.300000 50.000000 3.250000 0\n")
+    DATA_FILE.write("mol modstyle 0 0 Tube\n")
     DATA_FILE.write("mol modcolor 0 0 Chain\n")
     DATA_FILE.write("mol modmaterial 0 0 MetallicPastel\n")
     for i in range(0, len(ccMatrix)):
@@ -792,7 +789,8 @@ def projectCorrelationsOntoProteinVMD(pdb_file, ccMatrix, vmd_out_file,
                 if chainI != chainJ:
                     DATA_FILE = open(vmd_out_file + '-interchain-chains' + chainI + '-' + chainJ + '.tcl', 'w')
                     DATA_FILE.write("mol new " + pdb_file + " \n")
-                    DATA_FILE.write("mol modstyle 0 0 NewCartoon 0.300000 50.000000 3.250000 0\n")
+                    #DATA_FILE.write("mol modstyle 0 0 NewCartoon 0.300000 50.000000 3.250000 0\n")
+                    DATA_FILE.write("mol modstyle 0 0 Tube\n")
                     DATA_FILE.write("mol modcolor 0 0 Chain\n")
                     DATA_FILE.write("mol modmaterial 0 0 MetallicPastel\n")
                     for i in range(0, len(ccMatrix)):
@@ -819,7 +817,8 @@ def projectCorrelationsOntoProteinVMD(pdb_file, ccMatrix, vmd_out_file,
         for chain in chains:
             DATA_FILE = open(vmd_out_file + '-intrachain-chain' + chain + '.tcl', 'w')
             DATA_FILE.write("mol new " + pdb_file + " \n")
-            DATA_FILE.write("mol modstyle 0 0 NewCartoon 0.300000 50.000000 3.250000 0\n")
+            #DATA_FILE.write("mol modstyle 0 0 NewCartoon 0.300000 50.000000 3.250000 0\n")
+            DATA_FILE.write("mol modstyle 0 0 Tube\n")
             DATA_FILE.write("mol modcolor 0 0 Chain\n")
             DATA_FILE.write("mol modmaterial 0 0 MetallicPastel\n")
             for i in range(0, len(ccMatrix)):

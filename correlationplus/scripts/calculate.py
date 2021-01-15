@@ -27,9 +27,7 @@ import getopt
 
 from prody import parsePDB
 
-from correlationplus.calculate import calcENMnDCC
-from correlationplus.calculate import calcMDnDCC
-
+from correlationplus.calculate import *
 
 def usage_calculateApp():
     """                                                                                                                                                                                       
@@ -139,13 +137,24 @@ def handle_arguments_calculateApp():
             sys.exit(-1)
         
     
-    # Assign a default name if the user forgets the output file prefix.                                                                                                                       
-    if out_file is None:
-        out_file = "DCC"
-
+    
     # Assign a default matrix type                                                                                                                               
     if sel_type is None:
         sel_type = "ndcc"
+
+    # Assign a default name if the user forgets the output file prefix.                                                                                                                      
+    if out_file is None:
+        if (sel_type.lower()=="ndcc"):
+            out_file = "DCC"
+        elif(sel_type.lower()=="lmi"):
+            out_file = "LMI"
+        else:
+            print("@> ERROR: Unknown correlation matrix calculation requested!")
+            print("@> This app can only calculate lmi or ndcc matrices.")
+            print("@> Please check what you specidied with -t option!")
+            usage_calculateApp()
+            sys.exit(-1)
+
 
     return method, out_file, sel_type, pdb_file, trj_file, beg_frm, end_frm, num_mod, cut_off
     
@@ -186,12 +195,22 @@ def calculateApp():
         print("@> Trajectory file : "+trj_file)
         print("@> Beginning frame : "+str(beg_frm))
         print("@> Ending frame    : "+str(end_frm))
-        calcMDnDCC(pdb_file, trj_file, \
-                    startingFrame=beg_frm, \
-                    endingFrame=end_frm, \
-                    normalized=True, \
-                    saveMatrix=True, \
-                    out_file=out_file)
+        if(sel_type=="lmi"):
+            calcMD_LMI(pdb_file, trj_file, \
+                        startingFrame=beg_frm, \
+                        endingFrame=end_frm, \
+                        normalized=True, \
+                        alignTrajectory=True, \
+                        saveMatrix=True, \
+                        out_file=out_file)
+        else:
+            calcMDnDCC(pdb_file, trj_file, \
+                        startingFrame=beg_frm, \
+                        endingFrame=end_frm, \
+                        normalized=True, \
+                        alignTrajectory=True, \
+                        saveMatrix=True, \
+                        out_file=out_file)
 
     print("@> Correlation calculation finished successfully!")
 if __name__ == "__main__":

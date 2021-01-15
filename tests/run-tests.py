@@ -34,21 +34,27 @@ So, I will do it here by checking diffs of output images.
 def runTests():
     # Test correlationMapApp for nDCC maps
     prefix = os.path.normpath(os.path.join(__file__, '..', '..'))
+    # Test calculate module to produce nDCC map with GNM.
+    command = f"correlationplus calculate "+ \
+              f"-p {prefix}/examples/6fl9_centeredOrientedAligned2Z.pdb " + \
+               "-m GNM -o dcc-6fl9-gnm.dat"
+    print("\n@Testing the nDCC calculation from GNM with the following command:\n\n"+command+"\n\n")
+    os.system(command)
 
-    # Test calculate module to produce nDCC maps with GNM.
-    os.system(f"correlationplus calculate "
-              f"-p {prefix}/examples/6fl9_centeredOrientedAligned2Z.pdb "
-               "-m GNM -o dcc-6fl9-gnm.dat")
-
-    # Test calculate module to produce nDCC maps with ANM.
+    # Test calculate module to produce nDCC map with ANM.
     os.system(f"correlationplus calculate "
               f"-p {prefix}/examples/6fl9_centeredOrientedAligned2Z.pdb "
                "-m ANM -o dcc-6fl9-anm.dat")
 
-    # Test calculate module to produce nDCC maps from an MD trajectory.
+    # Test calculate module to produce nDCC map from an MD trajectory.
     os.system(f"correlationplus calculate "
               f"-p {prefix}/examples/6lu7_dimer_with_N3_protein_sim1_ca.pdb "
               f"-f {prefix}/examples/6lu7_dimer_with_N3_protein_sim1_ca_short.trr -o dcc-6lu7-md.dat")
+
+    # Test calculate module to produce LMI map from an MD trajectory.
+    os.system(f"correlationplus calculate "
+              f"-p {prefix}/examples/6lu7_dimer_with_N3_protein_sim1_ca.pdb "
+              f"-f {prefix}/examples/6lu7_dimer_with_N3_protein_sim1_ca_short.trr -t lmi -o lmi-6lu7-md.dat")
 
     # Test visualizemapApp for absolute nDCC maps
     os.system(f"correlationplus visualizemap "

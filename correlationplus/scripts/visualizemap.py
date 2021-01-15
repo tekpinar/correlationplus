@@ -24,6 +24,7 @@
 
 
 import sys
+import os
 import getopt
 from collections import Counter
 
@@ -80,6 +81,12 @@ def handle_arguments_visualizemapApp():
         usage_visualizemapApp()
         sys.exit(-1)
 
+    if os.path.exists(inp_file)==False:
+        print("@> ERROR: Could not find "+inp_file)
+        sys.exit(-1)
+    if os.path.exists(pdb_file)==False:
+        print("@> ERROR: Could not find "+pdb_file)
+        sys.exit(-1)
     # Assign a default name if the user forgets the output file prefix.
     if out_file is None:
         out_file = "correlation"
@@ -100,6 +107,7 @@ def visualizemapApp():
 @> PDB file     : {pdb_file}
 @> Data type    : {sel_type}
 @> Output       : {out_file}""")
+
 
     ##########################################################################
     # Read PDB file
