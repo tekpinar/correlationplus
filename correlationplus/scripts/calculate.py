@@ -36,13 +36,21 @@ def usage_calculateApp():
     print("""
 Example usage: 
 
-If you would like to calculate ANM based normalized cross-correlations from a 
+If you would like to calculate ANM-based normalized cross-correlations from a 
 pdb file:                                                                                                                                                                                
 correlationplus calculate -p 4z90.pdb
 
 If you would like to calculate cross-correlations from a reference pdb file 
 and a trajectory file (in dcd, xtc or trr formats):                                                                                                                                                                                
 correlationplus calculate -p 4z90.pdb -f 4z90.xtc
+
+If you would like to calculate ANM-based linear mutual information maps from a 
+pdb file:                                                                                                                                                                                
+correlationplus calculate -p 4z90.pdb -t lmi
+
+If you would like to calculate a linear mutual information map from a reference pdb file 
+and a trajectory file (in dcd, xtc or trr formats):                                                                                                                                                                                
+correlationplus calculate -p 4z90.pdb -f 4z90.xtc -t lmi
 
 Arguments:                                                                                         
            -p: PDB file of the protein. (Mandatory)
@@ -127,8 +135,7 @@ def handle_arguments_calculateApp():
             print("@> ENM method can only be ANM or GNM!")
             sys.exit(-1)
     else:
-        if method is None:
-            method = "MD"
+        method = "MD"
         #Check the file extension.        
         if (trj_file.lower().endswith(('.dcd', '.xtc', '.trr'))) is False:
             print("@> ERROR: Unrecognized trajectory type!")
@@ -184,12 +191,20 @@ def calculateApp():
         print("@> Cutoff radius   : "+str(cut_off))
         #Read pdb file
         selectedAtoms = parsePDB(pdb_file, subset='ca')
-        calcENMnDCC(selectedAtoms, cut_off, \
-                    method=method, 
-                    nmodes=num_mod, \
-                    normalized=True, \
-                    saveMatrix=True, \
-                    out_file=out_file )
+        if(sel_type=="lmi"):
+            calcENM_LMI(selectedAtoms, cut_off, \
+                        method=method, 
+                        nmodes=num_mod, \
+                        normalized=True, \
+                        saveMatrix=True, \
+                        out_file=out_file )
+        else:
+            calcENMnDCC(selectedAtoms, cut_off, \
+                        method=method, 
+                        nmodes=num_mod, \
+                        normalized=True, \
+                        saveMatrix=True, \
+                        out_file=out_file )
         
     else:
         print("@> Trajectory file : "+trj_file)

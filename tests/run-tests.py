@@ -38,18 +38,26 @@ def runTests():
     command = f"correlationplus calculate "+ \
               f"-p {prefix}/examples/6fl9_centeredOrientedAligned2Z.pdb " + \
                "-m GNM -o dcc-6fl9-gnm.dat"
-    print("\n@Testing the nDCC calculation from GNM with the following command:\n\n"+command+"\n\n")
+    print("\n@> Testing the nDCC calculation from GNM with the following command:\n\n"+command+"\n\n")
     os.system(command)
 
     # Test calculate module to produce nDCC map with ANM.
-    os.system(f"correlationplus calculate "
-              f"-p {prefix}/examples/6fl9_centeredOrientedAligned2Z.pdb "
-               "-m ANM -o dcc-6fl9-anm.dat")
+    command = f"correlationplus calculate " + \
+              f"-p {prefix}/examples/6fl9_centeredOrientedAligned2Z.pdb " + \
+               "-m ANM -o dcc-6fl9-anm.dat"
+    print("\n@> Testing the nDCC calculation from ANM with the following command:\n\n"+command+"\n\n")
+    os.system(command)
 
     # Test calculate module to produce nDCC map from an MD trajectory.
     os.system(f"correlationplus calculate "
               f"-p {prefix}/examples/6lu7_dimer_with_N3_protein_sim1_ca.pdb "
               f"-f {prefix}/examples/6lu7_dimer_with_N3_protein_sim1_ca_short.trr -o dcc-6lu7-md.dat")
+
+
+    # Test calculate module to produce LMI map with ANM modes.
+    os.system(f"correlationplus calculate "
+              f"-p {prefix}/examples/6lu7_dimer_with_N3_protein_sim1_ca.pdb "
+               "-t lmi -o lmi-6lu7-anm.dat")
 
     # Test calculate module to produce LMI map from an MD trajectory.
     os.system(f"correlationplus calculate "
@@ -64,8 +72,8 @@ def runTests():
 
     # Test visualizemapApp for LMI maps
     os.system(f"correlationplus visualizemap "
-              f"-i {prefix}/examples/6fl9_rc15_scalCoeff1_100_modes_lmi_v2.dat "
-              f"-p {prefix}/examples/6fl9_centeredOrientedAligned2Z.pdb "
+              f"-i {prefix}/examples/6lu7_dimer_with_N3_protein_sim1-lmi.dat "
+              f"-p {prefix}/examples/6lu7_dimer_with_N3_protein_sim1_ca.pdb "
               "-t lmi")
 
  

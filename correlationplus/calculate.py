@@ -21,8 +21,8 @@
 # You should have received a copy of the GNU Lesser General Public License    #
 # along with correlationplus.  If not, see <https://www.gnu.org/licenses/>.   #
 ###############################################################################
-
-from prody import calcANM, calcGNM
+import sys
+from prody import ANM, calcANM, calcGNM
 from prody import calcCrossCorr
 
 import numpy as np
@@ -65,7 +65,9 @@ def calcENMnDCC(selectedAtoms, cut_off, method="ANM", nmodes=100, \
         modes, sel = calcANM(selectedAtoms, cutoff=cut_off, n_modes=nmodes)
     elif (method == "GNM"):
         modes, sel = calcGNM(selectedAtoms, cutoff=cut_off, n_modes=nmodes)
-    
+    else:
+        print("@> ERROR: Unknown method! Select ANM or GNM!")
+        sys.exit(-1)
     if(normalized==True):
         ccMatrix = calcCrossCorr(modes, n_cpu=1, norm=True)
         out_file = "n"+out_file
@@ -253,13 +255,140 @@ def calcMD_LMI(topology, trajectory, startingFrame=0, endingFrame=(-1),\
     N_Frames = len(Rvector)
 
     R_average = np.mean(Rvector, axis=0)
-    print("@> Calculating linear mutual information matrix:")
+    print("@> Calculating linear mutual information matrix from MD trajectory:")
 
     ################### LMI matrix calculation part!    
     fullCovarMatrix = np.zeros((3*N, 3*N), np.double)
     for k in range(0, len(Rvector)):
         if(k%100==0):
             print("@> Frame: "+str(k))
+        deltaR=np.subtract(Rvector[k], R_average)
+        fullCovarMatrix += np.outer(deltaR, deltaR)
+
+    #Do the averaging
+    fullCovarMatrix=fullCovarMatrix/float(N_Frames)
+
+    lmiMatrix = np.zeros((N, N), np.double)
+
+    #Just to make the diagonal element 1.0 when normalized!
+    np.fill_diagonal(lmiMatrix, 2000.0) 
+    
+    #TODO: This part can be put under @numba.njit to accelarate it!
+    for i in range(0, N):
+        ind_3i=3*i
+        ind_3iPlus1=3*(i+1)
+        for j in range (i+1, N):
+            ind_3j=3*j
+            ind_3jPlus1=3*(j+1)
+
+            #Diagonal element i
+            subMatrix_C_i = fullCovarMatrix[ind_3i:ind_3iPlus1, \
+                                            ind_3i:ind_3iPlus1]
+            detC_i = (np.linalg.det(subMatrix_C_i))
+
+            #Diagonal element j
+            subMatrix_C_j = fullCovarMatrix[ind_3j:ind_3jPlus1, \
+                                            ind_3j:ind_3jPlus1]
+            detC_j = (np.linalg.det(subMatrix_C_j))
+
+            #Copy matrix elements
+            subMatrix_C_ij = np.zeros((6, 6), np.double)
+
+            subMatrix_C_ij[0:3, 0:3] = subMatrix_C_i
+            subMatrix_C_ij[3:6, 3:6] = subMatrix_C_j
+
+            subMatrix_C_ij[0:3, 3:6] = fullCovarMatrix[ind_3i:ind_3iPlus1,\
+                                                       ind_3j:ind_3jPlus1]
+            subMatrix_C_ij[3:6, 0:3] = np.transpose(subMatrix_C_ij[0:3, 3:6])
+
+            detC_ij = (np.linalg.det(subMatrix_C_ij))
+            
+            lmiMatrix[i][j] = 0.5*(np.log(detC_i*detC_j/detC_ij))
+
+            lmiMatrix[j][i] = lmiMatrix[i][j]
+    #########################################################################
+
+    if(normalized==True):
+        lmi_normalized = np.zeros((N, N), np.double)
+        lmi_normalized = np.sqrt(1.0-np.exp(-2.0/3.0*lmiMatrix))
+        
+        if(saveMatrix==True):
+            np.savetxt("n"+out_file, lmi_normalized, fmt='%.6f')
+
+        return lmi_normalized
+    else:
+        for i in range(0, N):
+            for j in range (i+1, N):
+                lmiMatrix[j][i] = lmiMatrix[i][j]
+        if(saveMatrix==True):
+            np.savetxt(out_file, lmiMatrix, fmt='%.6f')
+        return lmiMatrix
+
+
+def calcENM_LMI(selectedAtoms, cut_off, method="ANM", nmodes=100, \
+                normalized=True, saveMatrix=True, out_file="nDCC.dat"):
+    """
+        Calculate normalized linear mutual information matrix based on elastic 
+        network model.
+    
+    Parameters
+    ----------
+    selectedAtoms: prody object
+        A list of -typically CA- atoms selected from the parsed PDB file.
+    cut_off: int
+        Cutoff radius in Angstrom unit for ANM or GNM. 
+        Default value is 15 for ANM and 10 for GNM. 
+    method: string
+        This string can only take two values: ANM or GNM
+        ANM us the default value.
+    nmodes: int
+        100 modes are default for normal mode based nDCC calculations.
+    saveMatrix: bool
+        If True, an output file for the correlations will be written
+        be written. 
+    out_file: string
+        Output file name for the data matrix. 
+        Default value is nDCC.dat
+    Returns
+    -------
+    ccMatrix: A numpy square matrix of floats
+        Cross-correlation matrix.
+    """
+    if(method == "ANM"):
+        #modes, sel = calcANM(selectedAtoms, cutoff=cut_off, n_modes=nmodes)
+        anm = ANM('ANM analysis')
+        anm.buildHessian(selectedAtoms, cutoff=cut_off)
+        anm.calcModes(n_modes=nmodes)
+
+    # elif (method == "GNM"):
+    #     modes, sel = calcGNM(selectedAtoms, cutoff=cut_off, n_modes=nmodes)
+    else:
+        print("@> ERROR: LMI can only be calculated from ANM modes!")
+        sys.exit(-1)
+      
+    Rvector = []
+
+    #######################################################################################
+    N = selectedAtoms.numAtoms()
+    scalingCoeff = 1.0
+
+    for i in range(0, nmodes):
+        newMode=((scalingCoeff/np.sqrt(anm[i].getEigval()))*anm[i].getEigvec())
+        Rvector.append(selectedAtoms.getCoords().flatten()+newMode)
+        #Rvector.append(selectedAtoms.getCoords()+np.reshape(newMode, (N, 3)))
+
+    #######################################################################################
+    #I reassign this bc in lmiMatrix calculation, we may skip some part of the trajectory!
+    N_Frames = len(Rvector)
+
+    R_average = np.mean(Rvector, axis=0)
+    print("@> Calculating linear mutual information matrix from normal modes:")
+
+    ################### LMI matrix calculation part!    
+    fullCovarMatrix = np.zeros((3*N, 3*N), np.double)
+    for k in range(0, len(Rvector)):
+        if(k%99==0):
+            print("@> Mode: "+str(k+1))
         deltaR=np.subtract(Rvector[k], R_average)
         fullCovarMatrix += np.outer(deltaR, deltaR)
 

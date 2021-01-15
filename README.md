@@ -80,7 +80,7 @@ singularity pull correlationplus.simg docker://structuraldynamicslab/correlation
 ./correlationplus.simg -i 6fl9_rc15_scalCoeff1_100_modes_lmi_v2.dat -j zacharias_rc15_scalCoeff15_100_modes_lmi.dat -p 6fl9_centeredOrientedAligned2Z.pdb -t lmi
 ```
 
-Unlike docker you have not to worry about shared directory, your *home* and */tmp* are automatically shared.
+Unlike docker you do not have to worry about shared directory, your *home* and */tmp* are automatically shared.
 You can also run an *ipython* interactive session.
 ```bash
 singularity shell correlationplus.simg
@@ -89,7 +89,7 @@ singularity shell correlationplus.simg
 
 ## A Quick Start with correlationplus Scripts
 
-### Calculating dynamical cross-correlations
+### Calculating correlations maps
 Download examples folder and go there. 
 
 To calculate **dynamical cross-correlations** with **Gaussian** network model:
@@ -104,7 +104,24 @@ To calculate **dynamical cross-correlations** with **Anisotropic** network model
 correlationplus calculate -p 6fl9_centeredOrientedAligned2Z.pdb -m ANM -o anm-ndcc.dat
 ```
 
-### Visualization of correlation maps
+To calculate **dynamical cross-correlations** from a molecular dynamics trajectory (in dcd, xtc or trr format):
+
+```bash
+correlationplus calculate -p 6lu7_dimer_with_N3_protein_sim1_ca.pdb -f 6lu7_dimer_with_N3_protein_sim1_ca_short.trr
+```
+
+To calculate **linear mutual informations** with **Anisotropic** network model:
+
+```bash
+correlationplus calculate -p 6lu7_dimer_with_N3_protein_sim1_ca.pdb -t lmi
+```
+
+To calculate **linear mutual informations** from a molecular dynamics trajectory (in dcd, xtc or trr format):
+
+```bash
+correlationplus calculate -p 6lu7_dimer_with_N3_protein_sim1_ca.pdb -f 6lu7_dimer_with_N3_protein_sim1_ca_short.trr -t lmi
+```
+### Visualizing correlation maps
 To run a simple example of visualization, you can use data and pdb files in the examples folder:
 
 ```bash
