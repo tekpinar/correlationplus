@@ -42,7 +42,7 @@ def usage_visualizemapApp():
     """
     print("""
 Example usage:
-correlationplus visualizemap -i 4z90-cross-correlations.txt -p 4z90.pdb
+correlationplus visualize -i 4z90-cross-correlations.txt -p 4z90.pdb
 
 Arguments: -i: A file containing normalized dynamical cross correlations in matrix format. (Mandatory)
            -p: PDB file of the protein. (Mandatory)
@@ -101,7 +101,7 @@ def handle_arguments_visualizemapApp():
 def visualizemapApp():
     inp_file, out_file, sel_type, pdb_file = handle_arguments_visualizemapApp()
     print(f"""
-@> Running 'visualizemap App'
+@> Running 'visualize' app:
     
 @> Input file   : {inp_file}
 @> PDB file     : {pdb_file}

@@ -65,13 +65,13 @@ def runTests():
               f"-f {prefix}/examples/6lu7_dimer_with_N3_protein_sim1_ca_short.trr -t lmi -o lmi-6lu7-md.dat")
 
     # Test visualizemapApp for absolute nDCC maps
-    os.system(f"correlationplus visualizemap "
+    os.system(f"correlationplus visualize "
               f"-i {prefix}/examples/6fl9_just_prot_anm_100_modes_rc_15_cross-correlations.txt "
               f"-p {prefix}/examples/6fl9_centeredOrientedAligned2Z.pdb "
                "-t absndcc")
 
     # Test visualizemapApp for LMI maps
-    os.system(f"correlationplus visualizemap "
+    os.system(f"correlationplus visualize "
               f"-i {prefix}/examples/6lu7_dimer_with_N3_protein_sim1-lmi.dat "
               f"-p {prefix}/examples/6lu7_dimer_with_N3_protein_sim1_ca.pdb "
               "-t lmi")

@@ -34,5 +34,5 @@ models.
 
 __all__ = ['calculate', 'visualize', 'centralityAnalysis']
 
-__version__ = '0.1.6rc1'
+__version__ = '0.1.7rc1'
 
