@@ -9,10 +9,11 @@ information or generalized correlations.
 
 ## Installation
 
-### with pip
-This installation method is for regular users:
+We recommend on of the installation methods for regular users:
 
-We recommend to use pip
+### with pip
+
+We recommend to use pip as follows:
 ```bash
 pip install correlationplus
 ```
@@ -37,7 +38,7 @@ conda install -c bioconda correlationplus
 ```
 
 Most of the time, at least one these methods will be sufficient for the installation.
-However, if these two methods didn't work for you for any reason, you can take a look 
+However, if these two methods didn't work for any reason, you can take a look 
 to 'Advanced Installation Instructions' below.
 
 
@@ -127,17 +128,17 @@ correlationplus diffMap -i 6fl9_rc15_scalCoeff1_100_modes_lmi_v2.dat -j zacharia
 Centrality analysis can be used to deduce active sites, binding sites, 
 key mutation sites and allosteric residues. 
 **correlationplus** can do centrality analysis for your protein
-via its **centralityAnalysis** app.
+via its **analyze** app.
 
 It can compute degree, closeness, betweenness, current flow closeness, 
 current flow betweenness and eigenvector centralities. The following command 
 will do all of the above analysis:
 
 ```bash
-correlationplus centralityAnalysis -i 6fl9_just_prot_anm_100_modes_rc_15_cross-correlations.txt -p 6fl9_centeredOrientedAligned2Z.pdb -t absndcc
+correlationplus analyze -i 6fl9_just_prot_anm_100_modes_rc_15_cross-correlations.txt -p 6fl9_centeredOrientedAligned2Z.pdb -t absndcc
 ```
-After the calculation, the centrality values will be inserted into *Bfactor*
- column of a pdb file. You can load the pdb files with your favorite visualization 
+After the calculation, the centrality values will be inserted into *Bfactor* 
+column of a pdb file. You can load the pdb files with your favorite visualization 
 software and color according to *Bfactors*. If you prefer *VMD* - as we do-, 
 the app will produce tcl files so that you can visualize the key residues with *VMD*.
 The tcl script highlights the residues with the highest 10% of the selected centrality
@@ -148,22 +149,22 @@ vmd -e correlation_degree.tcl
 ```
 
 ## Ipython Interface
-For a detailed analysis, script interfaces provided by visualize, diffMap and 
-centralityAnalysis apps may not be sufficient. Therefore, you can use IPython 
+For a detailed analysis, script interfaces provided by calculate, visualize, analyze and 
+diffMap apps may not be sufficient. Therefore, you can use IPython 
 to load the functions and do a detailed analysis as follows. 
 
 ```python
 from correlationplus.visualize import *
 ```
  
-You can get help for individual functions with
+You can get help for each function with
 
 ```python
 help(intraChainCorrelationMaps) 
 
 ```
 You can check different valueFilters, distanceFilters for your analysis. 
-Even you can scan a range of values by calling the functions in a 
+Also, you can scan a range of values by calling the functions in a 
 loop. 
 
 ## Advanced Installation Instructions

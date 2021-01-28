@@ -85,7 +85,7 @@ def runTests():
               "-t lmi")
 
     # Test centralityAnalysisApp for LMI maps
-    os.system(f"correlationplus centralityAnalysis "
+    os.system(f"correlationplus analyze "
               f"-i {prefix}/examples/6lu7_dimer_with_N3_protein_sim1-lmi.dat "
               f"-p {prefix}/examples/6lu7_dimer_with_N3_protein_sim1_ca.pdb "
               "-t lmi")

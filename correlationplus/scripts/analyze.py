@@ -40,15 +40,15 @@ def usage_centralityAnalysisApp():
     """
     print("""
 Example usage:
-correlationplus centralityAnalysis -i 4z90-cross-correlations.txt -p 4z90.pdb
+correlationplus analyze -i 4z90-cross-correlations.txt -p 4z90.pdb
 
 Arguments: -i: A file containing normalized dynamical cross correlations in matrix format. (Mandatory)
            -p: PDB file of the protein. (Mandatory)
            -t: Type of the matrix. It can be ndcc, lmi or absndcc (absolute values of ndcc). Default value is ndcc (Optional)
            -o: This will be your output file. Output figures are in png format. (Optional)
            -c: Type of the centrality that you want to calculate. Default is 'all'. (Optional)
-           -v: Value filter. The values lower than this value will be considered as zero. Default is 0.3. (Optional)
-           -d: Distance filter. The values higher than this value will be considered as zero. Default is 7.0 Angstrom. (Optional)
+           -v: Value filter. The values lower than this value in the map will be considered as zero. Default is 0.3. (Optional)
+           -d: Distance filter. The residues with distances higher than this value will be considered as zero. Default is 7.0 Angstrom. (Optional)
 """)
 
 def handle_arguments_centralityAnalysisApp():
@@ -87,7 +87,7 @@ def handle_arguments_centralityAnalysisApp():
 
     # Input data matrix and PDB file are mandatory!
     if inp_file is None or pdb_file is None:
-        print("PDB file and data matrix are mandatory!")
+        print("PDB file and a correlation matrix are mandatory!")
         usage_centralityAnalysisApp()
         sys.exit(-1)
 
@@ -116,7 +116,7 @@ def centralityAnalysisApp():
             distance_cutoff = handle_arguments_centralityAnalysisApp()
 
     print(f"""
-@> Running 'centralityAnalysis' app
+@> Running 'analyze' app
 
 @> Input file     : {inp_file}
 @> PDB file       : {pdb_file}

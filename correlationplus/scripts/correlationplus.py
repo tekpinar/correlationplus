@@ -30,7 +30,7 @@ import sys
 from correlationplus.scripts.calculate import calculateApp
 from correlationplus.scripts.visualize import visualizemapApp
 from correlationplus.scripts.diffMap import diffMapApp
-from correlationplus.scripts.centralAnalysis import centralityAnalysisApp
+from correlationplus.scripts.analyze import centralityAnalysisApp
 
 #TODO:
 # There are a bunch of things one can add to this script:
@@ -56,15 +56,15 @@ Example usage:
 
 correlationplus -h
 
-CorrelationPlus contains four analysis apps:
+CorrelationPlus contains four apps:
  - calculate
  - visualize
+ - analyze
  - diffMap
- - centralityAnalysis
 
 You can get more information about each individual app as follows:
 
-correlationplus centralityAnalysis -h
+correlationplus analyze -h
 """)
 
 
@@ -91,10 +91,10 @@ def main():
             calculateApp()
         elif sys.argv[1] == "visualize":
             visualizemapApp()
+        elif sys.argv[1] == "analyze":
+            centralityAnalysisApp()
         elif sys.argv[1] == "diffMap":
             diffMapApp()
-        elif sys.argv[1] == "centralityAnalysis":
-            centralityAnalysisApp()
         elif sys.argv[1] == "-h" or sys.argv[1] == "--help":
             usage_main()
         else:
