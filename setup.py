@@ -28,7 +28,7 @@ from correlationplus import __version__ as cp_vers
 
 setup(name='correlationplus',
       version=cp_vers,
-      description=" Python package to plot and analyze dynamical correlations maps of proteins.",
+      description=" Python package to calculate, visualize and analyze dynamical correlations maps of proteins.",
       long_description=open('README.md').read(),
       long_description_content_type="text/markdown",
       author="Mustafa Tekpinar",
@@ -47,7 +47,8 @@ setup(name='correlationplus',
           'Programming Language :: Python :: 3.8',
           'License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)',
           'Intended Audience :: Science/Research',
-          'Topic :: Scientific/Engineering :: Bio-Informatics'
+          'Topic :: Scientific/Engineering :: Bio-Informatics',
+          'Topic :: Scientific/Engineering :: Chemistry'
           ],
       python_requires='>=3.6',
       install_requires=[i for i in [l.strip() for l in open("requirements.txt").read().split('\n')] if i],
