@@ -51,6 +51,7 @@ def cmap_discretize(cmap, N):
         x = resize(arange(100), (5,100))
         djet = cmap_discretize(cm.jet, 5)
         imshow(x, cmap=djet)
+
     """
 
     if type(cmap) == str:
@@ -69,9 +70,9 @@ def convertLMIdata2Matrix(inp_file, writeAllOutput: bool):
     """
         This function parses LMI matrix and returns a numpy array. If the 
         It can handle both full matrix format or g_correlation format.
+
     Parameters
     ----------
-
     inp_file: string
         LMI file to read.
  
@@ -119,7 +120,9 @@ def filterCorrelationMapByDistance(ccMatrix, out_file, title,
 
     
     """
-        If residues are closer to each other than a certain distance
+        Remove correlations lower than a threshold value.
+    
+    If residues are closer to each other than a certain distance
     (distanceValue), make these correlations zero. This filter can be useful
     to get rid of high short distance correlations for visualization purposes.
     This function returns a filtered ccMatrix.
@@ -149,6 +152,7 @@ def filterCorrelationMapByDistance(ccMatrix, out_file, title,
     Returns
     -------
     Nothing
+
     """
     print("@> Filtering correlations lower than " + str(distanceValue) + " Angstrom.")
     # Calculate distance matrix
@@ -210,6 +214,7 @@ def overallCorrelationMap(ccMatrix,
     Returns
     -------
     Nothing
+
     """
 
     # selectedAtoms = parsePDB(pdb_file, subset='ca')
@@ -364,6 +369,7 @@ def intraChainCorrelationMaps(ccMatrix,
     Returns
     -------
     Nothing
+
     """
 
     myList = list(Counter(selectedAtoms.getChids()).keys())
@@ -489,6 +495,7 @@ def interChainCorrelationMaps(ccMatrix,
     Returns
     -------
     Nothing
+
     """
     from mpl_toolkits.axes_grid1 import make_axes_locatable
     myList = list(Counter(selectedAtoms.getChids()).keys())
@@ -634,6 +641,7 @@ def distanceDistribution(ccMatrix, out_file, title, selectedAtoms,
     Returns
     -------
     Nothing
+
     """
     # Calculate distance matrix
     dist_matrix = buildDistMatrix(selectedAtoms)
@@ -691,19 +699,18 @@ def projectCorrelationsOntoProteinVMD(pdb_file, ccMatrix, vmd_out_file,
                                       absoluteValues: bool,
                                       writeAllOutput: bool):
     """
-        This function writes tcl files that contains the correlations between
-    residues i and j. It produces three output files:
+        Produces tcl files that contains the correlations between residues i and j. 
+
+    It produces three output files:
     1-A general file that contains all correlation.
     2-(If there are at least two chains) Files that contain interchain
-      correlations.
+    correlations.
     3-(If there are at least two chains) Files that contain intrachain
-      correlations of individual chains.
+    correlations of individual chains.
     The output files can be visualized with VMD (Visual Molecular
-    dynamics) program as follows.
-    i) Load your pdb file, whether via command line or graphical interface.
-    ii) Go to Extemsions -> Tk Console and then
-    iii) source vmd-output-general.tcl
-    It can take some to load the general script.
+    dynamics) program as follows. Load your pdb file, whether via command
+    line or graphical interface. Go to Extensions -> Tk Console and then
+    'source vmd-output-general.tcl' It can take some to load the general script.
 
     Parameters
     ----------
@@ -727,6 +734,7 @@ def projectCorrelationsOntoProteinVMD(pdb_file, ccMatrix, vmd_out_file,
     Returns
     -------
     Nothing
+
     """
     # Calculate distance matrix
     dist_matrix = buildDistMatrix(selectedAtoms)
@@ -870,6 +878,7 @@ def overallUniformDifferenceMap(ccMatrix1, ccMatrix2,
     Returns
     -------
     Nothing
+
     """
 
     # selectedAtoms = parsePDB(pdb_file, subset='ca')
@@ -913,6 +922,7 @@ def overallNonUniformDifferenceMap(ccMatrix1, ccMatrix2, minColorBarLimit,
     Returns
     -------
     Nothing
+
     """
 
     # selectedAtoms = parsePDB(pdb_file, subset='ca')
@@ -1086,7 +1096,6 @@ def findCommonCorePDB(selectedAtomSet1, selectedAtomSet2):
         A dictionary of residues in conformation A and corresponding residue in 
         conformation B. 
     
-    
     """
     print("@> Calculating a common core for two structures.")
     lengthSet1 = len(selectedAtomSet1)
@@ -1139,6 +1148,7 @@ def triangulateMaps(ccMatrix1, ccMatrix2,
     ccMatrixCombined: A numpy square matrix of floats
         This is a matrix that contain ccMatrix1 in the upper triangle
         and the ccMatrix2 in the lower triangle. 
+
     """
 
     n = len(ccMatrix1)
@@ -1180,6 +1190,7 @@ def generatePNG(ccMatrix, minColorBarLimit, maxColorBarLimit,
     Returns
     -------
     Nothing 
+
     """
     fig = plt.figure()
     fig.set_size_inches(8.0, 5.5, forward=True)

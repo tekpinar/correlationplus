@@ -12,7 +12,9 @@ Welcome to correlationplus's documentation!
 
    installation
    quickstart
-   
+   license
+
+	   
 
 Indices and tables
 ==================

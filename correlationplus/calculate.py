@@ -56,10 +56,12 @@ def calcENMnDCC(selectedAtoms, cut_off, method="ANM", nmodes=100, \
     out_file: string
         Output file name for the data matrix. 
         Default value is nDCC.dat
+
     Returns
     -------
     ccMatrix: A numpy square matrix of floats
         Cross-correlation matrix.
+
     """
     if(method == "ANM"):
         modes, sel = calcANM(selectedAtoms, cutoff=cut_off, n_modes=nmodes)
@@ -84,6 +86,7 @@ def calcMDnDCC(topology, trajectory, startingFrame=0, endingFrame=(-1),\
     """
         Calculate normalized dynamical cross-correlations when a topology
         and a trajectory file is given. 
+
     Parameters
     ----------
     topology: string
@@ -108,10 +111,12 @@ def calcMDnDCC(topology, trajectory, startingFrame=0, endingFrame=(-1),\
     out_file: string
         Output file name for the cross-correlation matrix. 
         Default value is DCC and the file extension is .dat. 
+
     Returns
     -------
     ccMatrix: A numpy square matrix of floats
         Cross-correlation matrix.
+
     """
     #Create the universe (That sounds really fancy :)
     universe = mda.Universe(topology, trajectory)
@@ -195,6 +200,7 @@ def calcMD_LMI(topology, trajectory, startingFrame=0, endingFrame=(-1),\
     """
         Calculate linear mutual information when a topology
         and a trajectory file is provided. 
+
     Parameters
     ----------
     topology: string
@@ -220,10 +226,12 @@ def calcMD_LMI(topology, trajectory, startingFrame=0, endingFrame=(-1),\
     out_file: string
         Output file name for the linear mutual information matrix. 
         Default value is LMI and the file extension is .dat. 
+
     Returns
     -------
     lmiMatrix: A numpy square matrix of floats
         Linear mutual information matrix.
+
     """
     #Create the universe (That sounds really fancy :)
     universe = mda.Universe(topology, trajectory)
@@ -349,10 +357,12 @@ def calcENM_LMI(selectedAtoms, cut_off, method="ANM", nmodes=100, \
     out_file: string
         Output file name for the data matrix. 
         Default value is nDCC.dat
+
     Returns
     -------
     ccMatrix: A numpy square matrix of floats
         Cross-correlation matrix.
+
     """
     if(method == "ANM"):
         #modes, sel = calcANM(selectedAtoms, cutoff=cut_off, n_modes=nmodes)

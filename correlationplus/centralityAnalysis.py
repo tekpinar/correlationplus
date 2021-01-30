@@ -36,6 +36,7 @@ import networkx as nx
 def projectCentralitiesOntoProteinVMD(centrality, centralityArray, out_file, selectedAtoms, scalingFactor):
     """
     Produces VMD output files for visualizing protein centralities.
+
     This function writes a tcl file and a PDB file that can be viewed in
     VMD. Bfactor field of the protein contains the centrality information.
     The first N residues with the highest centrality are highlighed in VDW
@@ -68,6 +69,7 @@ def projectCentralitiesOntoProteinVMD(centrality, centralityArray, out_file, sel
     Returns
     -------
     Nothing
+
     """
 
     # Write output in VMD format
@@ -104,6 +106,7 @@ def projectCentralitiesOntoProteinVMD(centrality, centralityArray, out_file, sel
 def plotCentralities(centrality, centralityArray, out_file, selectedAtoms, scalingFactor):
     """
     Plots the centrality values on a 2D graph.
+
     The centrality values are plotted on a 2D png file.
     If there are at least two chains, the function produces a figure
     for each chain.
@@ -128,6 +131,7 @@ def plotCentralities(centrality, centralityArray, out_file, selectedAtoms, scali
     Return
     ------
     Nothing
+
     """
 
     chains = Counter(selectedAtoms.getChids()).keys()
@@ -187,12 +191,9 @@ def centralityAnalysis(ccMatrix, distanceMatrix, valueFilter, distanceFilter, ou
     This function calculates various network (graph) centralities of a protein.
 
     This function calculates some network centrality measures such as
-        -degree
-        -betweenness
-        -closeness
-        -current flow betweenness
-        -eigenvector.
+    degree, betweenness, closeness, current flow betweenness and eigenvector.
     This function needs Python 3.6 or later to maintain dictionary order.!!!
+
     Parameters
     ----------
     ccMatrix: Numpy matrix
@@ -220,6 +221,7 @@ def centralityAnalysis(ccMatrix, distanceMatrix, valueFilter, distanceFilter, ou
     Returns
     -------
     Nothing
+
     """
     # Create your  graph
     dynNetwork = nx.Graph()
