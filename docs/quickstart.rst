@@ -17,7 +17,7 @@ You can find more information about each module as follows:
 Here are some examples of the correlationplus commandline interface.
 You can find all required files in the examples folder at our `github page <https://github.com/tekpinar/correlationplus>`_
 
-**calculate** module
+**calculate** script
 --------------------
 With this module, you can perform dynamical cross-correlation and linear mutual information from
 elastic network models and molecular dynamics trajectories. 
@@ -42,7 +42,7 @@ To calculate **linear mutual informations** from a molecular dynamics trajectory
 
 ``correlationplus calculate -p 6lu7_dimer_with_N3_protein_sim1_ca.pdb -f 6lu7_dimer_with_N3_protein_sim1_ca_short.trr -t lmi``
 
-**visualize** module
+**visualize** script
 --------------------
 Visualize module plots all 2D correlation maps. It prepares tcl file and the correlated residue pairs can
 be visualized with the help of **VMD** program. This interface needs only a pdb file with N residues and
@@ -85,7 +85,7 @@ The difference maps can be produced with diffMap app as follows:
 
 ``correlationplus diffMap -i 6fl9_rc15_scalCoeff1_100_modes_lmi_v2.dat -j zacharias_rc15_scalCoeff15_100_modes_lmi.dat -p 6fl9_centeredOrientedAligned2Z.pdb -t lmi``
 
-**analyze** module
+**analyze** script
 ------------------
 This module can be used to perform centrality analysis of the correlation maps.
 Centrality analysis is used to deduce active sites, binding sites, key mutation
