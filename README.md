@@ -10,7 +10,7 @@ your molecular dynamics trajectories for these visualizations and analyses.
 
 ## Installation
 
-We recommend on of the installation methods for regular users:
+We recommend one of the installation methods for regular users:
 
 ### with pip
 
@@ -50,7 +50,7 @@ There are three main scrips:
 * visualize
 * analyze
 
-You can find details of each script below.
+You can find details of each script with the following commands:
 
 ```bash
 correlationplus calculate -h
@@ -58,7 +58,8 @@ correlationplus visualize -h
 correlationplus analyze -h
 ```
 
-Go to our [readthedocs](https://correlationplus.readthedocs.io/en/latest/quickstart.html) for detailed usage examples.
+Go to our [readthedocs](https://correlationplus.readthedocs.io/en/latest/quickstart.html) for 
+detailed usage examples for each script.
 
 ## Licensing
 
