@@ -51,6 +51,7 @@ def cmap_discretize(cmap, N):
         x = resize(arange(100), (5,100))
         djet = cmap_discretize(cm.jet, 5)
         imshow(x, cmap=djet)
+
     """
 
     if type(cmap) == str:
@@ -67,12 +68,11 @@ def cmap_discretize(cmap, N):
 
 def convertLMIdata2Matrix(inp_file, writeAllOutput: bool):
     """
-        This function parses LMI matrix produced in g_correlation
-        and returns a numpy array.
+        This function parses LMI matrix and returns a numpy array. If the 
+        It can handle both full matrix format or g_correlation format.
 
     Parameters
     ----------
-
     inp_file: string
         LMI file to read.
  
@@ -87,33 +87,30 @@ def convertLMIdata2Matrix(inp_file, writeAllOutput: bool):
 
     """
     data_file = open(inp_file, 'r')
-
     allLines = data_file.readlines()
-    data_list = []
-    for line in allLines:
-        words = line.split()
-        for i in words:
-                data_list.append(i)
-
-    data_list = data_list[4:-1]
-    n = int(np.sqrt(len(data_list)))
-    data_array = np.array(data_list, dtype=float)
-
-    cc = np.reshape(data_array, (n, n))
-    #print (cc.dtype)
-
     data_file.close()
-    #Fill diagonal elements with zeros
-    #np.fill_diagonal(cc, 0.0)
+    if(("x" in allLines[0]) and ("[" in allLines[0])):
+        # This is a g_correlation file.
+        data_list = []
+        for line in allLines:
+            words = line.split()
+            for i in words:
+                    data_list.append(i)
 
-    #Find maximum for the remaining matrix
-    #maximum=cc.max()
-    #cc=cc/cc.max()
-    #print (maximum)
-    #np.fill_diagonal(cc, 1.0)
+        data_list = data_list[4:-1]
+        n = int(np.sqrt(len(data_list)))
+        data_array = np.array(data_list, dtype=float)
 
-    if writeAllOutput:
-        np.savetxt(inp_file[:-4] + "_modif.dat", cc, fmt='%.6f')
+        cc = np.reshape(data_array, (n, n))
+
+        if writeAllOutput:
+            np.savetxt(inp_file[:-4] + "_modif.dat", cc, fmt='%.6f')
+    else:
+        # The data is assumed to be in full matrix format.
+        # Please note that correlationplus can not handle upper or lower
+        # triangle matrix format for now.
+        cc = np.loadtxt(inp_file, dtype=float)
+
     return cc
 
 
@@ -123,7 +120,9 @@ def filterCorrelationMapByDistance(ccMatrix, out_file, title,
 
     
     """
-        If residues are closer to each other than a certain distance
+        Remove correlations lower than a threshold value.
+    
+    If residues are closer to each other than a certain distance
     (distanceValue), make these correlations zero. This filter can be useful
     to get rid of high short distance correlations for visualization purposes.
     This function returns a filtered ccMatrix.
@@ -153,6 +152,7 @@ def filterCorrelationMapByDistance(ccMatrix, out_file, title,
     Returns
     -------
     Nothing
+
     """
     print("@> Filtering correlations lower than " + str(distanceValue) + " Angstrom.")
     # Calculate distance matrix
@@ -214,6 +214,7 @@ def overallCorrelationMap(ccMatrix,
     Returns
     -------
     Nothing
+
     """
 
     # selectedAtoms = parsePDB(pdb_file, subset='ca')
@@ -368,6 +369,7 @@ def intraChainCorrelationMaps(ccMatrix,
     Returns
     -------
     Nothing
+
     """
 
     myList = list(Counter(selectedAtoms.getChids()).keys())
@@ -493,6 +495,7 @@ def interChainCorrelationMaps(ccMatrix,
     Returns
     -------
     Nothing
+
     """
     from mpl_toolkits.axes_grid1 import make_axes_locatable
     myList = list(Counter(selectedAtoms.getChids()).keys())
@@ -638,6 +641,7 @@ def distanceDistribution(ccMatrix, out_file, title, selectedAtoms,
     Returns
     -------
     Nothing
+
     """
     # Calculate distance matrix
     dist_matrix = buildDistMatrix(selectedAtoms)
@@ -695,19 +699,18 @@ def projectCorrelationsOntoProteinVMD(pdb_file, ccMatrix, vmd_out_file,
                                       absoluteValues: bool,
                                       writeAllOutput: bool):
     """
-        This function writes tcl files that contains the correlations between
-    residues i and j. It produces three output files:
+        Produces tcl files that contains the correlations between residues i and j. 
+
+    It produces three output files:
     1-A general file that contains all correlation.
     2-(If there are at least two chains) Files that contain interchain
-      correlations.
+    correlations.
     3-(If there are at least two chains) Files that contain intrachain
-      correlations of individual chains.
+    correlations of individual chains.
     The output files can be visualized with VMD (Visual Molecular
-    dynamics) program as follows.
-    i) Load your pdb file, whether via command line or graphical interface.
-    ii) Go to Extemsions -> Tk Console and then
-    iii) source vmd-output-general.tcl
-    It can take some to load the general script.
+    dynamics) program as follows. Load your pdb file, whether via command
+    line or graphical interface. Go to Extensions -> Tk Console and then
+    'source vmd-output-general.tcl' It can take some to load the general script.
 
     Parameters
     ----------
@@ -731,6 +734,7 @@ def projectCorrelationsOntoProteinVMD(pdb_file, ccMatrix, vmd_out_file,
     Returns
     -------
     Nothing
+
     """
     # Calculate distance matrix
     dist_matrix = buildDistMatrix(selectedAtoms)
@@ -761,7 +765,8 @@ def projectCorrelationsOntoProteinVMD(pdb_file, ccMatrix, vmd_out_file,
                                 "mol addrep 0\n"
     DATA_FILE = open(vmd_out_file + '-general.tcl', 'w')
     DATA_FILE.write("mol new " + pdb_file + " \n")
-    DATA_FILE.write("mol modstyle 0 0 NewCartoon 0.300000 50.000000 3.250000 0\n")
+    # DATA_FILE.write("mol modstyle 0 0 NewCartoon 0.300000 50.000000 3.250000 0\n")
+    DATA_FILE.write("mol modstyle 0 0 Tube\n")
     DATA_FILE.write("mol modcolor 0 0 Chain\n")
     DATA_FILE.write("mol modmaterial 0 0 MetallicPastel\n")
     for i in range(0, len(ccMatrix)):
@@ -792,7 +797,8 @@ def projectCorrelationsOntoProteinVMD(pdb_file, ccMatrix, vmd_out_file,
                 if chainI != chainJ:
                     DATA_FILE = open(vmd_out_file + '-interchain-chains' + chainI + '-' + chainJ + '.tcl', 'w')
                     DATA_FILE.write("mol new " + pdb_file + " \n")
-                    DATA_FILE.write("mol modstyle 0 0 NewCartoon 0.300000 50.000000 3.250000 0\n")
+                    #DATA_FILE.write("mol modstyle 0 0 NewCartoon 0.300000 50.000000 3.250000 0\n")
+                    DATA_FILE.write("mol modstyle 0 0 Tube\n")
                     DATA_FILE.write("mol modcolor 0 0 Chain\n")
                     DATA_FILE.write("mol modmaterial 0 0 MetallicPastel\n")
                     for i in range(0, len(ccMatrix)):
@@ -819,7 +825,8 @@ def projectCorrelationsOntoProteinVMD(pdb_file, ccMatrix, vmd_out_file,
         for chain in chains:
             DATA_FILE = open(vmd_out_file + '-intrachain-chain' + chain + '.tcl', 'w')
             DATA_FILE.write("mol new " + pdb_file + " \n")
-            DATA_FILE.write("mol modstyle 0 0 NewCartoon 0.300000 50.000000 3.250000 0\n")
+            #DATA_FILE.write("mol modstyle 0 0 NewCartoon 0.300000 50.000000 3.250000 0\n")
+            DATA_FILE.write("mol modstyle 0 0 Tube\n")
             DATA_FILE.write("mol modcolor 0 0 Chain\n")
             DATA_FILE.write("mol modmaterial 0 0 MetallicPastel\n")
             for i in range(0, len(ccMatrix)):
@@ -871,6 +878,7 @@ def overallUniformDifferenceMap(ccMatrix1, ccMatrix2,
     Returns
     -------
     Nothing
+
     """
 
     # selectedAtoms = parsePDB(pdb_file, subset='ca')
@@ -914,6 +922,7 @@ def overallNonUniformDifferenceMap(ccMatrix1, ccMatrix2, minColorBarLimit,
     Returns
     -------
     Nothing
+
     """
 
     # selectedAtoms = parsePDB(pdb_file, subset='ca')
@@ -1087,7 +1096,6 @@ def findCommonCorePDB(selectedAtomSet1, selectedAtomSet2):
         A dictionary of residues in conformation A and corresponding residue in 
         conformation B. 
     
-    
     """
     print("@> Calculating a common core for two structures.")
     lengthSet1 = len(selectedAtomSet1)
@@ -1140,6 +1148,7 @@ def triangulateMaps(ccMatrix1, ccMatrix2,
     ccMatrixCombined: A numpy square matrix of floats
         This is a matrix that contain ccMatrix1 in the upper triangle
         and the ccMatrix2 in the lower triangle. 
+
     """
 
     n = len(ccMatrix1)
@@ -1181,6 +1190,7 @@ def generatePNG(ccMatrix, minColorBarLimit, maxColorBarLimit,
     Returns
     -------
     Nothing 
+
     """
     fig = plt.figure()
     fig.set_size_inches(8.0, 5.5, forward=True)

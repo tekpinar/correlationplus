@@ -24,6 +24,7 @@
 
 
 import sys
+import os
 import getopt
 from collections import Counter
 
@@ -41,7 +42,7 @@ def usage_visualizemapApp():
     """
     print("""
 Example usage:
-correlationplus visualizemap -i 4z90-cross-correlations.txt -p 4z90.pdb
+correlationplus visualize -i 4z90-cross-correlations.txt -p 4z90.pdb
 
 Arguments: -i: A file containing normalized dynamical cross correlations in matrix format. (Mandatory)
            -p: PDB file of the protein. (Mandatory)
@@ -80,6 +81,12 @@ def handle_arguments_visualizemapApp():
         usage_visualizemapApp()
         sys.exit(-1)
 
+    if os.path.exists(inp_file)==False:
+        print("@> ERROR: Could not find "+inp_file)
+        sys.exit(-1)
+    if os.path.exists(pdb_file)==False:
+        print("@> ERROR: Could not find "+pdb_file)
+        sys.exit(-1)
     # Assign a default name if the user forgets the output file prefix.
     if out_file is None:
         out_file = "correlation"
@@ -94,12 +101,13 @@ def handle_arguments_visualizemapApp():
 def visualizemapApp():
     inp_file, out_file, sel_type, pdb_file = handle_arguments_visualizemapApp()
     print(f"""
-@> Running 'visualizemap App'
+@> Running 'visualize' app:
     
 @> Input file   : {inp_file}
 @> PDB file     : {pdb_file}
 @> Data type    : {sel_type}
 @> Output       : {out_file}""")
+
 
     ##########################################################################
     # Read PDB file

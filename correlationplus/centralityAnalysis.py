@@ -1,10 +1,10 @@
 ##############################################################################
-# correlationplus - Python module to plot dynamical correlations maps         #
-#                   for proteins.                                             #
+# correlationplus - A Python package to calculate, visualize and analyze      #
+#                   dynamical correlations maps of proteins.                  #
 # Authors: Mustafa Tekpinar                                                   #
 # Copyright Mustafa Tekpinar 2017-2018                                        #
 # Copyright CNRS-UMR3528, 2019                                                #
-# Copyright Institut Pasteur Paris, 2020                                       #
+# Copyright Institut Pasteur Paris, 2020                                      #
 #                                                                             #
 # This file is part of correlationplus.                                       #
 #                                                                             #
@@ -28,6 +28,7 @@ from collections import Counter
 
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.ticker import FormatStrFormatter
 from prody import writePDB
 import networkx as nx
 
@@ -35,6 +36,7 @@ import networkx as nx
 def projectCentralitiesOntoProteinVMD(centrality, centralityArray, out_file, selectedAtoms, scalingFactor):
     """
     Produces VMD output files for visualizing protein centralities.
+
     This function writes a tcl file and a PDB file that can be viewed in
     VMD. Bfactor field of the protein contains the centrality information.
     The first N residues with the highest centrality are highlighed in VDW
@@ -67,6 +69,7 @@ def projectCentralitiesOntoProteinVMD(centrality, centralityArray, out_file, sel
     Returns
     -------
     Nothing
+
     """
 
     # Write output in VMD format
@@ -103,6 +106,7 @@ def projectCentralitiesOntoProteinVMD(centrality, centralityArray, out_file, sel
 def plotCentralities(centrality, centralityArray, out_file, selectedAtoms, scalingFactor):
     """
     Plots the centrality values on a 2D graph.
+
     The centrality values are plotted on a 2D png file.
     If there are at least two chains, the function produces a figure
     for each chain.
@@ -127,6 +131,7 @@ def plotCentralities(centrality, centralityArray, out_file, selectedAtoms, scali
     Return
     ------
     Nothing
+
     """
 
     chains = Counter(selectedAtoms.getChids()).keys()
@@ -141,12 +146,15 @@ def plotCentralities(centrality, centralityArray, out_file, selectedAtoms, scali
                 if selectedAtoms.getChids()[i] == chain:
                     x.append(selectedAtoms[i].getResnum())
                     y.append(centralityArray[i])
+            
 
-            plt.subplots()
+            fig, ax = plt.subplots()
+            plt.title('Chain '+chain)
             plt.locator_params(axis='y', nbins=5)
 
             plt.xticks(fontsize=16)
             plt.yticks(fontsize=16)
+            ax.yaxis.set_major_formatter(FormatStrFormatter('%.3f'))
             plt.ylabel(centrality.replace('_', ' '), fontsize=20)
             plt.xlabel("Residue Number", fontsize=20)
 
@@ -158,11 +166,12 @@ def plotCentralities(centrality, centralityArray, out_file, selectedAtoms, scali
             plt.close('all')
     else:
         dst_file = out_file + '_' + centrality
-        plt.subplots()
+        fig, ax = plt.subplots()
         # plt.locator_params(axis='y', nbins=4)
 
         plt.xticks(fontsize=16)
         plt.yticks(fontsize=16)
+        ax.yaxis.set_major_formatter(FormatStrFormatter('%.3f'))
         plt.ylabel(centrality.replace('_', ' '), fontsize=20)
         plt.xlabel("Residue Number", fontsize=20)
 
@@ -177,23 +186,29 @@ def plotCentralities(centrality, centralityArray, out_file, selectedAtoms, scali
         plt.close('all')
 
 
-def centralityAnalysis(ccMatrix, valueFilter, out_file, centrality, selectedAtoms):
+def centralityAnalysis(ccMatrix, distanceMatrix, valueFilter, distanceFilter, out_file, centrality, selectedAtoms):
     """
     This function calculates various network (graph) centralities of a protein.
 
     This function calculates some network centrality measures such as
-        -degree
-        -betweenness
-        -closeness
-        -current flow betweenness
-        -eigenvector.
+    degree, betweenness, closeness, current flow betweenness and eigenvector.
     This function needs Python 3.6 or later to maintain dictionary order.!!!
+
     Parameters
     ----------
     ccMatrix: Numpy matrix
         It is a numpy matrix of typically nDCC, LMI or Generalized Correlations.
+    distanceMatrix: Numpy matrix
+        The distances between Calpha atoms of the protein stored in a matrix.
     valueFilter: float
-        The ccMatrix values than the valueFilter will be ignored.
+        The ccMatrix values lower than the valueFilter will be ignored.
+    distanceFilter: float
+        The distance values higher than the distanceFilter will be ignored
+        and they will not be considered as edges in a network. 
+        This kind of value pruning may work for low conformational change MD
+        simulations or ENM based calculations. However, if there are large
+        scale structural changes, it will be necessary to eliminate the edges 
+        based on contacts and their preservation in during the entire simulation. 
     out_file: string
         Prefix of the output file. According to the centralty measure, it will be
         extended.
@@ -206,6 +221,7 @@ def centralityAnalysis(ccMatrix, valueFilter, out_file, centrality, selectedAtom
     Returns
     -------
     Nothing
+
     """
     # Create your  graph
     dynNetwork = nx.Graph()
@@ -217,9 +233,11 @@ def centralityAnalysis(ccMatrix, valueFilter, out_file, centrality, selectedAtom
         dynNetwork.add_node(i)
 
     # Add all pairwise interactions greater than the valueFilter as edges.
+    # In addition, add only edges which has a distance of lower than the 
+    # distance filter
     for i in range(n):
         for j in range(n):
-            if fabs(ccMatrix[i][j]) > valueFilter:
+            if((fabs(ccMatrix[i][j])>valueFilter) and (distanceMatrix[i][j]<=distanceFilter)):
                 dynNetwork.add_edge(i, j, weight=-log(fabs(ccMatrix[i][j])))
                 # dynNetwork.add_edge(i, j, weight=fabs(correlationArray[i][j]))
 
@@ -380,5 +398,6 @@ def centralityAnalysis(ccMatrix, valueFilter, out_file, centrality, selectedAtom
     else:
         print("ERROR: Unknown centrality selected! It can only be")
         print("       'degree', 'betweenness', 'closeness',")
-        print("       'current_flow_betweenness' or 'current_flow_closeness'!")
+        print("       'current_flow_betweenness', 'current_flow_closeness'")
+        print("       or 'eigenvector!'")
         sys.exit(-1)
