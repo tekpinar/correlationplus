@@ -1,5 +1,6 @@
 Installation
 ============
+
 Basic Installation
 ------------------
 We recommend installing correlationplus with pip or conda for regular users:
@@ -7,27 +8,30 @@ We recommend installing correlationplus with pip or conda for regular users:
 with pip
 ~~~~~~~~
 
-We recommend to use pip as follows:
+We recommend to use pip as follows::
 
-``pip install correlationplus``
+    pip install correlationplus
 
-or if you do not have administration rights
+or if you do not have administration rights::
 
-``pip install --user correlationplus``
+    pip install --user correlationplus
 
 If you prefer to use a virtualenv
-``python3 -m venv correlationplus``
-``cd correlationplus``
-``source bin/activate``
-``pip install correlationplus``
+
+.. code-block:: shell
+
+    python3 -m venv correlationplus
+    cd correlationplus
+    source bin/activate
+    pip install correlationplus
 
 
 with conda
 ~~~~~~~~~~
 
-You can also install correlationplus with conda as follows:
+You can also install correlationplus with conda as follows::
 
-``conda install -c bioconda correlationplus``
+    conda install -c bioconda correlationplus
 		
 Most of the time, at least one these methods will be sufficient for the installation.
 However, if these two methods didn't work for any reason, you can take a look 
@@ -42,14 +46,17 @@ for developers
 ~~~~~~~~~~~~~~
 
 We recommend to use pip and a virtualenv
-``python3 -m venv correlationplus``
-``cd correlationplus``
-``source bin/activate``
-``mkdir src``
-``cd src``
-``git clone https://github.com/tekpinar/correlationplus.git # or git@github.com:tekpinar/correlationplus.git``
-``cd correlationplus``
-``pip install -e .``
+
+.. code-block:: shell
+
+    python3 -m venv correlationplus
+    cd correlationplus
+    source bin/activate
+    mkdir src
+    cd src
+    git clone https://github.com/tekpinar/correlationplus.git # or git@github.com:tekpinar/correlationplus.git``
+    cd correlationplus``
+    pip install -e .
 
 from Docker image
 ~~~~~~~~~~~~~~~~~
@@ -98,16 +105,16 @@ then once in the container
 from Singularity image
 ~~~~~~~~~~~~~~~~~~~~~~
 
-As the docker image is registered in dockerhub you can also use it directly with `Singularity <https://sylabs.io/docs/>`_
+As the docker image is registered in dockerhub you can also use it directly with `Singularity <https://sylabs.io/docs/>`_ ::
 
-``singularity run docker://structuraldynamicslab/correlationplus diffMap -i 6fl9_rc15_scalCoeff1_100_modes_lmi_v2.dat -j zacharias_rc15_scalCoeff15_100_modes_lmi.dat -p 6fl9_centeredOrientedAligned2Z.pdb -t lmi``
+    singularity run docker://structuraldynamicslab/correlationplus diffMap -i 6fl9_rc15_scalCoeff1_100_modes_lmi_v2.dat -j zacharias_rc15_scalCoeff15_100_modes_lmi.dat -p 6fl9_centeredOrientedAligned2Z.pdb -t lmi
 
-or in 2 steps
+or in 2 steps ::
 
-``singularity pull correlationplus.simg docker://structuraldynamicslab/correlation_plus``
-
-``./correlationplus.simg diffMap -i 6fl9_rc15_scalCoeff1_100_modes_lmi_v2.dat -j zacharias_rc15_scalCoeff15_100_modes_lmi.dat -p 6fl9_centeredOrientedAligned2Z.pdb -t lmi``
+    singularity pull correlationplus.simg docker://structuraldynamicslab/correlation_plus
+    ./correlationplus.simg diffMap -i 6fl9_rc15_scalCoeff1_100_modes_lmi_v2.dat -j zacharias_rc15_scalCoeff15_100_modes_lmi.dat -p 6fl9_centeredOrientedAligned2Z.pdb -t lmi
 
 Unlike docker you do not have to worry about shared directory, your *home* and */tmp* are automatically shared.
-You can also run an *ipython* interactive session.
-``singularity shell correlationplus.simg``
+You can also run an *ipython* interactive session ::
+
+    singularity shell correlationplus.simg
