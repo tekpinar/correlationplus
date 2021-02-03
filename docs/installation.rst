@@ -60,20 +60,36 @@ The computation inside the container will be performed under **correlationplus**
 So before running a **correlationplus** container,
 do not forget to create and mount a shared directory in the container. 
 
-This directory must be writable.
+This directory must be writable to this user. So you have two possibilities
 
-``mkdir shared_dir``
+    1. map your id on the host to the *correlationplus* user in the container
+       ``-u $(id -u ${USER}):$(id -g ${USER})``
+    2. make the shared directory writable to anyone
+       ``chmod 777 shared_dir``
 
-``cp 6fl9_just_prot_anm_100_modes_rc_15_cross-correlations.txt 6fl9_centeredOrientedAligned2Z.pdb shared_dir``
+option 1
 
-``chmod 777 shared_dir``
+.. code-block:: shell
 
-``cd shared_dir``
+    mkdir shared_dir
+    cp 6fl9_just_prot_anm_100_modes_rc_15_cross-correlations.txt 6fl9_centeredOrientedAligned2Z.pdb shared_dir
+    cd shared_dir
+    docker run -v $PWD:/home/correlationplus -u $(id -u ${USER}):$(id -g ${USER}) structuraldynamicslab/correlation_plus diffMap -i 6fl9_rc15_scalCoeff1_100_modes_lmi_v2.dat -j zacharias_rc15_scalCoeff15_100_modes_lmi.dat -p 6fl9_centeredOrientedAligned2Z.pdb -t lmi
 
-``docker run -v $PWD:/home/correlationplus structuraldynamicslab/correlation_plus diffMap -i 6fl9_rc15_scalCoeff1_100_modes_lmi_v2.dat -j zacharias_rc15_scalCoeff15_100_modes_lmi.dat -p 6fl9_centeredOrientedAligned2Z.pdb -t lmi``
+option 2
 
-It is also possible to run an ipython interactive session
-``docker run -v $PWD:/home/correlationplus --entrypoint /bin/bash -it structuraldynamicslab/correlationplus:0.1.4rc2``
+.. code-block:: shell
+
+    mkdir shared_dir
+    cp 6fl9_just_prot_anm_100_modes_rc_15_cross-correlations.txt 6fl9_centeredOrientedAligned2Z.pdb shared_dir
+    chmod 777 shared_dir
+    cd shared_dir
+    docker run -v $PWD:/home/correlationplus structuraldynamicslab/correlation_plus diffMap -i 6fl9_rc15_scalCoeff1_100_modes_lmi_v2.dat -j zacharias_rc15_scalCoeff15_100_modes_lmi.dat -p 6fl9_centeredOrientedAligned2Z.pdb -t lmi
+
+
+It is also possible to run an ipython interactive session::
+
+    docker run -v $PWD:/home/correlationplus --entrypoint /bin/bash -it structuraldynamicslab/correlationplus:0.1.4rc2
 
 then once in the container
 
