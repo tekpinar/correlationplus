@@ -4,7 +4,7 @@
 # Authors: Mustafa Tekpinar                                                   #
 # Copyright Mustafa Tekpinar 2017-2018                                        #
 # Copyright CNRS-UMR3528, 2019                                                #
-# Copyright Institut Pasteur Paris, 2020                                      #
+# Copyright Institut Pasteur Paris, 2020-2021                                 #
 #                                                                             #
 # This file is part of correlationplus.                                       #
 #                                                                             #
@@ -29,7 +29,6 @@ import matplotlib.pyplot as plt
 from matplotlib.cm import get_cmap
 import numpy as np
 from prody import buildDistMatrix
-
 
 
 def cmap_discretize(cmap, N):
