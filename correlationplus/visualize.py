@@ -31,7 +31,6 @@ import numpy as np
 from prody import buildDistMatrix
 
 
-
 def cmap_discretize(cmap, N):
     """
         Creates a discrete colormap from the continuous colormap cmap.
@@ -89,13 +88,13 @@ def convertLMIdata2Matrix(inp_file, writeAllOutput: bool):
     data_file = open(inp_file, 'r')
     allLines = data_file.readlines()
     data_file.close()
-    if(("x" in allLines[0]) and ("[" in allLines[0])):
+    if ("x" in allLines[0]) and ("[" in allLines[0]):
         # This is a g_correlation file.
         data_list = []
         for line in allLines:
             words = line.split()
             for i in words:
-                    data_list.append(i)
+                data_list.append(i)
 
         data_list = data_list[4:-1]
         n = int(np.sqrt(len(data_list)))
@@ -154,7 +153,7 @@ def filterCorrelationMapByDistance(ccMatrix, out_file, title,
     Nothing
 
     """
-    print("@> Filtering correlations lower than " + str(distanceValue) + " Angstrom.")
+    print(f"@> Filtering correlations lower than {distanceValue} Angstrom.")
     # Calculate distance matrix
     dist_matrix = buildDistMatrix(selectedAtoms)
 
@@ -176,7 +175,7 @@ def filterCorrelationMapByDistance(ccMatrix, out_file, title,
     # Write output
     # Writing the output is very important for further analyses such as
     # inter-chain (inter-domain) or intra-chain (intra-domain) distributions etc.
-    if (writeAllOutput):
+    if writeAllOutput:
         DATA_FILE = open(dst_file + 'filtered.dat', 'w')
         for i in range(0, len(ccMatrix)):
             for j in range(i + 1, len(ccMatrix)):
@@ -309,7 +308,7 @@ def overallCorrelationMap(ccMatrix,
             beginningPoint = selection_reorder[i] / selection_reorder[-1]
             endingPoint = selection_reorder[i + 1] / selection_reorder[-1]
             middlePoint = (float(beginningPoint) + float(endingPoint)) / 2.0
-            if (i % 2 == 0):
+            if i % 2 == 0:
                 # x axis
                 ax.annotate('', xy=(beginningPoint, 1.03), xycoords='axes fraction',
                             xytext=(endingPoint, 1.03),
@@ -764,14 +763,14 @@ def projectCorrelationsOntoProteinVMD(pdb_file, ccMatrix, vmd_out_file,
                                 "mol selection \"chain {0:s} and resid {1:d} and name CA\"\n" + \
                                 "mol addrep 0\n"
     DATA_FILE = open(vmd_out_file + '-general.tcl', 'w')
-    DATA_FILE.write("mol new " + pdb_file + " \n")
+    DATA_FILE.write(f"mol new {pdb_file} \n")
     # DATA_FILE.write("mol modstyle 0 0 NewCartoon 0.300000 50.000000 3.250000 0\n")
     DATA_FILE.write("mol modstyle 0 0 Tube\n")
     DATA_FILE.write("mol modcolor 0 0 Chain\n")
     DATA_FILE.write("mol modmaterial 0 0 MetallicPastel\n")
     for i in range(0, len(ccMatrix)):
         for j in range(i + 1, len(ccMatrix)):
-            if (np.absolute(ccMatrix[i][j]) > valueFilter):
+            if np.absolute(ccMatrix[i][j]) > valueFilter:
                 DATA_FILE.write(vdw_representation_string.format(selectedAtoms.getChids()[i],
                                                                  selectedAtoms.getResnums()[i]))
                 DATA_FILE.write(vdw_representation_string.format(selectedAtoms.getChids()[j],
@@ -795,7 +794,7 @@ def projectCorrelationsOntoProteinVMD(pdb_file, ccMatrix, vmd_out_file,
         for chainI in chains:
             for chainJ in chains:
                 if chainI != chainJ:
-                    DATA_FILE = open(vmd_out_file + '-interchain-chains' + chainI + '-' + chainJ + '.tcl', 'w')
+                    DATA_FILE = open(f"{vmd_out_file}-interchain-chains{chainI}-{chainJ}.tcl", 'w')
                     DATA_FILE.write("mol new " + pdb_file + " \n")
                     #DATA_FILE.write("mol modstyle 0 0 NewCartoon 0.300000 50.000000 3.250000 0\n")
                     DATA_FILE.write("mol modstyle 0 0 Tube\n")
@@ -813,7 +812,7 @@ def projectCorrelationsOntoProteinVMD(pdb_file, ccMatrix, vmd_out_file,
                                     DATA_FILE.write(draw_string.format(selectedAtoms.getChids()[i],
                                                                        selectedAtoms.getResnums()[i],
                                                                        selectedAtoms.getChids()[j],
-                                                                       selectedAtoms.getResnums()[j], \
+                                                                       selectedAtoms.getResnums()[j],
                                                                        # The radius of the connecting cylinder is
                                                                        # proportional to the correlation value.
                                                                        # However, it is necessary to multiply
@@ -823,8 +822,8 @@ def projectCorrelationsOntoProteinVMD(pdb_file, ccMatrix, vmd_out_file,
 
         # Intra-chain
         for chain in chains:
-            DATA_FILE = open(vmd_out_file + '-intrachain-chain' + chain + '.tcl', 'w')
-            DATA_FILE.write("mol new " + pdb_file + " \n")
+            DATA_FILE = open(f"{vmd_out_file}-intrachain-chain{chain}.tcl", 'w')
+            DATA_FILE.write(f"mol new {pdb_file} \n")
             #DATA_FILE.write("mol modstyle 0 0 NewCartoon 0.300000 50.000000 3.250000 0\n")
             DATA_FILE.write("mol modstyle 0 0 Tube\n")
             DATA_FILE.write("mol modcolor 0 0 Chain\n")
@@ -886,9 +885,10 @@ def overallUniformDifferenceMap(ccMatrix1, ccMatrix2,
     diffMap = np.subtract(ccMatrix1, ccMatrix2)
 
     n = len(ccMatrix1)
-    numOfLabels=9
+    numOfLabels = 9
     generatePNG(diffMap, minColorBarLimit, maxColorBarLimit, numOfLabels,
-                            out_file+"-overall-difference.png", title, selectedAtoms)
+                f"{out_file}-overall-difference.png", title, selectedAtoms)
+
 
 def overallNonUniformDifferenceMap(ccMatrix1, ccMatrix2, minColorBarLimit,
                                    maxColorBarLimit, out_file, title,
@@ -1023,7 +1023,7 @@ def overallNonUniformDifferenceMap(ccMatrix1, ccMatrix2, minColorBarLimit,
         beginningPoint = selection_reorder[i] / selection_reorder[-1]
         endingPoint = selection_reorder[i + 1] / selection_reorder[-1]
         middlePoint = (float(beginningPoint) + float(endingPoint)) / 2.0
-        if (i % 2 == 0):
+        if i % 2 == 0:
             # x axis
             ax.annotate('', xy=(beginningPoint, 1.03), xycoords='axes fraction',
                         xytext=(endingPoint, 1.03), arrowprops=dict(linewidth=2., arrowstyle="-", color='black'))
@@ -1117,6 +1117,7 @@ def findCommonCorePDB(selectedAtomSet1, selectedAtomSet2):
     # print(commonCoreDictionary)
     return commonCoreDictionary
 
+
 def triangulateMaps(ccMatrix1, ccMatrix2,
                                 minColorBarLimit, maxColorBarLimit, 
                                 out_file, title, selectedAtoms):
@@ -1152,7 +1153,7 @@ def triangulateMaps(ccMatrix1, ccMatrix2,
     """
 
     n = len(ccMatrix1)
-    if (len(ccMatrix2) != n):
+    if len(ccMatrix2) != n:
         print("Two matrices have to have same dimensions!")
         sys.exit(-1)
 
@@ -1160,10 +1161,11 @@ def triangulateMaps(ccMatrix1, ccMatrix2,
     ccMatrixCombined = np.triu(ccMatrix2, k=0) + np.tril(ccMatrix1, k=0)                                                                                                                                             
     np.fill_diagonal(ccMatrixCombined, 1.0)
     
-    numOfLabels=5
+    numOfLabels = 5
     generatePNG(ccMatrixCombined, minColorBarLimit, maxColorBarLimit,
                 numOfLabels, out_file+"-triangulated.png", title, selectedAtoms)
     return ccMatrixCombined
+
 
 def generatePNG(ccMatrix, minColorBarLimit, maxColorBarLimit,
                 numOfLabels, out_file, title, selectedAtoms):
@@ -1297,4 +1299,3 @@ def generatePNG(ccMatrix, minColorBarLimit, maxColorBarLimit,
     # plt.tight_layout()
     plt.savefig(out_file, bbox_inches='tight', dpi=200)
     # plt.show()
-

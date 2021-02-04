@@ -141,15 +141,14 @@ def plotCentralities(centrality, centralityArray, out_file, selectedAtoms, scali
         for chain in chains:
             x = []
             y = []
-            dst_file = out_file + '_' + centrality + '_chain' + chain
+            dst_file = f"{out_file}_{centrality}_chain{chain}"
             for i in range(0, len(selectedAtoms.getResnums())):
                 if selectedAtoms.getChids()[i] == chain:
                     x.append(selectedAtoms[i].getResnum())
                     y.append(centralityArray[i])
-            
 
             fig, ax = plt.subplots()
-            plt.title('Chain '+chain)
+            plt.title('Chain ' + chain)
             plt.locator_params(axis='y', nbins=5)
 
             plt.xticks(fontsize=16)
@@ -165,7 +164,7 @@ def plotCentralities(centrality, centralityArray, out_file, selectedAtoms, scali
             plt.savefig(dst_file + '.png')
             plt.close('all')
     else:
-        dst_file = out_file + '_' + centrality
+        dst_file = f"{out_file}_{centrality}"
         fig, ax = plt.subplots()
         # plt.locator_params(axis='y', nbins=4)
 
@@ -237,11 +236,11 @@ def centralityAnalysis(ccMatrix, distanceMatrix, valueFilter, distanceFilter, ou
     # distance filter
     for i in range(n):
         for j in range(n):
-            if((fabs(ccMatrix[i][j])>valueFilter) and (distanceMatrix[i][j]<=distanceFilter)):
+            if fabs(ccMatrix[i][j]) > valueFilter and distanceMatrix[i][j] <= distanceFilter:
                 dynNetwork.add_edge(i, j, weight=-log(fabs(ccMatrix[i][j])))
                 # dynNetwork.add_edge(i, j, weight=fabs(correlationArray[i][j]))
 
-    ##########################Calculate degrees of all nodes
+    ########################## Calculate degrees of all nodes
     if centrality == 'degree':
         degreeResult = dynNetwork.degree(weight='weight')
         degreeResultList = []
@@ -251,7 +250,7 @@ def centralityAnalysis(ccMatrix, distanceMatrix, valueFilter, distanceFilter, ou
         print("@> Degree calculation finished!")
 
         # open a file for degree
-        degreeFile = open(out_file + "_degree_value_filter" + "{:.2f}".format(valueFilter) + '.dat', "w")
+        degreeFile = open(f"{out_file}_degree_value_filter{valueFilter:.2f}.dat", "w")
         for i in range(n):
             #    print(str(i)+" "+(str(dynNetwork.degree(i, weight='weight'))))
             degreeFile.write("{0:d}\t{1:.6f}\t{2:s}\n".format(selectedAtoms[i].getResnum(),
@@ -270,7 +269,7 @@ def centralityAnalysis(ccMatrix, distanceMatrix, valueFilter, distanceFilter, ou
                          scalingFactor=1)
 
 
-    ##########################Calculate betweenness
+    ########################## Calculate betweenness
     elif centrality == 'betweenness':
         betweennessResult = nx.betweenness_centrality(dynNetwork, k=None,
                                                       normalized=True, weight='weight',
@@ -279,7 +278,7 @@ def centralityAnalysis(ccMatrix, distanceMatrix, valueFilter, distanceFilter, ou
         # print(betweennessResult)
 
         # open a file for betweenness
-        betweennessFile = open(out_file + "_betweenness_value_filter" + "{:.2f}".format(valueFilter) + '.dat', "w")
+        betweennessFile = open(f"{out_file}_betweenness_value_filter{valueFilter:.2f}.dat", "w")
 
         for i in range(n):
             #    print(str(i)+" "+(str(dynNetwork.betweenness(i, weight='weight'))))
@@ -296,7 +295,7 @@ def centralityAnalysis(ccMatrix, distanceMatrix, valueFilter, distanceFilter, ou
                          list(betweennessResult.values()),
                          out_file, selectedAtoms, scalingFactor=1)
 
-    ##########################Calculate closeness
+    ########################## Calculate closeness
     elif centrality == 'closeness':
         closenessResult = nx.closeness_centrality(dynNetwork, u=None, distance='weight')
         print("@> Closeness calculation finished!")
@@ -321,7 +320,7 @@ def centralityAnalysis(ccMatrix, distanceMatrix, valueFilter, distanceFilter, ou
                          selectedAtoms, scalingFactor=1)
 
 
-    ##########################Calculate current_flow_betweenness
+    ########################## Calculate current_flow_betweenness
     elif centrality == 'current_flow_betweenness':
         current_flow_betweennessResult = nx.current_flow_betweenness_centrality(dynNetwork, normalized=True,
                                                                                 weight='weight')
@@ -347,7 +346,7 @@ def centralityAnalysis(ccMatrix, distanceMatrix, valueFilter, distanceFilter, ou
                          list(current_flow_betweennessResult.values()),
                          out_file,
                          selectedAtoms, scalingFactor=1)
-    ##########################Calculate closeness
+    ########################## Calculate closeness
     elif centrality == 'current_flow_closeness':
         current_flow_closenessResult = nx.current_flow_closeness_centrality(dynNetwork, weight='weight')
 
@@ -372,13 +371,13 @@ def centralityAnalysis(ccMatrix, distanceMatrix, valueFilter, distanceFilter, ou
                          list(current_flow_closenessResult.values()),
                          out_file,
                          selectedAtoms, scalingFactor=1)
-    ##########################Calculate eigenvector centrality
+    ########################## Calculate eigenvector centrality
     elif centrality == 'eigenvector':
         eigenvectorResult = nx.eigenvector_centrality_numpy(dynNetwork, weight='weight')
         print("@> Eigenvector calculation finished!")
 
         # open a file for closeness
-        eigenvectorFile = open(out_file + "_eigenvector_value_filter" + "{:.2f}".format(valueFilter) + '.dat', "w")
+        eigenvectorFile = open(f"{out_file}_eigenvector_value_filter{valueFilter:.2f}.dat", "w")
 
         for i in range(n):
             #    print(str(i)+" "+(str(dynNetwork.closeness(i, weight='weight'))))
