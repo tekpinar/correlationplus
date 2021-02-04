@@ -31,8 +31,8 @@ from prody import parsePDB
 from prody import buildDistMatrix
 from correlationplus.visualize import convertLMIdata2Matrix
 from correlationplus.centralityAnalysis import centralityAnalysis
+# from .visualizemap import handle_arguments_visualizemapApp
 
-#from .visualizemap import handle_arguments_visualizemapApp
 
 def usage_centralityAnalysisApp():
     """
@@ -50,6 +50,7 @@ Arguments: -i: A file containing normalized dynamical cross correlations in matr
            -v: Value filter. The values lower than this value in the map will be considered as zero. Default is 0.3. (Optional)
            -d: Distance filter. The residues with distances higher than this value will be considered as zero. Default is 7.0 Angstrom. (Optional)
 """)
+
 
 def handle_arguments_centralityAnalysisApp():
     inp_file = None
@@ -146,15 +147,22 @@ def centralityAnalysisApp():
         sys.exit(-1)
 
     valueFilter = float(value_cutoff)
-    distanceFilter=float(distance_cutoff)
-    distanceMatrix=buildDistMatrix(selectedAtoms)
+    distanceFilter = float(distance_cutoff)
+    distanceMatrix = buildDistMatrix(selectedAtoms)
 
     if centrality_type == "all":
-        centralityAnalysis(ccMatrix, distanceMatrix, valueFilter, distanceFilter, out_file, "degree", selectedAtoms)
-        centralityAnalysis(ccMatrix, distanceMatrix, valueFilter, distanceFilter, out_file, "betweenness", selectedAtoms)
-        centralityAnalysis(ccMatrix, distanceMatrix, valueFilter, distanceFilter, out_file, "closeness", selectedAtoms)
-        centralityAnalysis(ccMatrix, distanceMatrix, valueFilter, distanceFilter, out_file, "current_flow_betweenness", selectedAtoms)
-        centralityAnalysis(ccMatrix, distanceMatrix, valueFilter, distanceFilter, out_file, "current_flow_closeness", selectedAtoms)
-        centralityAnalysis(ccMatrix, distanceMatrix, valueFilter, distanceFilter, out_file, "eigenvector", selectedAtoms)
+        centralityAnalysis(ccMatrix, distanceMatrix, valueFilter, distanceFilter, out_file, "degree",
+                           selectedAtoms)
+        centralityAnalysis(ccMatrix, distanceMatrix, valueFilter, distanceFilter, out_file, "betweenness",
+                           selectedAtoms)
+        centralityAnalysis(ccMatrix, distanceMatrix, valueFilter, distanceFilter, out_file, "closeness",
+                           selectedAtoms)
+        centralityAnalysis(ccMatrix, distanceMatrix, valueFilter, distanceFilter, out_file, "current_flow_betweenness",
+                           selectedAtoms)
+        centralityAnalysis(ccMatrix, distanceMatrix, valueFilter, distanceFilter, out_file, "current_flow_closeness",
+                           selectedAtoms)
+        centralityAnalysis(ccMatrix, distanceMatrix, valueFilter, distanceFilter, out_file, "eigenvector",
+                           selectedAtoms)
     else:
-        centralityAnalysis(ccMatrix, distanceMatrix, valueFilter, distanceFilter, out_file, centrality_type, selectedAtoms)
+        centralityAnalysis(ccMatrix, distanceMatrix, valueFilter, distanceFilter, out_file, centrality_type,
+                           selectedAtoms)

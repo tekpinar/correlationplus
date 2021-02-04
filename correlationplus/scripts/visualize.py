@@ -81,11 +81,11 @@ def handle_arguments_visualizemapApp():
         usage_visualizemapApp()
         sys.exit(-1)
 
-    if os.path.exists(inp_file)==False:
-        print("@> ERROR: Could not find "+inp_file)
+    if not os.path.exists(inp_file):
+        print("@> ERROR: Could not find " + inp_file)
         sys.exit(-1)
-    if os.path.exists(pdb_file)==False:
-        print("@> ERROR: Could not find "+pdb_file)
+    if not os.path.exists(pdb_file):
+        print("@> ERROR: Could not find " + pdb_file)
         sys.exit(-1)
     # Assign a default name if the user forgets the output file prefix.
     if out_file is None:
@@ -133,14 +133,14 @@ def visualizemapApp():
 
     maxCorrelationValue = np.max(ccMatrix)
 
-    if (minCorrelationValue < 0.0):
+    if minCorrelationValue < 0.0:
         # Assume that it is an nDCC file
         minColorBarLimit = -1.0
     else:
         # Assume that it is an LMI file
         minColorBarLimit = 0.0
 
-    if (maxCorrelationValue > 1.0):
+    if maxCorrelationValue > 1.0:
         print("This correlation map is not normalized!")
         # TODO: At this point, one can ask the user if s/he wants to normalize it!
         sys.exit(-1)
@@ -151,16 +151,16 @@ def visualizemapApp():
                           out_file, " ", selectedAtoms)
 
     plotDistributions = True
-    if (plotDistributions):
-        if (sel_type == "ndcc"):
+    if plotDistributions:
+        if sel_type == "ndcc":
             distanceDistribution(ccMatrix, out_file, "nDCC", selectedAtoms,
                                  absoluteValues=False, writeAllOutput=True)
 
-        elif (sel_type == "absndcc"):
+        elif sel_type == "absndcc":
             distanceDistribution(ccMatrix, out_file, "Abs(nDCC)",
                                  selectedAtoms, absoluteValues=True, writeAllOutput=False)
 
-        elif (sel_type == "lmi"):
+        elif sel_type == "lmi":
             distanceDistribution(ccMatrix, out_file, "LMI", selectedAtoms,
                                  absoluteValues=True, writeAllOutput=True)
 
@@ -174,7 +174,7 @@ def visualizemapApp():
     chains = Counter(selectedAtoms.getChids()).keys()
     saveMatrix = False
     plotChains = True
-    if (len(chains) > 1) and (plotChains is True):
+    if len(chains) > 1 and plotChains:
         intraChainCorrelationMaps(ccMatrix, minColorBarLimit, maxColorBarLimit,
                                   out_file, " ", selectedAtoms, saveMatrix)
         interChainCorrelationMaps(ccMatrix, minColorBarLimit, maxColorBarLimit,

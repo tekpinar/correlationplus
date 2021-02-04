@@ -35,24 +35,21 @@ def runTests():
     # Test correlationMapApp for nDCC maps
     prefix = os.path.normpath(os.path.join(__file__, '..', '..'))
     # Test calculate module to produce nDCC map with GNM.
-    command = f"correlationplus calculate "+ \
-              f"-p {prefix}/examples/6fl9_centeredOrientedAligned2Z.pdb " + \
-               "-m GNM -o dcc-6fl9-gnm.dat"
-    print("\n@> Testing the nDCC calculation from GNM with the following command:\n\n"+command+"\n\n")
+    command = f"correlationplus calculate -p {prefix}/examples/6fl9_centeredOrientedAligned2Z.pdb " \
+              f"-m GNM -o dcc-6fl9-gnm.dat"
+    print(f"\n@> Testing the nDCC calculation from GNM with the following command:\n\n{command}\n\n")
     os.system(command)
 
     # Test calculate module to produce nDCC map with ANM.
-    command = f"correlationplus calculate " + \
-              f"-p {prefix}/examples/6fl9_centeredOrientedAligned2Z.pdb " + \
-               "-m ANM -o dcc-6fl9-anm.dat"
-    print("\n@> Testing the nDCC calculation from ANM with the following command:\n\n"+command+"\n\n")
+    command = f"correlationplus calculate -p {prefix}/examples/6fl9_centeredOrientedAligned2Z.pdb " \
+              f"-m ANM -o dcc-6fl9-anm.dat"
+    print(f"\n@> Testing the nDCC calculation from ANM with the following command:\n\n{command}\n\n")
     os.system(command)
 
     # Test calculate module to produce nDCC map from an MD trajectory.
     os.system(f"correlationplus calculate "
               f"-p {prefix}/examples/6lu7_dimer_with_N3_protein_sim1_ca.pdb "
               f"-f {prefix}/examples/6lu7_dimer_with_N3_protein_sim1_ca_short.trr -o dcc-6lu7-md.dat")
-
 
     # Test calculate module to produce LMI map with ANM modes.
     os.system(f"correlationplus calculate "
@@ -68,14 +65,13 @@ def runTests():
     os.system(f"correlationplus visualize "
               f"-i {prefix}/examples/6fl9_just_prot_anm_100_modes_rc_15_cross-correlations.txt "
               f"-p {prefix}/examples/6fl9_centeredOrientedAligned2Z.pdb "
-               "-t absndcc")
+              "-t absndcc")
 
     # Test visualizemapApp for LMI maps
     os.system(f"correlationplus visualize "
               f"-i {prefix}/examples/6lu7_dimer_with_N3_protein_sim1-lmi.dat "
               f"-p {prefix}/examples/6lu7_dimer_with_N3_protein_sim1_ca.pdb "
               "-t lmi")
-
  
     # Test diffMapApp for LMI maps
     os.system(f"correlationplus diffMap "
@@ -89,6 +85,7 @@ def runTests():
               f"-i {prefix}/examples/6lu7_dimer_with_N3_protein_sim1-lmi.dat "
               f"-p {prefix}/examples/6lu7_dimer_with_N3_protein_sim1_ca.pdb "
               "-t lmi")
+
 
 if __name__ == "__main__":
     import sys

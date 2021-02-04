@@ -29,6 +29,7 @@ from prody import parsePDB
 
 from correlationplus.calculate import *
 
+
 def usage_calculateApp():
     """                                                                                                                                                                                       
     Show how to use this program!                                                                                                                                                             
@@ -76,19 +77,19 @@ Arguments:
 
 
 def handle_arguments_calculateApp():
-    method   = None
+    method = None
     out_file = None
     sel_type = None
     pdb_file = None
     trj_file = None
-    beg_frm  = 0
-    end_frm  = -1
-    num_mod  = 100
-    cut_off  = None
+    beg_frm = 0
+    end_frm = -1
+    num_mod = 100
+    cut_off = None
 
     try:
-        opts, args = getopt.getopt(sys.argv[2:], "hm:o:t:p:f:b:e:n:c:", \
-        ["help", "method=", "out=", "type=", "pdb=", "frames=", "beg=", "end=", "n_modes=", "cutoff="])
+        opts, args = getopt.getopt(sys.argv[2:], "hm:o:t:p:f:b:e:n:c:",
+                        ["help", "method=", "out=", "type=", "pdb=", "frames=", "beg=", "end=", "n_modes=", "cutoff="])
     except getopt.GetoptError:
         usage_calculateApp()
         print("@> ERROR: Unknown option encountered!")
@@ -125,7 +126,7 @@ def handle_arguments_calculateApp():
         usage_calculateApp()
         sys.exit(-1)
 
-    #If the user has not provided a trajectory file:
+    # If the user has not provided a trajectory file:
     if trj_file is None:
         # It means that the user wants only ENM-based calculations.                                                                                                                       
         if method is None:
@@ -136,41 +137,35 @@ def handle_arguments_calculateApp():
             sys.exit(-1)
     else:
         method = "MD"
-        #Check the file extension.        
-        if (trj_file.lower().endswith(('.dcd', '.xtc', '.trr'))) is False:
+        # Check the file extension.
+        if not trj_file.lower().endswith(('.dcd', '.xtc', '.trr')):
             print("@> ERROR: Unrecognized trajectory type!")
             print("@> A trajectory file can only be in dcd, xtc or trr format!")
             usage_calculateApp()
             sys.exit(-1)
-        
-    
-    
+
     # Assign a default matrix type                                                                                                                               
     if sel_type is None:
         sel_type = "ndcc"
 
     # Assign a default name if the user forgets the output file prefix.                                                                                                                      
     if out_file is None:
-        if (sel_type.lower()=="ndcc"):
+        if sel_type.lower() == "ndcc":
             out_file = "DCC"
-        elif(sel_type.lower()=="lmi"):
+        elif sel_type.lower() == "lmi":
             out_file = "LMI"
         else:
             print("@> ERROR: Unknown correlation matrix calculation requested!")
             print("@> This app can only calculate lmi or ndcc matrices.")
-            print("@> Please check what you specidied with -t option!")
+            print("@> Please check what you specified with -t option!")
             usage_calculateApp()
             sys.exit(-1)
 
-
     return method, out_file, sel_type, pdb_file, trj_file, beg_frm, end_frm, num_mod, cut_off
-    
-
 
 
 def calculateApp():
-    method, out_file, sel_type, pdb_file, trj_file, beg_frm, end_frm, \
-    num_mod, cut_off = handle_arguments_calculateApp()
+    method, out_file, sel_type, pdb_file, trj_file, beg_frm, end_frm, num_mod, cut_off = handle_arguments_calculateApp()
     print(f"""                                                                                                                                                                                
 @> Running 'calculate App'
                                             
@@ -179,54 +174,56 @@ def calculateApp():
 @> Correlation     : {sel_type}
 @> PDB file        : {pdb_file}""")
 
-    if (out_file.lower().endswith(('.dat', '.txt'))) is False:
+    if out_file.lower().endswith(('.dat', '.txt')) is False:
         out_file = out_file + ".dat"
 
     if trj_file is None:
-        print("@> Number of modes : "+str(num_mod))
-        if cut_off is None and method=="ANM":
-            cut_off=15
-        if cut_off is None and method=="GNM":
-            cut_off=10
-        print("@> Cutoff radius   : "+str(cut_off))
-        #Read pdb file
+        print("@> Number of modes : " + str(num_mod))
+        if cut_off is None and method == "ANM":
+            cut_off = 15
+        if cut_off is None and method == "GNM":
+            cut_off = 10
+        print("@> Cutoff radius   : " + str(cut_off))
+        # Read pdb file
         selectedAtoms = parsePDB(pdb_file, subset='ca')
-        if(sel_type=="lmi"):
-            calcENM_LMI(selectedAtoms, cut_off, \
+        if sel_type == "lmi":
+            calcENM_LMI(selectedAtoms, cut_off,
                         method=method, 
-                        nmodes=num_mod, \
-                        normalized=True, \
-                        saveMatrix=True, \
-                        out_file=out_file )
+                        nmodes=num_mod,
+                        normalized=True,
+                        saveMatrix=True,
+                        out_file=out_file)
         else:
-            calcENMnDCC(selectedAtoms, cut_off, \
+            calcENMnDCC(selectedAtoms, cut_off,
                         method=method, 
-                        nmodes=num_mod, \
-                        normalized=True, \
-                        saveMatrix=True, \
-                        out_file=out_file )
+                        nmodes=num_mod,
+                        normalized=True,
+                        saveMatrix=True,
+                        out_file=out_file)
         
     else:
-        print("@> Trajectory file : "+trj_file)
-        print("@> Beginning frame : "+str(beg_frm))
-        print("@> Ending frame    : "+str(end_frm))
-        if(sel_type=="lmi"):
-            calcMD_LMI(pdb_file, trj_file, \
-                        startingFrame=beg_frm, \
-                        endingFrame=end_frm, \
-                        normalized=True, \
-                        alignTrajectory=True, \
-                        saveMatrix=True, \
-                        out_file=out_file)
+        print("@> Trajectory file : " + trj_file)
+        print("@> Beginning frame : " + str(beg_frm))
+        print("@> Ending frame    : " + str(end_frm))
+        if sel_type == "lmi":
+            calcMD_LMI(pdb_file, trj_file,
+                       startingFrame=beg_frm,
+                       endingFrame=end_frm,
+                       normalized=True,
+                       alignTrajectory=True,
+                       saveMatrix=True,
+                       out_file=out_file)
         else:
-            calcMDnDCC(pdb_file, trj_file, \
-                        startingFrame=beg_frm, \
-                        endingFrame=end_frm, \
-                        normalized=True, \
-                        alignTrajectory=True, \
-                        saveMatrix=True, \
-                        out_file=out_file)
+            calcMDnDCC(pdb_file, trj_file,
+                       startingFrame=beg_frm,
+                       endingFrame=end_frm,
+                       normalized=True,
+                       alignTrajectory=True,
+                       saveMatrix=True,
+                       out_file=out_file)
 
     print("@> Correlation calculation finished successfully!")
+
+
 if __name__ == "__main__":
     calculateApp()
