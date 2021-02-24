@@ -47,6 +47,8 @@ correlationplus visualize -i 4z90-cross-correlations.txt -p 4z90.pdb
 Arguments: -i: A file containing normalized dynamical cross correlations in matrix format. (Mandatory)
            -p: PDB file of the protein. (Mandatory)
            -t: Type of the matrix. It can be ndcc, lmi or absndcc (absolute values of ndcc). Default value is ndcc (Optional)
+           -v: Correlation values equal or greater than the specified value will be projected onto protein structure. Default is 0.75. (Optional)
+           -d: If the minimal distance between two C_alpha atoms is bigger than the specified distance, it will be projected onto protein structure. Default is 0. (Optional)
            -o: This will be your output file. Output figures are in png format. (Optional)
 """)
 
@@ -56,9 +58,10 @@ def handle_arguments_visualizemapApp():
     pdb_file = None
     out_file = None
     sel_type = None
-
+    val_fltr = None
+    dis_fltr = None
     try:
-        opts, args = getopt.getopt(sys.argv[2:], "hi:o:t:p:", ["help", "inp=", "out=", "type=", "pdb="])
+        opts, args = getopt.getopt(sys.argv[2:], "hi:o:t:p:v:d:", ["help", "inp=", "out=", "type=", "pdb=", "val=", "dis="])
     except getopt.GetoptError:
         usage_visualizemapApp()
     for opt, arg in opts:
@@ -73,6 +76,10 @@ def handle_arguments_visualizemapApp():
             sel_type = arg
         elif opt in ("-p", "--pdb"):
             pdb_file = arg
+        elif opt in ("-v", "--val"):
+            val_fltr = arg
+        elif opt in ("-d", "--dis"):
+            dis_fltr = arg
         else:
             assert False, usage_visualizemapApp()
 
@@ -95,18 +102,28 @@ def handle_arguments_visualizemapApp():
     if sel_type is None:
         sel_type = "ndcc"
 
-    return inp_file, out_file, sel_type, pdb_file
+    if val_fltr is None:
+        val_fltr = 0.75
+
+    if dis_fltr is None:
+        dis_fltr = 0.0
+    
+
+    return inp_file, out_file, sel_type, pdb_file, val_fltr, dis_fltr
 
 
 def visualizemapApp():
-    inp_file, out_file, sel_type, pdb_file = handle_arguments_visualizemapApp()
+    inp_file, out_file, sel_type, pdb_file, val_fltr, dis_fltr = \
+        handle_arguments_visualizemapApp()
     print(f"""
 @> Running 'visualize' app:
     
-@> Input file   : {inp_file}
-@> PDB file     : {pdb_file}
-@> Data type    : {sel_type}
-@> Output       : {out_file}""")
+@> Input file     : {inp_file}
+@> PDB file       : {pdb_file}
+@> Data type      : {sel_type}
+@> Value filter   : {val_fltr}
+@> Distance filter: {dis_fltr}
+@> Output         : {out_file}""")
 
 
     ##########################################################################
@@ -183,9 +200,9 @@ def visualizemapApp():
     # Here, we can filter some correlation values closer than a distance.
     # Typically, it is supposed to filter out the correlation within the
     # same secondary structure etc.
-    filterByDistance = False
+    filterByDistance = True
     if filterByDistance:
-        distanceValue = 5.0
+        distanceValue = float(dis_fltr)
         ccMatrix = filterCorrelationMapByDistance(ccMatrix, out_file, " ",
                                                   selectedAtoms, distanceValue,
                                                   absoluteValues=False,
@@ -193,7 +210,7 @@ def visualizemapApp():
 
     # Overall projection
     projectCorrelationsOntoProteinVMD(pdb_file, ccMatrix, out_file,
-                                      selectedAtoms, valueFilter=0.75,
+                                      selectedAtoms, valueFilter=float(val_fltr),
                                       absoluteValues=True, writeAllOutput=True)
 
     print("\n@> Program finished successfully!\n")
