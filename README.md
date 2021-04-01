@@ -14,23 +14,35 @@ We recommend one of the installation methods for regular users:
 
 ### with pip
 
-We recommend to use pip as follows:
-```bash
-pip install correlationplus
-```
+The pip version required by some dependencies is >= 21.0.1 which is not the pip version bundle with python 3.(6,7,8)
+So you have to update pip before to install *correlationplus*. Otherwise you will have trouble during *MDAnalysis* dependency installation.
+For this reason we **strongly** encourage you to install correlation plus in a [virtualenv](https://virtualenv.pypa.io/en/latest/).
 
-or if you do not have administration rights
-```bash
-pip install --user correlationplus
-```
-
-If you prefer to use a virtualenv
 ```bash
 python3 -m venv correlationplus
 cd correlationplus
 source bin/activate
-pip install correlationplus
+python3 -m pip install -U pip
+python3 -m pip install correlationplus
 ```
+
+if you still want to install it without using a virtualenv
+you hate to upgrade pip version to a version >=21.0.1
+or install numpy==1.16
+and the install correlationplus
+
+We recommend to use pip as follows:
+```bash
+python3 -m pip install numpy==1.16.1
+python3 -m pip install correlationplus
+```
+
+or if you do not have administration rights
+```bash
+python3 -m pip install --user numpy==1.16.1
+python3 -m pip install --user correlationplus
+```
+
 
 ### with conda
 ```bash
