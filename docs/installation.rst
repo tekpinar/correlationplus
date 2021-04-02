@@ -8,13 +8,17 @@ We recommend installing correlationplus with pip or conda for regular users:
 with pip
 ~~~~~~~~
 We recommend to use pip as follows:
+
 .. code-block:: shell
+
 python3 -m pip install numpy==1.16.1
 python3 -m pip install correlationplus
 
 
 or if you do not have administration rights
+
 .. code-block:: shell
+
 python3 -m pip install --user numpy==1.16.1
 python3 -m pip install --user correlationplus
 
@@ -27,7 +31,7 @@ You can also install correlationplus with conda as follows::
 		
 Most of the time, at least one these methods will be sufficient for the installation.
 However, if these two methods didn't work for any reason, you can take a look 
-to the 'Advanced Installation' instructions.
+at the 'Advanced Installation' instructions.
 
 Advanced Installation
 ---------------------
