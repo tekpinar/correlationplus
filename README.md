@@ -5,8 +5,8 @@ A Python package to calculate, visualize and analyze dynamical correlations of p
 correlationplus contains three main scripts that you can use to calculate, visualize
 and analyze dynamical correlations of proteins. 
 These correlations can be dynamical cross-correlations, linear mutual
-information or generalized correlations. You can use elastic network models or your
-your molecular dynamics trajectories for these visualizations and analyses. 
+information. You can use elastic network models or your
+your molecular dynamics trajectories for calculation, visualizations and analyses. 
 
 ## Installation
 
@@ -14,9 +14,9 @@ We recommend one of the installation methods for regular users:
 
 ### with pip
 
-The pip version required by some dependencies is >= 21.0.1 which is not the pip version bundle with python 3.(6,7,8)
-So you have to update pip before to install *correlationplus*. Otherwise you will have trouble during *MDAnalysis* dependency installation.
-For this reason we **strongly** encourage you to install correlation plus in a [virtualenv](https://virtualenv.pypa.io/en/latest/).
+The pip version required by some dependencies is >= 21.0.1, which is not the pip version bundle with python 3.(6,7,8)
+So, you have to update pip before installing *correlationplus*. Otherwise, you will have trouble during *MDAnalysis* dependency installation.
+For this reason, we **strongly** encourage you to install correlationplus in a [virtualenv](https://virtualenv.pypa.io/en/latest/).
 
 ```bash
 python3 -m venv correlationplus
@@ -27,8 +27,8 @@ python3 -m pip install correlationplus
 ```
 
 if you still want to install it without using a virtualenv
-you hate to upgrade pip version to a version >=21.0.1
-or install numpy==1.16
+or you hate to upgrade pip version to a version >=21.0.1,
+install numpy==1.16
 and the install correlationplus
 
 We recommend to use pip as follows:
