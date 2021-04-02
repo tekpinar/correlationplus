@@ -38,7 +38,7 @@ for developers
 ~~~~~~~~~~~~~~
 The pip version required by some dependencies is >= 21.0.1, which is not the pip version bundle with python 3.(6,7,8)
 So, you have to update pip before installing *correlationplus*. Otherwise, you will have trouble during *MDAnalysis* dependency installation.
-For this reason, we **strongly** encourage you to install correlationplus in a `virtualenv <https://virtualenv.pypa.io/en/latest/>` ::
+For this reason, we **strongly** encourage you to install correlationplus in a `virtualenv <https://virtualenv.pypa.io/en/latest/>`_ ::
 
 	python3 -m venv correlationplus
 	cd correlationplus
