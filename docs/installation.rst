@@ -7,20 +7,16 @@ We recommend installing correlationplus with pip or conda for regular users:
 
 with pip
 ~~~~~~~~
-We recommend to use pip as follows:
+We recommend to use pip as follows::
 
-.. code-block:: shell
-
-python3 -m pip install numpy==1.16.1
-python3 -m pip install correlationplus
+	python3 -m pip install numpy==1.16.1
+	python3 -m pip install correlationplus
 
 
-or if you do not have administration rights
+or if you do not have administration rights::
 
-.. code-block:: shell
-
-python3 -m pip install --user numpy==1.16.1
-python3 -m pip install --user correlationplus
+	python3 -m pip install --user numpy==1.16.1
+	python3 -m pip install --user correlationplus
 
 with conda
 ~~~~~~~~~~
