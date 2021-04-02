@@ -7,24 +7,16 @@ We recommend installing correlationplus with pip or conda for regular users:
 
 with pip
 ~~~~~~~~
-
-We recommend to use pip as follows::
-
-    pip install correlationplus
-
-or if you do not have administration rights::
-
-    pip install --user correlationplus
-
-If you prefer to use a virtualenv
-
+We recommend to use pip as follows:
 .. code-block:: shell
+python3 -m pip install numpy==1.16.1
+python3 -m pip install correlationplus
 
-    python3 -m venv correlationplus
-    cd correlationplus
-    source bin/activate
-    pip install correlationplus
 
+or if you do not have administration rights
+.. code-block:: shell
+python3 -m pip install --user numpy==1.16.1
+python3 -m pip install --user correlationplus
 
 with conda
 ~~~~~~~~~~
@@ -44,19 +36,16 @@ try one of the methods detailed below:
 
 for developers
 ~~~~~~~~~~~~~~
-
-We recommend to use pip and a virtualenv
+The pip version required by some dependencies is >= 21.0.1, which is not the pip version bundle with python 3.(6,7,8)
+So, you have to update pip before installing *correlationplus*. Otherwise, you will have trouble during *MDAnalysis* dependency installation.
+For this reason, we **strongly** encourage you to install correlationplus in a [virtualenv](https://virtualenv.pypa.io/en/latest/).
 
 .. code-block:: shell
-
-    python3 -m venv correlationplus
-    cd correlationplus
-    source bin/activate
-    mkdir src
-    cd src
-    git clone https://github.com/tekpinar/correlationplus.git # or git@github.com:tekpinar/correlationplus.git``
-    cd correlationplus``
-    pip install -e .
+python3 -m venv correlationplus
+cd correlationplus
+source bin/activate
+python3 -m pip install -U pip
+python3 -m pip install correlationplus
 
 from Docker image
 ~~~~~~~~~~~~~~~~~
