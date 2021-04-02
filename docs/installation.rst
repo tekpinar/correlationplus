@@ -5,6 +5,12 @@ Basic Installation
 ------------------
 We recommend installing correlationplus with pip or conda for regular users:
 
+with conda
+~~~~~~~~~~
+
+You can also install correlationplus with conda as follows::
+
+    conda install -c bioconda correlationplus
 with pip
 ~~~~~~~~
 We recommend to use pip as follows::
@@ -18,12 +24,7 @@ or if you do not have administration rights::
 	python3 -m pip install --user numpy==1.16.1
 	python3 -m pip install --user correlationplus
 
-with conda
-~~~~~~~~~~
 
-You can also install correlationplus with conda as follows::
-
-    conda install -c bioconda correlationplus
 		
 Most of the time, at least one these methods will be sufficient for the installation.
 However, if these two methods didn't work for any reason, you can take a look 
