@@ -12,6 +12,12 @@ your molecular dynamics trajectories for calculation, visualizations and analyse
 
 We recommend one of the installation methods for regular users:
 
+### with conda
+```bash
+conda install -c bioconda correlationplus
+
+```
+
 ### with pip
 
 The pip version required by some dependencies is >= 21.0.1, which is not the pip version bundle with python 3.(6,7,8)
@@ -44,11 +50,6 @@ python3 -m pip install --user correlationplus
 ```
 
 
-### with conda
-```bash
-conda install -c bioconda correlationplus
-
-```
 
 Most of the time, at least one these methods will be sufficient for the installation.
 However, if these two methods didn't work for any reason, you can take a look 
