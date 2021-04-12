@@ -45,9 +45,9 @@ def projectCentralitiesOntoProteinVMD(centrality, centralityArray, out_file, sel
     The output files can be visualized with VMD (Visual Molecular
     dynamics) program as follows.
     i) Load your pdb file, whether via command line or graphical interface.
-    ii) Go to Extemsions -> Tk Console and then
+    ii) Go to Extensions -> Tk Console and then
     iii) source vmd-output-general.tcl
-    It can take some to load the general script.
+    It can take some time to load the general script.
 
     Parameters
     ----------
@@ -183,6 +183,53 @@ def plotCentralities(centrality, centralityArray, out_file, selectedAtoms, scali
         # plt.show()
         plt.savefig(dst_file + '.png')
         plt.close('all')
+
+
+def projectCommunitiesOntoProteinVMD(sortedCommunities, out_file, selectedAtoms):
+    """
+    Produces VMD output files for visualizing protein communities.
+
+    This function writes a tcl file and a PDB file that can be viewed in
+    VMD. Occupancy field of the protein contains the community information.
+
+    The output files can be visualized with VMD (Visual Molecular
+    dynamics) program as follows.
+    i) Load your pdb file, whether via command line or graphical interface.
+    ii) Go to Extensions -> Tk Console and then
+    iii) source vmd-output-general.tcl
+
+    Parameters
+    ----------
+    sortedCommunities: Iterator over tuples of sets of nodes
+        It is a tuple of lists. Each list contain a community.
+    out_file: string
+        Prefix of the output file. According to the centralty measure, it will be
+        extended.
+    selectedAtoms: object
+        This is a prody.parsePDB object of typically CA atoms of a protein.
+    Returns
+    -------
+    Nothing
+
+    """
+    VMD_FILE = open(out_file + '_communities.tcl', 'w')
+
+    VMD_FILE.write("mol new " + out_file + '_communities.pdb' + "\n")
+    VMD_FILE.write("mol modstyle 0 0 Tube 0.5 25\n")
+    VMD_FILE.write("mol modcolor 0 0 Occupancy\n")
+    VMD_FILE.write("mol modmaterial 0 0 Glossy\n")
+
+    selectedAtoms.setOccupancies(0)
+    i=0
+    for item in sortedCommunities:
+        #print(item)
+        for residx in item:
+            selectedAtoms[residx].setOccupancy(i)
+        i = i + 1  
+
+    writePDB(out_file + '_communities.pdb', selectedAtoms)
+
+    VMD_FILE.close()
 
 
 def centralityAnalysis(ccMatrix, distanceMatrix, valueFilter, distanceFilter, out_file, centrality, selectedAtoms):
@@ -376,7 +423,7 @@ def centralityAnalysis(ccMatrix, distanceMatrix, valueFilter, distanceFilter, ou
         eigenvectorResult = nx.eigenvector_centrality_numpy(dynNetwork, weight='weight')
         print("@> Eigenvector calculation finished!")
 
-        # open a file for closeness
+        # open a file for eigenvectors
         eigenvectorFile = open(f"{out_file}_eigenvector_value_filter{valueFilter:.2f}.dat", "w")
 
         for i in range(n):
@@ -394,6 +441,34 @@ def centralityAnalysis(ccMatrix, distanceMatrix, valueFilter, distanceFilter, ou
                          list(eigenvectorResult.values()),
                          out_file,
                          selectedAtoms, scalingFactor=1)
+    ########################## Calculate communities with Girvan-Newman
+    elif centrality == 'community':
+        from networkx.algorithms import community
+        communities = community.girvan_newman(dynNetwork)
+        sortedCommunities = tuple(sorted(c) for c in next(communities))
+        print("@> There are " + str(len(sortedCommunities)) + \
+                " communities in your structure.")
+        projectCommunitiesOntoProteinVMD(sortedCommunities, out_file, selectedAtoms)
+        print("@> Community calculation finished!")
+
+        # # open a file for community
+        # eigenvectorFile = open(f"{out_file}_eigenvector_value_filter{valueFilter:.2f}.dat", "w")
+
+        # for i in range(n):
+        #     #    print(str(i)+" "+(str(dynNetwork.closeness(i, weight='weight'))))
+        #     eigenvectorFile.write("{0:d}\t{1:.6f}\t{2:s}\n".format(selectedAtoms[i].getResnum(),
+        #                                                            eigenvectorResult[i],
+        #                                                            selectedAtoms[i].getChid()))
+        # eigenvectorFile.close()
+
+        # projectCentralitiesOntoProteinVMD(centrality,
+        #                                   list(eigenvectorResult.values()),
+        #                                   out_file,
+        #                                   selectedAtoms, scalingFactor=1)
+        # plotCentralities(centrality,
+        #                  list(eigenvectorResult.values()),
+        #                  out_file,
+        #                  selectedAtoms, scalingFactor=1)
     else:
         print("ERROR: Unknown centrality selected! It can only be")
         print("       'degree', 'betweenness', 'closeness',")
