@@ -8,6 +8,12 @@ These correlations can be dynamical cross-correlations, linear mutual
 information. You can use elastic network models or your
 your molecular dynamics trajectories for calculation, visualizations and analyses. 
 
+## Video Tutorials
+* Installation: https://www.youtube.com/watch?v=Fc_xpnrbbWU
+* Calculate Module: https://www.youtube.com/watch?v=HG8Mzmy1IOM
+* Visualize Module: https://www.youtube.com/watch?v=HgUVAV1unXs
+* Analyze Module: https://www.youtube.com/watch?v=04BwJDauOn4
+
 ## Installation
 
 We recommend one of the installation methods for regular users:
