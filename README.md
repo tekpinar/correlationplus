@@ -13,6 +13,8 @@ your molecular dynamics trajectories for calculation, visualizations and analyse
 * Calculate Module: https://www.youtube.com/watch?v=HG8Mzmy1IOM
 * Visualize Module: https://www.youtube.com/watch?v=HgUVAV1unXs
 * Analyze Module: https://www.youtube.com/watch?v=04BwJDauOn4
+* Sequence Conservation Analysis with CoeViz and correlationplus (Part 1): https://www.youtube.com/watch?v=ieu91glEd0s
+* Sequence Conservation Analysis with CoeViz and correlationplus (Part 2): https://www.youtube.com/watch?v=BuxQNFoid1A
 
 ## Installation
 
