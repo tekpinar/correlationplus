@@ -34,6 +34,7 @@ from prody import parsePDB
 from correlationplus.visualize import overallCorrelationMap, convertLMIdata2Matrix, distanceDistribution
 from correlationplus.visualize import intraChainCorrelationMaps, interChainCorrelationMaps
 from correlationplus.visualize import filterCorrelationMapByDistance, projectCorrelationsOntoProteinVMD
+from correlationplus.visualize import projectCorrelationsOntoProteinPyMol
 
 
 def usage_visualizemapApp():
@@ -210,6 +211,11 @@ def visualizemapApp():
 
     # Overall projection
     projectCorrelationsOntoProteinVMD(pdb_file, ccMatrix, out_file,
+                                      selectedAtoms, valueFilter=float(val_fltr),
+                                      absoluteValues=True, writeAllOutput=True)
+
+
+    projectCorrelationsOntoProteinPyMol(pdb_file, ccMatrix, out_file,
                                       selectedAtoms, valueFilter=float(val_fltr),
                                       absoluteValues=True, writeAllOutput=True)
 

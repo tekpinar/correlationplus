@@ -847,6 +847,160 @@ def projectCorrelationsOntoProteinVMD(pdb_file, ccMatrix, vmd_out_file,
                                                                ccMatrix[i][j] * 0.5))
             DATA_FILE.close()
 
+def projectCorrelationsOntoProteinPyMol(pdb_file, ccMatrix, pml_out_file,
+                                      selectedAtoms, valueFilter,
+                                      absoluteValues: bool,
+                                      writeAllOutput: bool):
+    """
+        Produces pml files that contains the correlations between residues i and j. 
+
+    It produces three output files:
+    1-A general file that contains all correlation.
+    2-(If there are at least two chains) Files that contain interchain
+    correlations.
+    3-(If there are at least two chains) Files that contain intrachain
+    correlations of individual chains.
+    The output files can be visualized with PyMol program. 
+
+    Parameters
+    ----------
+    ccMatrix: A numpy square matrix of floats
+        Cross-correlation matrix.
+    pml_out_file: string
+        prefix for the output pml files.
+    selectedAtoms: prody object
+        A list of -typically CA- atoms selected from the parsed PDB file.
+    valueFilter: float
+        Correlation values smaller than this threshold will not be written
+        for visualization. For example, 0.3 is a good threshold for normalized
+        dynamical cross-correlation data. 
+    absoluteValues: bool
+        If True, an absolute values of correlations will be consideered. 
+    writeAllOutput: bool
+        If True, an output file for distances and correlations. 
+        This can be useful to see their distribution as well as 
+        individual values.  
+
+    Returns
+    -------
+    Nothing
+
+    """
+    # Calculate distance matrix
+    dist_matrix = buildDistMatrix(selectedAtoms)
+
+    # Plot the figure
+    # print("@> Min. distance: {0:.2f} Angstrom.".format(np.min(dist_matrix)))
+    print("@> Max. distance: {0:.2f} Angstrom.".format(np.max(dist_matrix)))
+
+    x = dist_matrix.flatten()
+    y = ccMatrix.flatten()
+
+    # print(len(y))
+
+    distanceFilter = 0.5
+
+    # Write output in Pymol format
+    # Writing the output is very important for further analyses such as
+    # inter-chain (inter-domain) or intra-chain (intra-domain) distributions etc.
+    #
+    draw_string = "VERTEX,   {0:.3f}, {1:.3f}, {2:.3f},\ \n"
+    vdw_representation_string = "show spheres, chain {0:s} and resi {1:d} and name ca\n"
+
+    DATA_FILE = open(pml_out_file + '-general.pml', 'w')
+    DATA_FILE.write(f"load {pdb_file} \n")
+    DATA_FILE.write("cartoon type = tube\n")
+
+    for i in range(0, len(ccMatrix)):
+        for j in range(i + 1, len(ccMatrix)):
+            if np.absolute(ccMatrix[i][j]) > valueFilter:
+                DATA_FILE.write(vdw_representation_string.format(selectedAtoms.getChids()[i],
+                                                                 selectedAtoms.getResnums()[i]))
+                DATA_FILE.write(vdw_representation_string.format(selectedAtoms.getChids()[j],
+                                                                 selectedAtoms.getResnums()[j]))
+    DATA_FILE.write("python\n")
+    DATA_FILE.write("from pymol.cgo import *\n")
+    DATA_FILE.write("from pymol import cmd\n")
+    DATA_FILE.write("correlations = [   BEGIN, LINES, \ \n")
+    for i in range(0, len(ccMatrix)):
+        for j in range(i + 1, len(ccMatrix)):
+            if np.absolute(ccMatrix[i][j]) > valueFilter:
+                DATA_FILE.write("COLOR , 0.0, 0.0, 1.0,\ \n")
+                DATA_FILE.write(draw_string.format(selectedAtoms.getCoords()[i][0],
+                                                   selectedAtoms.getCoords()[i][1],
+                                                   selectedAtoms.getCoords()[i][2]))
+                DATA_FILE.write(draw_string.format(selectedAtoms.getCoords()[j][0],
+                                                   selectedAtoms.getCoords()[j][1],
+                                                   selectedAtoms.getCoords()[j][2]))
+
+
+    DATA_FILE.write("   END   ]\n")
+    DATA_FILE.write("cmd.load_cgo(correlations,'correlations')\n")
+    DATA_FILE.write("cmd.set(\"cgo_line_width\",2.0,'correlations')\n")
+    DATA_FILE.write("python end")
+    DATA_FILE.close()
+
+    # chains = Counter(selectedAtoms.getChids()).keys()
+
+    # plotChains = True
+    # if (len(chains) > 1) & plotChains:
+    #     # Inter-chain
+    #     for chainI in chains:
+    #         for chainJ in chains:
+    #             if chainI != chainJ:
+    #                 DATA_FILE = open(f"{vmd_out_file}-interchain-chains{chainI}-{chainJ}.tcl", 'w')
+    #                 DATA_FILE.write("mol new " + pdb_file + " \n")
+    #                 #DATA_FILE.write("mol modstyle 0 0 NewCartoon 0.300000 50.000000 3.250000 0\n")
+    #                 DATA_FILE.write("mol modstyle 0 0 Tube\n")
+    #                 DATA_FILE.write("mol modcolor 0 0 Chain\n")
+    #                 DATA_FILE.write("mol modmaterial 0 0 MetallicPastel\n")
+    #                 for i in range(0, len(ccMatrix)):
+    #                     for j in range(i + 1, len(ccMatrix)):
+    #                         if np.absolute(ccMatrix[i][j]) > valueFilter:
+    #                             if (selectedAtoms.getChids()[i] == chainI) and (selectedAtoms.getChids()[j] == chainJ):
+    #                                 DATA_FILE.write(vdw_representation_string.format(selectedAtoms.getChids()[i],
+    #                                                                                  selectedAtoms.getResnums()[i]))
+    #                                 DATA_FILE.write(vdw_representation_string.format(selectedAtoms.getChids()[j],
+    #                                                                                  selectedAtoms.getResnums()[j]))
+
+    #                                 DATA_FILE.write(draw_string.format(selectedAtoms.getChids()[i],
+    #                                                                    selectedAtoms.getResnums()[i],
+    #                                                                    selectedAtoms.getChids()[j],
+    #                                                                    selectedAtoms.getResnums()[j],
+    #                                                                    # The radius of the connecting cylinder is
+    #                                                                    # proportional to the correlation value.
+    #                                                                    # However, it is necessary to multiply
+    #                                                                    # the radius with 0.5 to make it look better.
+    #                                                                    ccMatrix[i][j] * 0.5))
+    #                 DATA_FILE.close()
+
+    #     # Intra-chain
+    #     for chain in chains:
+    #         DATA_FILE = open(f"{vmd_out_file}-intrachain-chain{chain}.tcl", 'w')
+    #         DATA_FILE.write(f"mol new {pdb_file} \n")
+    #         #DATA_FILE.write("mol modstyle 0 0 NewCartoon 0.300000 50.000000 3.250000 0\n")
+    #         DATA_FILE.write("mol modstyle 0 0 Tube\n")
+    #         DATA_FILE.write("mol modcolor 0 0 Chain\n")
+    #         DATA_FILE.write("mol modmaterial 0 0 MetallicPastel\n")
+    #         for i in range(0, len(ccMatrix)):
+    #             for j in range(i + 1, len(ccMatrix)):
+    #                 if np.absolute(ccMatrix[i][j]) > valueFilter:
+    #                     if (selectedAtoms.getChids()[i] == chain) and (selectedAtoms.getChids()[j] == chain):
+    #                         DATA_FILE.write(vdw_representation_string.format(selectedAtoms.getChids()[i],
+    #                                                                          selectedAtoms.getResnums()[i]))
+    #                         DATA_FILE.write(vdw_representation_string.format(selectedAtoms.getChids()[j],
+    #                                                                          selectedAtoms.getResnums()[j]))
+    #                         DATA_FILE.write(draw_string.format(selectedAtoms.getChids()[i],
+    #                                                            selectedAtoms.getResnums()[i],
+    #                                                            selectedAtoms.getChids()[j],
+    #                                                            selectedAtoms.getResnums()[j],
+    #                                                            # The radius of the connecting cylinder is proportional
+    #                                                            # to the correlation value.
+    #                                                            # However, it is necessary to multiply the radius
+    #                                                            # with 0.5 to make it look better.
+    #                                                            ccMatrix[i][j] * 0.5))
+    #         DATA_FILE.close()
+
 
 def overallUniformDifferenceMap(ccMatrix1, ccMatrix2,
                                 minColorBarLimit, maxColorBarLimit, 
