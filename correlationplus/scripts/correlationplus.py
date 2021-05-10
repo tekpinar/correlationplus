@@ -78,7 +78,7 @@ def main():
 |                           correlation maps.                                |
 |                   Copyright Mustafa Tekpinar 2017-2018                     |
 |                   Copyright CNRS-UMR3528, 2019                             |
-|                   Copyright Institut Pasteur Paris, 2020                   |
+|                Copyright Institut Pasteur Paris, 2020-2021                 |
 |                         Author Mustafa Tekpinar                            |
 |                       Email: tekpinar@buffalo.edu                          |
 |                          Licence: GNU Lesser GPL                           |
