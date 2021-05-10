@@ -157,9 +157,6 @@ def filterCorrelationMapByDistance(ccMatrix, out_file, title,
     # Calculate distance matrix
     dist_matrix = buildDistMatrix(selectedAtoms)
 
-    # print("@> Min. distance: {0:.2f} Angstrom.".format(np.min(dist_matrix)))
-    # print("@> Max. distance: {0:.2f} Angstrom.".format(np.max(dist_matrix)))
-
     for i in range(0, len(ccMatrix)):
         for j in range(i + 1, len(ccMatrix)):
             if dist_matrix[i][j] < distanceValue:
@@ -741,7 +738,7 @@ def projectCorrelationsOntoProteinVMD(pdb_file, ccMatrix, vmd_out_file,
 
     # Plot the figure
     # print("@> Min. distance: {0:.2f} Angstrom.".format(np.min(dist_matrix)))
-    print("@> Max. distance: {0:.2f} Angstrom.".format(np.max(dist_matrix)))
+    # print("@> Max. distance: {0:.2f} Angstrom.".format(np.max(dist_matrix)))
 
     x = dist_matrix.flatten()
     y = ccMatrix.flatten()
@@ -902,7 +899,7 @@ def projectCorrelationsOntoProteinPyMol(pdb_file, ccMatrix, pml_out_file,
 
     # Plot the figure
     # print("@> Min. distance: {0:.2f} Angstrom.".format(np.min(dist_matrix)))
-    print("@> Max. distance: {0:.2f} Angstrom.".format(np.max(dist_matrix)))
+    # print("@> Max. distance: {0:.2f} Angstrom.".format(np.max(dist_matrix)))
 
     x = dist_matrix.flatten()
     y = ccMatrix.flatten()
@@ -920,6 +917,7 @@ def projectCorrelationsOntoProteinPyMol(pdb_file, ccMatrix, pml_out_file,
     DATA_FILE = open(pml_out_file + '-general.pml', 'w')
     DATA_FILE.write(f"load {pdb_file} \n")
     DATA_FILE.write("cartoon type = tube\n")
+    #DATA_FILE.write("spectrum chain\n")
     DATA_FILE.write("set sphere_scale, 0.75\n")
     for i in range(0, len(ccMatrix)):
         for j in range(i + 1, len(ccMatrix)):
@@ -960,6 +958,7 @@ def projectCorrelationsOntoProteinPyMol(pdb_file, ccMatrix, pml_out_file,
                     DATA_FILE = open(f"{pml_out_file}-interchain-chains{chainI}-{chainJ}.pml", 'w')
                     DATA_FILE.write(f"load {pdb_file} \n")
                     DATA_FILE.write("cartoon type = tube\n")
+                    #DATA_FILE.write("spectrum chain\n")
                     DATA_FILE.write("set sphere_scale, 0.75\n")
 
                     for i in range(0, len(ccMatrix)):
@@ -1007,6 +1006,7 @@ def projectCorrelationsOntoProteinPyMol(pdb_file, ccMatrix, pml_out_file,
             DATA_FILE = open(f"{pml_out_file}-intrachain-chain{chain}.pml", 'w')
             DATA_FILE.write(f"load {pdb_file} \n")
             DATA_FILE.write("cartoon type = tube\n")
+            #DATA_FILE.write("spectrum chain\n")
             DATA_FILE.write("set sphere_scale, 0.75\n")
             for i in range(0, len(ccMatrix)):
                 for j in range(i + 1, len(ccMatrix)):

@@ -76,12 +76,12 @@ def main():
 |                                                                            |
 |        A Python package to calculate, visualize and analyze protein        |
 |                           correlation maps.                                |
-|                   Copyright Mustafa Tekpinar 2017-2018                     |
-|                   Copyright CNRS-UMR3528, 2019                             |
-|                Copyright Institut Pasteur Paris, 2020-2021                 |
-|                         Author Mustafa Tekpinar                            |
+|               Copyright (C) Mustafa Tekpinar 2017-2018                     |
+|                   Copyright (C) CNRS-UMR3528, 2019                         |
+|             Copyright (C) Institut Pasteur Paris, 2020-2021                |
+|                         Author: Mustafa Tekpinar                           |
 |                       Email: tekpinar@buffalo.edu                          |
-|                          Licence: GNU Lesser GPL                           |
+|                           Licence: GNU LGPL V3                             |
 |--------------------------------------------------------------------------- |
 
 """)

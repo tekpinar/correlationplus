@@ -45,11 +45,21 @@ def usage_visualizemapApp():
 Example usage:
 correlationplus visualize -i 4z90-cross-correlations.txt -p 4z90.pdb
 
-Arguments: -i: A file containing normalized dynamical cross correlations in matrix format. (Mandatory)
+Arguments: -i: A file containing normalized dynamical cross correlations in 
+               matrix format. (Mandatory)
+
            -p: PDB file of the protein. (Mandatory)
-           -t: Type of the matrix. It can be ndcc, lmi or absndcc (absolute values of ndcc). Default value is ndcc (Optional)
-           -v: Correlation values equal or greater than the specified value will be projected onto protein structure. Default is 0.75. (Optional)
-           -d: If the minimal distance between two C_alpha atoms is bigger than the specified distance, it will be projected onto protein structure. Default is 0. (Optional)
+           
+           -t: Type of the matrix. It can be ndcc, lmi or absndcc (absolute values of ndcc). 
+               Default value is ndcc (Optional)
+
+           -v: Correlation values equal or greater than the specified value 
+               will be projected onto protein structure. Default is 0.75. (Optional)
+
+           -d: If the minimal distance between two C_alpha atoms is bigger 
+               than the specified distance, it will be projected onto protein structure. 
+               Default is 0. (Optional)
+               
            -o: This will be your output file. Output figures are in png format. (Optional)
 """)
 
