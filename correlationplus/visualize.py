@@ -2,9 +2,9 @@
 # correlationplus - A Python package to calculate, visualize and analyze      #
 #                   dynamical correlations maps of proteins.                  #
 # Authors: Mustafa Tekpinar                                                   #
-# Copyright Mustafa Tekpinar 2017-2018                                        #
-# Copyright CNRS-UMR3528, 2019                                                #
-# Copyright Institut Pasteur Paris, 2020-2021                                 #
+# Copyright (C) Mustafa Tekpinar 2017-2018                                    #
+# Copyright (C) CNRS-UMR3528, 2019                                            #
+# Copyright (C) Institut Pasteur Paris, 2020-2021                             #
 #                                                                             #
 # This file is part of correlationplus.                                       #
 #                                                                             #
@@ -112,6 +112,98 @@ def convertLMIdata2Matrix(inp_file, writeAllOutput: bool):
 
     return cc
 
+def parseEVcouplingsScores(inp_file, selectedAtoms, writeAllOutput: bool):
+    """
+        This function parses sequence coupling scores obtained from
+        EVCoupling Server at https://evcouplings.org/. 
+        The file is in csv format and we tested it only for monomeric 
+        cases but it is expected to work on multimeric cases as well. 
+        Basically, the function converts column-wise data to an array.
+        It returns a numpy array. 
+
+    Parameters
+    ----------
+    inp_file: string
+        Couplings file to read.
+    selectedAtoms: prody object
+        A list of -typically CA- atoms selected from the parsed PDB file.
+    writeAllOutput: bool
+        If True, an output file for the coupling values will be written in matrix 
+        format. The matrix does not contain residue names etc. They are obtained
+        from a pdb file you provided.
+
+    Returns
+    -------
+    cc: A numpy array of float value arrays.
+        EVcoupling values in matrix format.  
+
+    """
+    data_file = open(inp_file, 'r')
+    allLines = data_file.readlines()
+    data_file.close()
+    # data_list = []
+    n = selectedAtoms.numAtoms()
+    resnumList = selectedAtoms.getResnums()
+    resindexList = selectedAtoms.getResindices()
+    chidList = selectedAtoms.getChids()
+
+    # Create a dictionaries for mathching 
+    # residue numbers with residue indices
+    resDict = dict(zip(resnumList, resindexList))
+
+    # Create another dictionary to match chains 
+    # of the residues
+    chnDict = dict(zip(resnumList, chidList))
+
+    cc = np.zeros((n, n), np.double)
+
+    # Read the first line to determine the location of the
+    # correct fields
+    words = allLines[0].split(",")
+    scoreIndex = 0
+    # Read the title line and read score field
+    if (("i" in words) and ("j" in words) and \
+        ("segment_i" in words) and ("segment_j" in words)
+        and ("score\n" in words)):
+        resid_i_Index = words.index('i')
+        resid_j_Index = words.index('j')
+        resid_i_ch_Index = words.index('segment_i')
+        resid_j_ch_Index = words.index('segment_j')
+        scoreIndex = words.index('score\n')
+        #print(scoreIndex)
+
+    elif (("i" in words) and ("j" in words) and \
+        ("segment_i" in words) and ("segment_j" in words)
+        and ("score" in words)):
+        resid_i_Index = words.index('i')
+        resid_j_Index = words.index('j')
+        resid_i_ch_Index = words.index('segment_i')
+        resid_j_ch_Index = words.index('segment_j')
+        scoreIndex = words.index('score')
+
+    else:
+        print("@> Are you sure this is an EVcouplings file?")
+        sys.exit(-1)
+
+    for line in allLines[1:]:
+        words = line.split(",")
+        # temp_list = []
+        # temp_list.append(words[resid_i_Index])
+        # temp_list.append(words[resid_j_Index])
+        # temp_list.append(words[resid_i_ch_Index])
+        # temp_list.append(words[resid_j_ch_Index])
+        # temp_list.append(words[scoreIndex])
+        # data_list.append(temp_list)
+        if (chnDict[int(words[resid_i_Index])] == words[resid_i_ch_Index]) and \
+            (chnDict[int(words[resid_j_Index])] == words[resid_j_ch_Index]):
+            cc[resDict[int(words[resid_i_Index])]][resDict[int(words[resid_j_Index])]] = \
+            (float(words[scoreIndex]))
+
+            cc[resDict[int(words[resid_j_Index])]][resDict[int(words[resid_i_Index])]] = \
+            (float(words[scoreIndex]))
+            #print(cc[resDict[int(words[resid_i_Index])]][resDict[int(words[resid_j_Index])]])
+   
+    return cc
 
 def filterCorrelationMapByDistance(ccMatrix, out_file, title,
                                    selectedAtoms, distanceValue,
@@ -293,7 +385,9 @@ def overallCorrelationMap(ccMatrix,
     position = fig.add_axes([0.85, 0.15, 0.03, 0.70])
     cbar = plt.colorbar(cax=position)
 
-    cbar.set_ticks([-1.00, -0.75, -0.50, -0.25, 0.00, 0.25, 0.50, 0.75, 1.00])
+    #cbar.set_ticks([-1.00, -0.75, -0.50, -0.25, 0.00, 0.25, 0.50, 0.75, 1.00])
+    numOfLabels = 9
+    cbar.set_ticks(np.linspace(minColorBarLimit, maxColorBarLimit, num=numOfLabels))
 
     for t in cbar.ax.get_yticklabels():
         t.set_horizontalalignment('right')
@@ -450,8 +544,9 @@ def intraChainCorrelationMaps(ccMatrix,
         position = fig.add_axes([0.85, 0.15, 0.03, 0.70])
 
         cbar = plt.colorbar(cax=position)
-        cbar.set_ticks([-1.00, -0.75, -0.50, -0.25, 0.00, 0.25, 0.50, 0.75, 1.00])
-
+        #cbar.set_ticks([-1.00, -0.75, -0.50, -0.25, 0.00, 0.25, 0.50, 0.75, 1.00])
+        numOfLabels = 9
+        cbar.set_ticks(np.linspace(minColorBarLimit, maxColorBarLimit, num=numOfLabels))
         for t in cbar.ax.get_yticklabels():
             t.set_horizontalalignment('right')
             t.set_x(4.0)
@@ -595,8 +690,9 @@ def interChainCorrelationMaps(ccMatrix,
             divider = make_axes_locatable(plt.gca())
             position = divider.append_axes("right", "5%", pad="25%")
             cbar = plt.colorbar(cax=position)
-            cbar.set_ticks([-1.00, -0.75, -0.50, -0.25, 0.00, 0.25, 0.50, 0.75, 1.00])
-
+            #cbar.set_ticks([-1.00, -0.75, -0.50, -0.25, 0.00, 0.25, 0.50, 0.75, 1.00])
+            numOfLabels = 9
+            cbar.set_ticks(np.linspace(minColorBarLimit, maxColorBarLimit, num=numOfLabels))
             for t in cbar.ax.get_yticklabels():
                 t.set_horizontalalignment('right')
                 t.set_x(4.0)
@@ -658,13 +754,15 @@ def distanceDistribution(ccMatrix, out_file, title, selectedAtoms,
     plt.xlabel("Distance ($\AA$)", fontsize=20)
     plt.ylabel(title, fontsize=20)
     if absoluteValues:
-        plt.ylim([0.0, 1.0])
+        #plt.ylim([0.0, 1.0])
         dst_file = out_file + '-absolute-correlation-vs-distance'
+        y = np.absolute(ccMatrix.flatten())
 
     else:
-        plt.ylim([-1.0, 1.0])
+        #plt.ylim([-1.0, 1.0])
         plt.axhline(0, color='k', lw=0.5)
         dst_file = out_file + '-correlation-vs-distance'
+        
 
     plt.plot(x, y, '.', color='k')
     plt.tight_layout()
@@ -693,6 +791,7 @@ def distanceDistribution(ccMatrix, out_file, title, selectedAtoms,
 
 def projectCorrelationsOntoProteinVMD(pdb_file, ccMatrix, vmd_out_file,
                                       selectedAtoms, valueFilter,
+                                      cylinderRadiusScaler,
                                       absoluteValues: bool,
                                       writeAllOutput: bool):
     """
@@ -720,7 +819,10 @@ def projectCorrelationsOntoProteinVMD(pdb_file, ccMatrix, vmd_out_file,
     valueFilter: float
         Correlation values smaller than this threshold will not be written
         for visualization. For example, 0.3 is a good threshold for normalized
-        dynamical cross-correlation data. 
+        dynamical cross-correlation data.
+    cylinderRadiusScaler: a float value.
+        It adjust radius of cylinders to be displayed in VMD.
+        The value is multiplied with the corresponding correlation value.
     absoluteValues: bool
         If True, an absolute values of correlations will be consideered. 
     writeAllOutput: bool
@@ -779,7 +881,7 @@ def projectCorrelationsOntoProteinVMD(pdb_file, ccMatrix, vmd_out_file,
                                                    # to the correlation value.
                                                    # However, it is necessary to multiply the radius
                                                    # with 0.5 to make it look better.
-                                                   ccMatrix[i][j] * 0.5))
+                                                   ccMatrix[i][j] * cylinderRadiusScaler))
     DATA_FILE.close()
 
     chains = Counter(selectedAtoms.getChids()).keys()
@@ -819,7 +921,7 @@ def projectCorrelationsOntoProteinVMD(pdb_file, ccMatrix, vmd_out_file,
                                         # proportional to the correlation value.
                                         # However, it is necessary to multiply
                                         # the radius with 0.5 to make it look better.
-                                        ccMatrix[i][j] * 0.5))
+                                        ccMatrix[i][j] * cylinderRadiusScaler))
                     DATA_FILE.close()
 
         # Intra-chain
@@ -852,11 +954,12 @@ def projectCorrelationsOntoProteinVMD(pdb_file, ccMatrix, vmd_out_file,
                                 # to the correlation value.
                                 # However, it is necessary to multiply the radius
                                 # with 0.5 to make it look better.
-                                ccMatrix[i][j] * 0.5))
+                                ccMatrix[i][j] * cylinderRadiusScaler))
             DATA_FILE.close()
 
 def projectCorrelationsOntoProteinPyMol(pdb_file, ccMatrix, pml_out_file,
                                       selectedAtoms, valueFilter,
+                                      cylinderRadiusScaler,
                                       absoluteValues: bool,
                                       writeAllOutput: bool):
     """
@@ -880,8 +983,11 @@ def projectCorrelationsOntoProteinPyMol(pdb_file, ccMatrix, pml_out_file,
         A list of -typically CA- atoms selected from the parsed PDB file.
     valueFilter: float
         Correlation values smaller than this threshold will not be written
-        for visualization. For example, 0.3 is a good threshold for normalized
+        for visualization. For example, 0.3 can be a good threshold for normalized
         dynamical cross-correlation data. 
+    cylinderRadiusScaler: a float value.
+        It adjust radius of cylinders to be displayed in PyMol.
+        The value is multiplied with the corresponding correlation value.
     absoluteValues: bool
         If True, an absolute values of correlations will be consideered. 
     writeAllOutput: bool
@@ -939,7 +1045,7 @@ def projectCorrelationsOntoProteinPyMol(pdb_file, ccMatrix, pml_out_file,
                                                    selectedAtoms.getCoords()[j][0],
                                                    selectedAtoms.getCoords()[j][1],
                                                    selectedAtoms.getCoords()[j][2],
-                                                   ccMatrix[i][j] * 0.3))
+                                                   ccMatrix[i][j] * cylinderRadiusScaler))
 
     DATA_FILE.write("]\n")
     DATA_FILE.write("cmd.load_cgo(correlations,'correlations')\n")
@@ -990,7 +1096,7 @@ def projectCorrelationsOntoProteinPyMol(pdb_file, ccMatrix, pml_out_file,
                                                 selectedAtoms.getCoords()[j][0],
                                                 selectedAtoms.getCoords()[j][1],
                                                 selectedAtoms.getCoords()[j][2],
-                                                ccMatrix[i][j] * 0.3))
+                                                ccMatrix[i][j] * cylinderRadiusScaler))
                                                                                                                                               # The radius of the connecting cylinder is
                                                 # proportional to the correlation value.
                                                 # However, it is necessary to multiply
@@ -1035,7 +1141,7 @@ def projectCorrelationsOntoProteinPyMol(pdb_file, ccMatrix, pml_out_file,
                                         selectedAtoms.getCoords()[j][0],
                                         selectedAtoms.getCoords()[j][1],
                                         selectedAtoms.getCoords()[j][2],
-                                        ccMatrix[i][j] * 0.3))
+                                        ccMatrix[i][j] * cylinderRadiusScaler))
             DATA_FILE.write("]\n")
             DATA_FILE.write("cmd.load_cgo(correlations,'correlations')\n")
             DATA_FILE.write("cmd.set(\"cgo_line_width\",2.0,'correlations')\n")
@@ -1207,7 +1313,9 @@ def overallNonUniformDifferenceMap(ccMatrix1, ccMatrix2, minColorBarLimit,
     position = fig.add_axes([0.85, 0.15, 0.03, 0.70])
     cbar = plt.colorbar(cax=position)
 
-    cbar.set_ticks([-1.00, -0.75, -0.50, -0.25, 0.00, 0.25, 0.50, 0.75, 1.00])
+    #cbar.set_ticks([-1.00, -0.75, -0.50, -0.25, 0.00, 0.25, 0.50, 0.75, 1.00])
+    numOfLabels = 9
+    cbar.set_ticks(np.linspace(minColorBarLimit, maxColorBarLimit, num=numOfLabels))
 
     for t in cbar.ax.get_yticklabels():
         t.set_horizontalalignment('right')
