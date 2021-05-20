@@ -61,7 +61,11 @@ Arguments: -i: A file containing correlations in matrix format. (Mandatory)
            -d: If the minimal distance between two C_alpha atoms is bigger 
                than the specified distance, it will be projected onto protein structure. 
                Default is 0. (Optional)
-               
+
+           -r: Cylinder radius scaling coefficient to multiply with the correlation quantity.
+               It can be used to improve tcl and pml outputs to view the interaction 
+               strengths properly. (Optional)
+
            -o: This will be your output file. Output figures are in png format. (Optional)
 """)
 
@@ -73,8 +77,10 @@ def handle_arguments_visualizemapApp():
     sel_type = None
     vmin_fltr = None
     dis_fltr = None
+    cyl_rad = None
     try:
-        opts, args = getopt.getopt(sys.argv[2:], "hi:o:t:p:v:d:", ["help", "inp=", "out=", "type=", "pdb=", "vmin=", "dis="])
+        opts, args = getopt.getopt(sys.argv[2:], "hi:o:t:p:v:d:r:", \
+            ["help", "inp=", "out=", "type=", "pdb=", "vmin=", "dis=", "radius="])
     except getopt.GetoptError:
         usage_visualizemapApp()
     for opt, arg in opts:
@@ -93,6 +99,8 @@ def handle_arguments_visualizemapApp():
             vmin_fltr = arg
         elif opt in ("-d", "--dis"):
             dis_fltr = arg
+        elif opt in ("-r", "--radius"):
+            cyl_rad = arg
         else:
             assert False, usage_visualizemapApp()
 
@@ -122,11 +130,11 @@ def handle_arguments_visualizemapApp():
         dis_fltr = 0.0
     
 
-    return inp_file, out_file, sel_type, pdb_file, vmin_fltr, dis_fltr
+    return inp_file, out_file, sel_type, pdb_file, vmin_fltr, dis_fltr, cyl_rad
 
 
 def visualizemapApp():
-    inp_file, out_file, sel_type, pdb_file, vmin_fltr, dis_fltr = \
+    inp_file, out_file, sel_type, pdb_file, vmin_fltr, dis_fltr, cyl_rad = \
         handle_arguments_visualizemapApp()
     print(f"""
 @> Running 'visualize' app:
@@ -201,6 +209,23 @@ def visualizemapApp():
     plotDistributions = True
     VMDcylinderRadiusScale = 0.5
     PMLcylinderRadiusScale = 0.3
+
+    if (cyl_rad == None):
+        if sel_type.lower() == "evcouplings":
+            VMDcylinderRadiusScale = 0.01
+            PMLcylinderRadiusScale = 0.01
+            print(f"""@> Cylinder radius: {cyl_rad}""")
+        else:
+            VMDcylinderRadiusScale = 0.5
+            PMLcylinderRadiusScale = 0.3
+            print(f"""@> VMD Cylinder radius: {VMDcylinderRadiusScale}""")
+            print(f"""@> PyMol Cylinder radius: {PMLcylinderRadiusScale}""")
+
+    else:
+        VMDcylinderRadiusScale = float(cyl_rad)
+        PMLcylinderRadiusScale = float(cyl_rad)
+        print(f"""@> Cylinder radius: {cyl_rad}""")
+
     if plotDistributions:
         if sel_type.lower() == "ndcc":
             distanceDistribution(ccMatrix, out_file, "nDCC", selectedAtoms,
@@ -221,8 +246,6 @@ def visualizemapApp():
         elif sel_type.lower() == "evcouplings":
             distanceDistribution(ccMatrix, out_file, "EVcoupling Score", selectedAtoms,
                                  absoluteValues=False, writeAllOutput=True)
-            VMDcylinderRadiusScale = 0.01
-            PMLcylinderRadiusScale = 0.01
         else:
             print("Warning: Unknows correlation data.\n")
             print("         Correlations can be ndcc, absndcc, lmi,\n")
