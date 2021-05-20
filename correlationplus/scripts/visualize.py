@@ -214,12 +214,11 @@ def visualizemapApp():
         if sel_type.lower() == "evcouplings":
             VMDcylinderRadiusScale = 0.01
             PMLcylinderRadiusScale = 0.01
-            print(f"""@> Cylinder radius: {cyl_rad}""")
         else:
             VMDcylinderRadiusScale = 0.5
             PMLcylinderRadiusScale = 0.3
-            print(f"""@> VMD Cylinder radius: {VMDcylinderRadiusScale}""")
-            print(f"""@> PyMol Cylinder radius: {PMLcylinderRadiusScale}""")
+        print(f"""@> VMD Cylinder radius: {VMDcylinderRadiusScale}""")
+        print(f"""@> PyMol Cylinder radius: {PMLcylinderRadiusScale}""")
 
     else:
         VMDcylinderRadiusScale = float(cyl_rad)

@@ -2,9 +2,9 @@
 # correlationplus - A Python package to calculate, visualize and analyze      #
 #                    dynamical correlations maps of proteins.                 #
 # Authors: Mustafa Tekpinar                                                   #
-# Copyright Mustafa Tekpinar 2017-2018                                        #
-# Copyright CNRS-UMR3528, 2019                                                #
-# Copyright Institut Pasteur Paris, 2020-2021                                 #
+# Copyright (C) Mustafa Tekpinar 2017-2018                                        #
+# Copyright (C) CNRS-UMR3528, 2019                                                #
+# Copyright (C) Institut Pasteur Paris, 2020-2021                                 #
 #                                                                             #
 # This file is part of correlationplus.                                       #
 #                                                                             #
@@ -35,14 +35,14 @@ def runTests():
     # Test correlationMapApp for nDCC maps
     prefix = os.path.normpath(os.path.join(__file__, '..', '..'))
     # Test calculate module to produce nDCC map with GNM.
-    command = f"correlationplus calculate -p {prefix}/examples/6fl9_centeredOrientedAligned2Z.pdb " \
-              f"-m GNM -o dcc-6fl9-gnm.dat"
+    command = f"correlationplus calculate -p {prefix}/examples/6lu7_dimer_with_N3_protein_sim1_ca.pdb  " \
+              f"-m GNM -o dcc-6lu7-gnm.dat"
     print(f"\n@> Testing the nDCC calculation from GNM with the following command:\n\n{command}\n\n")
     os.system(command)
 
     # Test calculate module to produce nDCC map with ANM.
-    command = f"correlationplus calculate -p {prefix}/examples/6fl9_centeredOrientedAligned2Z.pdb " \
-              f"-m ANM -o dcc-6fl9-anm.dat"
+    command = f"correlationplus calculate -p {prefix}/examples/6lu7_dimer_with_N3_protein_sim1_ca.pdb  " \
+              f"-m ANM -o dcc-6lu7-anm.dat"
     print(f"\n@> Testing the nDCC calculation from ANM with the following command:\n\n{command}\n\n")
     os.system(command)
 
@@ -63,8 +63,8 @@ def runTests():
 
     # Test visualizemapApp for absolute nDCC maps
     os.system(f"correlationplus visualize "
-              f"-i {prefix}/examples/6fl9_just_prot_anm_100_modes_rc_15_cross-correlations.txt "
-              f"-p {prefix}/examples/6fl9_centeredOrientedAligned2Z.pdb "
+              f"-i {prefix}/examples/ndcc-6lu7-anm.dat "
+              f"-p {prefix}/examples/6lu7_dimer_with_N3_protein_sim1_ca.pdb  "
               "-t absndcc")
 
     # Test visualizemapApp for LMI maps
@@ -75,9 +75,9 @@ def runTests():
  
     # Test diffMapApp for LMI maps
     os.system(f"correlationplus diffMap "
-              f"-i {prefix}/examples/6fl9_rc15_scalCoeff1_100_modes_lmi_v2.dat "
-              f"-j {prefix}/examples/zacharias_rc15_scalCoeff15_100_modes_lmi.dat "
-              f"-p {prefix}/examples/6fl9_centeredOrientedAligned2Z.pdb "
+              f"-i {prefix}/examples/6lu7_dimer_with_N3_protein_sim1-lmi.dat  "
+              f"-j {prefix}/examples/6lu7_dimer_no_ligand_protein_sim1-lmi.dat  "
+              f"-p {prefix}/examples/6lu7_dimer_with_N3_protein_sim1_ca.pdb "
               "-t lmi")
 
     # Test centralityAnalysisApp for LMI maps
