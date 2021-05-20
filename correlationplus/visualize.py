@@ -864,15 +864,19 @@ def projectCorrelationsOntoProteinVMD(pdb_file, ccMatrix, vmd_out_file,
     DATA_FILE.write("mol modstyle 0 0 Tube\n")
     DATA_FILE.write("mol modcolor 0 0 Chain\n")
     DATA_FILE.write("mol modmaterial 0 0 MetallicPastel\n")
+
+    spheresList = []
     for i in range(0, len(ccMatrix)):
         for j in range(i + 1, len(ccMatrix)):
             if ccMatrix[i][j] > valueFilter:
-                DATA_FILE.write(vdw_representation_string.format(\
-                    selectedAtoms.getChids()[i],
-                    selectedAtoms.getResnums()[i]))
-                DATA_FILE.write(vdw_representation_string.format(\
-                    selectedAtoms.getChids()[j],
-                    selectedAtoms.getResnums()[j]))
+                spheresList.append(i)
+                spheresList.append(j)
+    for item in np.unique(spheresList):
+        DATA_FILE.write(vdw_representation_string.format(selectedAtoms.getChids()[item],
+                                                            selectedAtoms.getResnums()[item]))
+    for i in range(0, len(ccMatrix)):
+        for j in range(i + 1, len(ccMatrix)):
+            if ccMatrix[i][j] > valueFilter:
                 DATA_FILE.write(draw_string.format(selectedAtoms.getChids()[i],
                                                    selectedAtoms.getResnums()[i],
                                                    selectedAtoms.getChids()[j],
@@ -881,7 +885,7 @@ def projectCorrelationsOntoProteinVMD(pdb_file, ccMatrix, vmd_out_file,
                                                    # to the correlation value.
                                                    # However, it is necessary to multiply the radius
                                                    # with 0.5 to make it look better.
-                                                   ccMatrix[i][j] * cylinderRadiusScaler))
+                                                   np.absolute(ccMatrix[i][j]) * cylinderRadiusScaler))
     DATA_FILE.close()
 
     chains = Counter(selectedAtoms.getChids()).keys()
@@ -898,19 +902,23 @@ def projectCorrelationsOntoProteinVMD(pdb_file, ccMatrix, vmd_out_file,
                     DATA_FILE.write("mol modstyle 0 0 Tube\n")
                     DATA_FILE.write("mol modcolor 0 0 Chain\n")
                     DATA_FILE.write("mol modmaterial 0 0 MetallicPastel\n")
+                    spheresList = []
                     for i in range(0, len(ccMatrix)):
                         for j in range(i + 1, len(ccMatrix)):
                             if ccMatrix[i][j] > valueFilter:
                                 if (selectedAtoms.getChids()[i] == chainI) and \
                                     (selectedAtoms.getChids()[j] == chainJ):
-                                    DATA_FILE.write(\
-                                        vdw_representation_string.format(\
-                                            selectedAtoms.getChids()[i],
-                                            selectedAtoms.getResnums()[i]))
-                                    DATA_FILE.write(\
-                                        vdw_representation_string.format(\
-                                            selectedAtoms.getChids()[j],
-                                            selectedAtoms.getResnums()[j]))
+                                    spheresList.append(i)
+                                    spheresList.append(j)
+                                    
+                    for item in np.unique(spheresList):
+                        DATA_FILE.write(vdw_representation_string.format(selectedAtoms.getChids()[item],
+                                                                         selectedAtoms.getResnums()[item]))
+                    for i in range(0, len(ccMatrix)):
+                        for j in range(i + 1, len(ccMatrix)):
+                            if ccMatrix[i][j] > valueFilter:
+                                if (selectedAtoms.getChids()[i] == chainI) and \
+                                    (selectedAtoms.getChids()[j] == chainJ):
 
                                     DATA_FILE.write(draw_string.format(\
                                         selectedAtoms.getChids()[i],
@@ -921,7 +929,7 @@ def projectCorrelationsOntoProteinVMD(pdb_file, ccMatrix, vmd_out_file,
                                         # proportional to the correlation value.
                                         # However, it is necessary to multiply
                                         # the radius with 0.5 to make it look better.
-                                        ccMatrix[i][j] * cylinderRadiusScaler))
+                                        np.absolute(ccMatrix[i][j]) * cylinderRadiusScaler))
                     DATA_FILE.close()
 
         # Intra-chain
@@ -932,19 +940,24 @@ def projectCorrelationsOntoProteinVMD(pdb_file, ccMatrix, vmd_out_file,
             DATA_FILE.write("mol modstyle 0 0 Tube\n")
             DATA_FILE.write("mol modcolor 0 0 Chain\n")
             DATA_FILE.write("mol modmaterial 0 0 MetallicPastel\n")
+            spheresList = []
             for i in range(0, len(ccMatrix)):
                 for j in range(i + 1, len(ccMatrix)):
                     if ccMatrix[i][j] > valueFilter:
                         if (selectedAtoms.getChids()[i] == chain) and \
                             (selectedAtoms.getChids()[j] == chain):
-                            DATA_FILE.write(\
-                                vdw_representation_string.format(\
-                                    selectedAtoms.getChids()[i],
-                                    selectedAtoms.getResnums()[i]))
-                            DATA_FILE.write(\
-                                vdw_representation_string.format(\
-                                    selectedAtoms.getChids()[j],
-                                    selectedAtoms.getResnums()[j]))
+                            spheresList.append(i)
+                            spheresList.append(j)
+                            
+            for item in np.unique(spheresList):
+                DATA_FILE.write(vdw_representation_string.format(selectedAtoms.getChids()[item],
+                                                                    selectedAtoms.getResnums()[item]))
+            for i in range(0, len(ccMatrix)):
+                for j in range(i + 1, len(ccMatrix)):
+                    if ccMatrix[i][j] > valueFilter:
+                        if (selectedAtoms.getChids()[i] == chain) and \
+                            (selectedAtoms.getChids()[j] == chain):
+
                             DATA_FILE.write(draw_string.format(\
                                 selectedAtoms.getChids()[i],
                                 selectedAtoms.getResnums()[i],
@@ -952,9 +965,9 @@ def projectCorrelationsOntoProteinVMD(pdb_file, ccMatrix, vmd_out_file,
                                 selectedAtoms.getResnums()[j],
                                 # The radius of the connecting cylinder is proportional
                                 # to the correlation value.
-                                # However, it is necessary to multiply the radius
-                                # with 0.5 to make it look better.
-                                ccMatrix[i][j] * cylinderRadiusScaler))
+                                # However, it is necessary to take absolute value of correlation
+                                # value because radius can not be negative. 
+                                np.absolute(ccMatrix[i][j]) * cylinderRadiusScaler))
             DATA_FILE.close()
 
 def projectCorrelationsOntoProteinPyMol(pdb_file, ccMatrix, pml_out_file,
