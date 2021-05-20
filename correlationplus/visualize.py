@@ -866,7 +866,7 @@ def projectCorrelationsOntoProteinVMD(pdb_file, ccMatrix, vmd_out_file,
     DATA_FILE.write("mol modmaterial 0 0 MetallicPastel\n")
     for i in range(0, len(ccMatrix)):
         for j in range(i + 1, len(ccMatrix)):
-            if np.absolute(ccMatrix[i][j]) > valueFilter:
+            if ccMatrix[i][j] > valueFilter:
                 DATA_FILE.write(vdw_representation_string.format(\
                     selectedAtoms.getChids()[i],
                     selectedAtoms.getResnums()[i]))
@@ -900,7 +900,7 @@ def projectCorrelationsOntoProteinVMD(pdb_file, ccMatrix, vmd_out_file,
                     DATA_FILE.write("mol modmaterial 0 0 MetallicPastel\n")
                     for i in range(0, len(ccMatrix)):
                         for j in range(i + 1, len(ccMatrix)):
-                            if np.absolute(ccMatrix[i][j]) > valueFilter:
+                            if ccMatrix[i][j] > valueFilter:
                                 if (selectedAtoms.getChids()[i] == chainI) and \
                                     (selectedAtoms.getChids()[j] == chainJ):
                                     DATA_FILE.write(\
@@ -934,7 +934,7 @@ def projectCorrelationsOntoProteinVMD(pdb_file, ccMatrix, vmd_out_file,
             DATA_FILE.write("mol modmaterial 0 0 MetallicPastel\n")
             for i in range(0, len(ccMatrix)):
                 for j in range(i + 1, len(ccMatrix)):
-                    if np.absolute(ccMatrix[i][j]) > valueFilter:
+                    if ccMatrix[i][j] > valueFilter:
                         if (selectedAtoms.getChids()[i] == chain) and \
                             (selectedAtoms.getChids()[j] == chain):
                             DATA_FILE.write(\
@@ -1016,7 +1016,7 @@ def projectCorrelationsOntoProteinPyMol(pdb_file, ccMatrix, pml_out_file,
     #
     #draw_string = "VERTEX,   {0:.3f}, {1:.3f}, {2:.3f},\ \n"
     draw_string = ("CYLINDER,  {0:.3f}, {1:.3f}, {2:.3f},\
-    {3:.3f}, {4:.3f}, {5:.3f}, {6:.1f},\
+    {3:.3f}, {4:.3f}, {5:.3f}, {6:.3f},\
     0.0, 0.0, 1.0, 0.0, 0.0, 1.0, \n ")
     vdw_representation_string = "show spheres, chain {0:s} and resi {1:d} and name ca\n"
 
@@ -1025,27 +1025,32 @@ def projectCorrelationsOntoProteinPyMol(pdb_file, ccMatrix, pml_out_file,
     DATA_FILE.write("cartoon type = tube\n")
     #DATA_FILE.write("spectrum chain\n")
     DATA_FILE.write("set sphere_scale, 0.75\n")
+
+    spheresList = []
     for i in range(0, len(ccMatrix)):
         for j in range(i + 1, len(ccMatrix)):
-            if np.absolute(ccMatrix[i][j]) > valueFilter:
-                DATA_FILE.write(vdw_representation_string.format(selectedAtoms.getChids()[i],
-                                                                 selectedAtoms.getResnums()[i]))
-                DATA_FILE.write(vdw_representation_string.format(selectedAtoms.getChids()[j],
-                                                                 selectedAtoms.getResnums()[j]))
+            if ccMatrix[i][j] > valueFilter:
+                spheresList.append(i)
+                spheresList.append(j)
+
+    for item in np.unique(spheresList):
+        DATA_FILE.write(vdw_representation_string.format(selectedAtoms.getChids()[item],
+                                                            selectedAtoms.getResnums()[item]))
+
     DATA_FILE.write("python\n")
     DATA_FILE.write("from pymol.cgo import *\n")
     DATA_FILE.write("from pymol import cmd\n")
     DATA_FILE.write("correlations = [ \n")
     for i in range(0, len(ccMatrix)):
         for j in range(i + 1, len(ccMatrix)):
-            if np.absolute(ccMatrix[i][j]) > valueFilter:
+            if ccMatrix[i][j] > valueFilter:
                 DATA_FILE.write(draw_string.format(selectedAtoms.getCoords()[i][0],
                                                    selectedAtoms.getCoords()[i][1],
                                                    selectedAtoms.getCoords()[i][2],
                                                    selectedAtoms.getCoords()[j][0],
                                                    selectedAtoms.getCoords()[j][1],
                                                    selectedAtoms.getCoords()[j][2],
-                                                   ccMatrix[i][j] * cylinderRadiusScaler))
+                                                   np.absolute(ccMatrix[i][j]) * cylinderRadiusScaler))
 
     DATA_FILE.write("]\n")
     DATA_FILE.write("cmd.load_cgo(correlations,'correlations')\n")
@@ -1066,27 +1071,26 @@ def projectCorrelationsOntoProteinPyMol(pdb_file, ccMatrix, pml_out_file,
                     DATA_FILE.write("cartoon type = tube\n")
                     #DATA_FILE.write("spectrum chain\n")
                     DATA_FILE.write("set sphere_scale, 0.75\n")
-
+                    spheresList = []
                     for i in range(0, len(ccMatrix)):
                         for j in range(i + 1, len(ccMatrix)):
-                            if np.absolute(ccMatrix[i][j]) > valueFilter:
+                            if ccMatrix[i][j] > valueFilter:
                                 if (selectedAtoms.getChids()[i] == chainI) and \
                                     (selectedAtoms.getChids()[j] == chainJ):
-                                    DATA_FILE.write(\
-                                        vdw_representation_string.format(\
-                                            selectedAtoms.getChids()[i],
-                                            selectedAtoms.getResnums()[i]))
-                                    DATA_FILE.write(\
-                                        vdw_representation_string.format(\
-                                            selectedAtoms.getChids()[j],
-                                            selectedAtoms.getResnums()[j]))
+                                    spheresList.append(i)
+                                    spheresList.append(j)
+                                    
+                    for item in np.unique(spheresList):
+                        DATA_FILE.write(vdw_representation_string.format(selectedAtoms.getChids()[item],
+                                                                         selectedAtoms.getResnums()[item]))
+
                     DATA_FILE.write("python\n")
                     DATA_FILE.write("from pymol.cgo import *\n")
                     DATA_FILE.write("from pymol import cmd\n")
                     DATA_FILE.write("correlations = [ \n")
                     for i in range(0, len(ccMatrix)):
                         for j in range(i + 1, len(ccMatrix)):
-                            if np.absolute(ccMatrix[i][j]) > valueFilter:
+                            if ccMatrix[i][j] > valueFilter:
                                 if (selectedAtoms.getChids()[i] == chainI) and \
                                     (selectedAtoms.getChids()[j] == chainJ):
                                     DATA_FILE.write(draw_string.format(\
@@ -1096,11 +1100,10 @@ def projectCorrelationsOntoProteinPyMol(pdb_file, ccMatrix, pml_out_file,
                                                 selectedAtoms.getCoords()[j][0],
                                                 selectedAtoms.getCoords()[j][1],
                                                 selectedAtoms.getCoords()[j][2],
-                                                ccMatrix[i][j] * cylinderRadiusScaler))
+                                                np.absolute(ccMatrix[i][j]) * cylinderRadiusScaler))
                                                                                                                                               # The radius of the connecting cylinder is
                                                 # proportional to the correlation value.
-                                                # However, it is necessary to multiply
-                                                # the radius with 0.3 to make it look better.
+                                                # However, radius can not be negative.
                     DATA_FILE.write("]\n")
                     DATA_FILE.write("cmd.load_cgo(correlations,'correlations')\n")
                     DATA_FILE.write("cmd.set(\"cgo_line_width\",2.0,'correlations')\n")
@@ -1114,24 +1117,25 @@ def projectCorrelationsOntoProteinPyMol(pdb_file, ccMatrix, pml_out_file,
             DATA_FILE.write("cartoon type = tube\n")
             #DATA_FILE.write("spectrum chain\n")
             DATA_FILE.write("set sphere_scale, 0.75\n")
+            spheresList = []
             for i in range(0, len(ccMatrix)):
                 for j in range(i + 1, len(ccMatrix)):
-                    if np.absolute(ccMatrix[i][j]) > valueFilter:
+                    if ccMatrix[i][j] > valueFilter:
                         if (selectedAtoms.getChids()[i] == chain) and \
                             (selectedAtoms.getChids()[j] == chain):
-                            DATA_FILE.write(vdw_representation_string.format(\
-                                selectedAtoms.getChids()[i],
-                                selectedAtoms.getResnums()[i]))
-                            DATA_FILE.write(vdw_representation_string.format(\
-                                selectedAtoms.getChids()[j],
-                                selectedAtoms.getResnums()[j]))
+                            spheresList.append(i)
+                            spheresList.append(j)
+                            
+            for item in np.unique(spheresList):
+                DATA_FILE.write(vdw_representation_string.format(selectedAtoms.getChids()[item],
+                                                                    selectedAtoms.getResnums()[item]))
             DATA_FILE.write("python\n")
             DATA_FILE.write("from pymol.cgo import *\n")
             DATA_FILE.write("from pymol import cmd\n")
             DATA_FILE.write("correlations = [ \n")
             for i in range(0, len(ccMatrix)):
                 for j in range(i + 1, len(ccMatrix)):
-                    if np.absolute(ccMatrix[i][j]) > valueFilter:
+                    if ccMatrix[i][j] > valueFilter:
                         if (selectedAtoms.getChids()[i] == chain) and \
                             (selectedAtoms.getChids()[j] == chain):                    
                             DATA_FILE.write(draw_string.format(\
@@ -1141,7 +1145,7 @@ def projectCorrelationsOntoProteinPyMol(pdb_file, ccMatrix, pml_out_file,
                                         selectedAtoms.getCoords()[j][0],
                                         selectedAtoms.getCoords()[j][1],
                                         selectedAtoms.getCoords()[j][2],
-                                        ccMatrix[i][j] * cylinderRadiusScaler))
+                                        np.absolute(ccMatrix[i][j]) * cylinderRadiusScaler))
             DATA_FILE.write("]\n")
             DATA_FILE.write("cmd.load_cgo(correlations,'correlations')\n")
             DATA_FILE.write("cmd.set(\"cgo_line_width\",2.0,'correlations')\n")
