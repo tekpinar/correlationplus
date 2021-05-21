@@ -31,6 +31,7 @@ from correlationplus.scripts.calculate import calculateApp
 from correlationplus.scripts.visualize import visualizemapApp
 from correlationplus.scripts.diffMap import diffMapApp
 from correlationplus.scripts.analyze import centralityAnalysisApp
+from correlationplus.scripts.paths import pathAnalysisApp
 
 #TODO:
 # There are a bunch of things one can add to this script:
@@ -93,6 +94,8 @@ def main():
             visualizemapApp()
         elif sys.argv[1] == "analyze":
             centralityAnalysisApp()
+        elif sys.argv[1] == "paths":
+            pathAnalysisApp()
         elif sys.argv[1] == "diffMap":
             diffMapApp()
         elif sys.argv[1] == "-h" or sys.argv[1] == "--help":
