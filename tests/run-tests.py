@@ -65,13 +65,13 @@ def runTests():
     os.system(f"correlationplus visualize "
               f"-i {prefix}/examples/ndcc-6lu7-anm.dat "
               f"-p {prefix}/examples/6lu7_dimer_with_N3_protein_sim1_ca.pdb  "
-              "-t absndcc")
+              "-t absndcc -v 0.75")
 
     # Test visualizemapApp for LMI maps
     os.system(f"correlationplus visualize "
               f"-i {prefix}/examples/6lu7_dimer_with_N3_protein_sim1-lmi.dat "
               f"-p {prefix}/examples/6lu7_dimer_with_N3_protein_sim1_ca.pdb "
-              "-t lmi")
+              "-t lmi -v 0.75 ")
  
     # Test diffMapApp for LMI maps
     os.system(f"correlationplus diffMap "

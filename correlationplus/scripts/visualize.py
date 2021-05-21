@@ -76,11 +76,12 @@ def handle_arguments_visualizemapApp():
     out_file = None
     sel_type = None
     vmin_fltr = None
+    vmax_fltr = None
     dis_fltr = None
     cyl_rad = None
     try:
-        opts, args = getopt.getopt(sys.argv[2:], "hi:o:t:p:v:d:r:", \
-            ["help", "inp=", "out=", "type=", "pdb=", "vmin=", "dis=", "radius="])
+        opts, args = getopt.getopt(sys.argv[2:], "hi:o:t:p:v:x:d:r:", \
+            ["help", "inp=", "out=", "type=", "pdb=", "vmin=", "vmax=", "dis=", "radius="])
     except getopt.GetoptError:
         usage_visualizemapApp()
     for opt, arg in opts:
@@ -97,6 +98,8 @@ def handle_arguments_visualizemapApp():
             pdb_file = arg
         elif opt in ("-v", "--vmin"):
             vmin_fltr = arg
+        elif opt in ("-x", "--vmax"):
+            vmax_fltr = arg
         elif opt in ("-d", "--dis"):
             dis_fltr = arg
         elif opt in ("-r", "--radius"):
@@ -123,26 +126,27 @@ def handle_arguments_visualizemapApp():
     if sel_type is None:
         sel_type = "ndcc"
 
-    if vmin_fltr is None:
-        vmin_fltr = 0.75
+    # if vmin_fltr is None:
+    #     vmin_fltr = 0.75
 
     if dis_fltr is None:
         dis_fltr = 0.0
     
 
-    return inp_file, out_file, sel_type, pdb_file, vmin_fltr, dis_fltr, cyl_rad
+    return inp_file, out_file, sel_type, pdb_file, \
+           vmin_fltr, vmax_fltr, dis_fltr, cyl_rad
 
 
 def visualizemapApp():
-    inp_file, out_file, sel_type, pdb_file, vmin_fltr, dis_fltr, cyl_rad = \
-        handle_arguments_visualizemapApp()
+    inp_file, out_file, sel_type, pdb_file, \
+    vmin_fltr, vmax_fltr, \
+    dis_fltr, cyl_rad = handle_arguments_visualizemapApp()
     print(f"""
 @> Running 'visualize' app:
     
 @> Input file       : {inp_file}
 @> PDB file         : {pdb_file}
 @> Data type        : {sel_type}
-@> Min. value filter: {vmin_fltr}
 @> Distance filter  : {dis_fltr}
 @> Output           : {out_file}""")
 
@@ -200,6 +204,15 @@ def visualizemapApp():
         print("Unknown matrix data type: The type can only be ndcc, absndcc or lmi!\n")
         sys.exit(-1)
 
+    # Set vmin_fltr and vmax_fltr
+    if (vmin_fltr == None):
+        vmin_fltr = minColorBarLimit
+    if (vmax_fltr == None):
+        vmax_fltr = maxColorBarLimit
+    
+    print(f"""@> Min. value filter: {vmin_fltr}""")
+    print(f"""@> Max. value filter: {vmax_fltr}""")
+    
     ##########################################################################
     # Call overall correlation calculation
 
@@ -275,13 +288,17 @@ def visualizemapApp():
 
     # Overall projection
     projectCorrelationsOntoProteinVMD(pdb_file, ccMatrix, out_file,
-                                      selectedAtoms, valueFilter=float(vmin_fltr),
+                                      selectedAtoms, 
+                                      vminFilter=float(vmin_fltr),
+                                      vmaxFilter=float(vmax_fltr),
                                       cylinderRadiusScaler=VMDcylinderRadiusScale,
                                       absoluteValues=True, writeAllOutput=True)
 
 
     projectCorrelationsOntoProteinPyMol(pdb_file, ccMatrix, out_file,
-                                      selectedAtoms, valueFilter=float(vmin_fltr),
+                                      selectedAtoms, 
+                                      vminFilter=float(vmin_fltr),
+                                      vmaxFilter=float(vmax_fltr),
                                       cylinderRadiusScaler=PMLcylinderRadiusScale,
                                       absoluteValues=True, writeAllOutput=True)
 

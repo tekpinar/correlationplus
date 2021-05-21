@@ -790,7 +790,8 @@ def distanceDistribution(ccMatrix, out_file, title, selectedAtoms,
 
 
 def projectCorrelationsOntoProteinVMD(pdb_file, ccMatrix, vmd_out_file,
-                                      selectedAtoms, valueFilter,
+                                      selectedAtoms, 
+                                      vminFilter, vmaxFilter,
                                       cylinderRadiusScaler,
                                       absoluteValues: bool,
                                       writeAllOutput: bool):
@@ -816,10 +817,14 @@ def projectCorrelationsOntoProteinVMD(pdb_file, ccMatrix, vmd_out_file,
         prefix for the output tcl files.
     selectedAtoms: prody object
         A list of -typically CA- atoms selected from the parsed PDB file.
-    valueFilter: float
-        Correlation values smaller than this threshold will not be written
-        for visualization. For example, 0.3 is a good threshold for normalized
-        dynamical cross-correlation data.
+    vminFilter: float
+        Only correlation values greater than this threshold will be written to tcl 
+        and pml visualization scripts. For example, 0.3 can be a good threshold 
+        for normalized dynamical cross-correlation data.
+    vmaxFilter: float
+        Only correlation values equal or lower than this threshold will be written 
+        to tcl and pml visualization scripts. It is useful if you would like to analyze
+        correlations in an interval.
     cylinderRadiusScaler: a float value.
         It adjust radius of cylinders to be displayed in VMD.
         The value is multiplied with the corresponding correlation value.
@@ -868,7 +873,8 @@ def projectCorrelationsOntoProteinVMD(pdb_file, ccMatrix, vmd_out_file,
     spheresList = []
     for i in range(0, len(ccMatrix)):
         for j in range(i + 1, len(ccMatrix)):
-            if ccMatrix[i][j] > valueFilter:
+            if ((ccMatrix[i][j] >  vminFilter) and \
+                (ccMatrix[i][j] <= vmaxFilter)):
                 spheresList.append(i)
                 spheresList.append(j)
     for item in np.unique(spheresList):
@@ -876,7 +882,8 @@ def projectCorrelationsOntoProteinVMD(pdb_file, ccMatrix, vmd_out_file,
                                                             selectedAtoms.getResnums()[item]))
     for i in range(0, len(ccMatrix)):
         for j in range(i + 1, len(ccMatrix)):
-            if ccMatrix[i][j] > valueFilter:
+            if ((ccMatrix[i][j] >  vminFilter) and \
+                (ccMatrix[i][j] <= vmaxFilter)):
                 DATA_FILE.write(draw_string.format(selectedAtoms.getChids()[i],
                                                    selectedAtoms.getResnums()[i],
                                                    selectedAtoms.getChids()[j],
@@ -905,7 +912,8 @@ def projectCorrelationsOntoProteinVMD(pdb_file, ccMatrix, vmd_out_file,
                     spheresList = []
                     for i in range(0, len(ccMatrix)):
                         for j in range(i + 1, len(ccMatrix)):
-                            if ccMatrix[i][j] > valueFilter:
+                            if ((ccMatrix[i][j] >  vminFilter) and \
+                                (ccMatrix[i][j] <= vmaxFilter)):
                                 if (selectedAtoms.getChids()[i] == chainI) and \
                                     (selectedAtoms.getChids()[j] == chainJ):
                                     spheresList.append(i)
@@ -916,7 +924,8 @@ def projectCorrelationsOntoProteinVMD(pdb_file, ccMatrix, vmd_out_file,
                                                                          selectedAtoms.getResnums()[item]))
                     for i in range(0, len(ccMatrix)):
                         for j in range(i + 1, len(ccMatrix)):
-                            if ccMatrix[i][j] > valueFilter:
+                            if ((ccMatrix[i][j] >  vminFilter) and \
+                                (ccMatrix[i][j] <= vmaxFilter)):
                                 if (selectedAtoms.getChids()[i] == chainI) and \
                                     (selectedAtoms.getChids()[j] == chainJ):
 
@@ -943,7 +952,8 @@ def projectCorrelationsOntoProteinVMD(pdb_file, ccMatrix, vmd_out_file,
             spheresList = []
             for i in range(0, len(ccMatrix)):
                 for j in range(i + 1, len(ccMatrix)):
-                    if ccMatrix[i][j] > valueFilter:
+                    if ((ccMatrix[i][j] >  vminFilter) and \
+                        (ccMatrix[i][j] <= vmaxFilter)):
                         if (selectedAtoms.getChids()[i] == chain) and \
                             (selectedAtoms.getChids()[j] == chain):
                             spheresList.append(i)
@@ -954,7 +964,8 @@ def projectCorrelationsOntoProteinVMD(pdb_file, ccMatrix, vmd_out_file,
                                                                     selectedAtoms.getResnums()[item]))
             for i in range(0, len(ccMatrix)):
                 for j in range(i + 1, len(ccMatrix)):
-                    if ccMatrix[i][j] > valueFilter:
+                    if ((ccMatrix[i][j] >  vminFilter) and \
+                        (ccMatrix[i][j] <= vmaxFilter)):
                         if (selectedAtoms.getChids()[i] == chain) and \
                             (selectedAtoms.getChids()[j] == chain):
 
@@ -971,7 +982,8 @@ def projectCorrelationsOntoProteinVMD(pdb_file, ccMatrix, vmd_out_file,
             DATA_FILE.close()
 
 def projectCorrelationsOntoProteinPyMol(pdb_file, ccMatrix, pml_out_file,
-                                      selectedAtoms, valueFilter,
+                                      selectedAtoms, 
+                                      vminFilter, vmaxFilter,
                                       cylinderRadiusScaler,
                                       absoluteValues: bool,
                                       writeAllOutput: bool):
@@ -994,10 +1006,14 @@ def projectCorrelationsOntoProteinPyMol(pdb_file, ccMatrix, pml_out_file,
         prefix for the output pml files.
     selectedAtoms: prody object
         A list of -typically CA- atoms selected from the parsed PDB file.
-    valueFilter: float
-        Correlation values smaller than this threshold will not be written
-        for visualization. For example, 0.3 can be a good threshold for normalized
-        dynamical cross-correlation data. 
+    vminFilter: float
+        Only correlation values greater than this threshold will be written to tcl 
+        and pml visualization scripts. For example, 0.3 can be a good threshold 
+        for normalized dynamical cross-correlation data.
+    vmaxFilter: float
+        Only correlation values equal or lower than this threshold will be written 
+        to tcl and pml visualization scripts. It is useful if you would like to analyze
+        correlations in an interval. 
     cylinderRadiusScaler: a float value.
         It adjust radius of cylinders to be displayed in PyMol.
         The value is multiplied with the corresponding correlation value.
@@ -1042,7 +1058,8 @@ def projectCorrelationsOntoProteinPyMol(pdb_file, ccMatrix, pml_out_file,
     spheresList = []
     for i in range(0, len(ccMatrix)):
         for j in range(i + 1, len(ccMatrix)):
-            if ccMatrix[i][j] > valueFilter:
+            if ((ccMatrix[i][j] >  vminFilter) and \
+                (ccMatrix[i][j] <= vmaxFilter)):
                 spheresList.append(i)
                 spheresList.append(j)
 
@@ -1056,7 +1073,8 @@ def projectCorrelationsOntoProteinPyMol(pdb_file, ccMatrix, pml_out_file,
     DATA_FILE.write("correlations = [ \n")
     for i in range(0, len(ccMatrix)):
         for j in range(i + 1, len(ccMatrix)):
-            if ccMatrix[i][j] > valueFilter:
+            if ((ccMatrix[i][j] >  vminFilter) and \
+                (ccMatrix[i][j] <= vmaxFilter)):
                 DATA_FILE.write(draw_string.format(selectedAtoms.getCoords()[i][0],
                                                    selectedAtoms.getCoords()[i][1],
                                                    selectedAtoms.getCoords()[i][2],
@@ -1087,7 +1105,8 @@ def projectCorrelationsOntoProteinPyMol(pdb_file, ccMatrix, pml_out_file,
                     spheresList = []
                     for i in range(0, len(ccMatrix)):
                         for j in range(i + 1, len(ccMatrix)):
-                            if ccMatrix[i][j] > valueFilter:
+                            if ((ccMatrix[i][j] >  vminFilter) and \
+                                (ccMatrix[i][j] <= vmaxFilter)):
                                 if (selectedAtoms.getChids()[i] == chainI) and \
                                     (selectedAtoms.getChids()[j] == chainJ):
                                     spheresList.append(i)
@@ -1103,7 +1122,8 @@ def projectCorrelationsOntoProteinPyMol(pdb_file, ccMatrix, pml_out_file,
                     DATA_FILE.write("correlations = [ \n")
                     for i in range(0, len(ccMatrix)):
                         for j in range(i + 1, len(ccMatrix)):
-                            if ccMatrix[i][j] > valueFilter:
+                            if ((ccMatrix[i][j] >  vminFilter) and \
+                                (ccMatrix[i][j] <= vmaxFilter)):
                                 if (selectedAtoms.getChids()[i] == chainI) and \
                                     (selectedAtoms.getChids()[j] == chainJ):
                                     DATA_FILE.write(draw_string.format(\
@@ -1133,7 +1153,8 @@ def projectCorrelationsOntoProteinPyMol(pdb_file, ccMatrix, pml_out_file,
             spheresList = []
             for i in range(0, len(ccMatrix)):
                 for j in range(i + 1, len(ccMatrix)):
-                    if ccMatrix[i][j] > valueFilter:
+                    if ((ccMatrix[i][j] >  vminFilter) and \
+                        (ccMatrix[i][j] <= vmaxFilter)):
                         if (selectedAtoms.getChids()[i] == chain) and \
                             (selectedAtoms.getChids()[j] == chain):
                             spheresList.append(i)
@@ -1148,7 +1169,8 @@ def projectCorrelationsOntoProteinPyMol(pdb_file, ccMatrix, pml_out_file,
             DATA_FILE.write("correlations = [ \n")
             for i in range(0, len(ccMatrix)):
                 for j in range(i + 1, len(ccMatrix)):
-                    if ccMatrix[i][j] > valueFilter:
+                    if ((ccMatrix[i][j] >  vminFilter) and \
+                        (ccMatrix[i][j] <= vmaxFilter)):
                         if (selectedAtoms.getChids()[i] == chain) and \
                             (selectedAtoms.getChids()[j] == chain):                    
                             DATA_FILE.write(draw_string.format(\

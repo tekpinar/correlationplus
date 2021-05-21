@@ -57,7 +57,7 @@ can also be parsed.
 
 To run a simple example of visualization, you can use data and pdb files in the examples folder::
 
-  correlationplus visualize -i ndcc-6lu7-anm.dat -p 6lu7_dimer_with_N3_protein_sim1_ca.pdb -t absndcc
+  correlationplus visualize -i ndcc-6lu7-anm.dat -p 6lu7_dimer_with_N3_protein_sim1_ca.pdb -t absndcc -v 0.75
 
 In addition, the command above will produce plots of absolute values of dynamical cross correlations vs interresidue distances.
 
@@ -66,7 +66,10 @@ and all individual intra-chain correlations, if exist. Moreover, the program
 will give you inter-chain correlations, if you have more than one chain. 
 
 You can analyze the correlations with `VMD <https://www.ks.uiuc.edu/Research/vmd/>`_ just by loading the tcl files produced by 
-visualize app. You can call *VMD* and go to *Extensions->Tk Console menu*. 
+visualize app. To reduce the clutter, the command above will only dump the correlations greater than 0.75 to your tcl or pml file.
+If you would like to visualize an interval, you can specify the maximal value as well with '-x ' parameter.
+
+You can call VMD and go to *Extensions->Tk Console menu*. 
 Write the following command to see the correlations::
 
   source correlation-interchain-chainsA-B.tcl
@@ -75,13 +78,13 @@ If you prefer to do the tcl loading in a single command::
 
   vmd -e correlation-interchain-chainsA-B.tcl
 
-Please, beware that the loading can take some time depending on protein size
-and number of correlations. 
+Please, beware that the loading can take some time depending on protein size,
+number of correlations and the min-max correlation limits that you imposed. 
 
 Additionally, vmd command has to be in your path if you want to do this 
 with the command above.
 
-If you would like to use PyMol::
+If you would like to use PyMol, the following command will be sufficient::
   
   pymol correlation-interchain-chainsA-B.pml
 
