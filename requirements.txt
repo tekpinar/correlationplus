@@ -1,7 +1,7 @@
 numpy==1.16.1
 matplotlib>=3.2.2, <=3.3.2
 scipy==1.5.2
-networkx==2.4
+networkx==2.5.1
 biopython==1.76
 prody>=1.10.8, <=1.10.11
 MDAnalysis>=1.0.0

@@ -2,9 +2,9 @@
 # correlationplus - A Python package to calculate, visualize and analyze      #
 #                   dynamical correlations maps of proteins.                  #
 # Authors: Mustafa Tekpinar                                                   #
-# Copyright Mustafa Tekpinar 2017-2018                                        #
-# Copyright CNRS-UMR3528, 2019                                                #
-# Copyright Institut Pasteur Paris, 2020-2021                                 #
+# Copyright (C) Mustafa Tekpinar 2017-2018                                        #
+# Copyright (C) CNRS-UMR3528, 2019                                                #
+# Copyright (C) Institut Pasteur Paris, 2020-2021                                 #
 #                                                                             #
 # This file is part of correlationplus.                                       #
 #                                                                             #
@@ -42,13 +42,25 @@ def usage_centralityAnalysisApp():
 Example usage:
 correlationplus analyze -i 4z90-cross-correlations.txt -p 4z90.pdb
 
-Arguments: -i: A file containing normalized dynamical cross correlations in matrix format. (Mandatory)
+Arguments: -i: A file containing normalized dynamical cross correlations in 
+               matrix format. (Mandatory)
+
            -p: PDB file of the protein. (Mandatory)
-           -t: Type of the matrix. It can be ndcc, lmi or absndcc (absolute values of ndcc). Default value is ndcc (Optional)
-           -o: This will be your output file. Output figures are in png format. (Optional)
-           -c: Type of the centrality that you want to calculate. Default is 'all'. (Optional)
-           -v: Value filter. The values lower than this value in the map will be considered as zero. Default is 0.3. (Optional)
-           -d: Distance filter. The residues with distances higher than this value will be considered as zero. Default is 7.0 Angstrom. (Optional)
+           
+           -t: Type of the matrix. It can be ndcc, lmi or absndcc 
+               (absolute values of ndcc). Default value is ndcc (Optional)
+
+           -o: This will be your output file. Output figures are in png format. 
+               (Optional)
+
+           -c: Type of the centrality that you want to calculate. Default is 'all'.
+               (Optional)
+               
+           -v: Value filter. The values lower than this value in the map will be 
+               considered as zero. Default is 0.3. (Optional)
+
+           -d: Distance filter. The residues with distances higher than this value 
+               will be considered as zero. Default is 7.0 Angstrom. (Optional)
 """)
 
 
@@ -162,6 +174,8 @@ def centralityAnalysisApp():
         centralityAnalysis(ccMatrix, distanceMatrix, valueFilter, distanceFilter, out_file, "current_flow_closeness",
                            selectedAtoms)
         centralityAnalysis(ccMatrix, distanceMatrix, valueFilter, distanceFilter, out_file, "eigenvector",
+                           selectedAtoms)
+        centralityAnalysis(ccMatrix, distanceMatrix, valueFilter, distanceFilter, out_file, "community",
                            selectedAtoms)
     else:
         centralityAnalysis(ccMatrix, distanceMatrix, valueFilter, distanceFilter, out_file, centrality_type,

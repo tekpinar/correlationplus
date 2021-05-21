@@ -2,9 +2,9 @@
 # correlationplus - Python module to plot dynamical correlations maps         #
 #                   for proteins.                                             #
 # Authors: Mustafa Tekpinar                                                   #
-# Copyright Mustafa Tekpinar 2017-2018                                        #
-# Copyright CNRS-UMR3528, 2019                                                #
-# Copyright Institut Pasteur Paris, 2020-2021                                 #
+# Copyright (C) Mustafa Tekpinar 2017-2018                                    #
+# Copyright (C) CNRS-UMR3528, 2019                                            #
+# Copyright (C) Institut Pasteur Paris, 2020-2021                             #
 #                                                                             #
 # This file is part of correlationplus.                                       #
 #                                                                             #
@@ -21,10 +21,10 @@
 # You should have received a copy of the GNU Lesser General Public License    #
 # along with correlationplus.  If not, see <https://www.gnu.org/licenses/>.   #
 ###############################################################################
-
-
 import sys
 import os
+
+#TODO: Move to argparse instead of getopt
 import getopt
 from collections import Counter
 
@@ -34,6 +34,8 @@ from prody import parsePDB
 from correlationplus.visualize import overallCorrelationMap, convertLMIdata2Matrix, distanceDistribution
 from correlationplus.visualize import intraChainCorrelationMaps, interChainCorrelationMaps
 from correlationplus.visualize import filterCorrelationMapByDistance, projectCorrelationsOntoProteinVMD
+from correlationplus.visualize import projectCorrelationsOntoProteinPyMol
+from correlationplus.visualize import parseEVcouplingsScores
 
 
 def usage_visualizemapApp():
@@ -44,11 +46,26 @@ def usage_visualizemapApp():
 Example usage:
 correlationplus visualize -i 4z90-cross-correlations.txt -p 4z90.pdb
 
-Arguments: -i: A file containing normalized dynamical cross correlations in matrix format. (Mandatory)
+Arguments: -i: A file containing correlations in matrix format. (Mandatory)
+
            -p: PDB file of the protein. (Mandatory)
-           -t: Type of the matrix. It can be ndcc, lmi or absndcc (absolute values of ndcc). Default value is ndcc (Optional)
-           -v: Correlation values equal or greater than the specified value will be projected onto protein structure. Default is 0.75. (Optional)
-           -d: If the minimal distance between two C_alpha atoms is bigger than the specified distance, it will be projected onto protein structure. Default is 0. (Optional)
+           
+           -t: Type of the matrix. It can be ndcc, lmi or absndcc (absolute values of ndcc).
+               In addition, coeviz and evcouplings are also some options to analyze sequence
+               correlations. 
+               Default value is ndcc (Optional)
+
+           -v: Minimal correlation value. Any value equal or greater than this 
+               will be projected onto protein structure. Default is 0.75. (Optional)
+
+           -d: If the minimal distance between two C_alpha atoms is bigger 
+               than the specified distance, it will be projected onto protein structure. 
+               Default is 0. (Optional)
+
+           -r: Cylinder radius scaling coefficient to multiply with the correlation quantity.
+               It can be used to improve tcl and pml outputs to view the interaction 
+               strengths properly. (Optional)
+
            -o: This will be your output file. Output figures are in png format. (Optional)
 """)
 
@@ -58,10 +75,13 @@ def handle_arguments_visualizemapApp():
     pdb_file = None
     out_file = None
     sel_type = None
-    val_fltr = None
+    vmin_fltr = None
+    vmax_fltr = None
     dis_fltr = None
+    cyl_rad = None
     try:
-        opts, args = getopt.getopt(sys.argv[2:], "hi:o:t:p:v:d:", ["help", "inp=", "out=", "type=", "pdb=", "val=", "dis="])
+        opts, args = getopt.getopt(sys.argv[2:], "hi:o:t:p:v:x:d:r:", \
+            ["help", "inp=", "out=", "type=", "pdb=", "vmin=", "vmax=", "dis=", "radius="])
     except getopt.GetoptError:
         usage_visualizemapApp()
     for opt, arg in opts:
@@ -76,10 +96,14 @@ def handle_arguments_visualizemapApp():
             sel_type = arg
         elif opt in ("-p", "--pdb"):
             pdb_file = arg
-        elif opt in ("-v", "--val"):
-            val_fltr = arg
+        elif opt in ("-v", "--vmin"):
+            vmin_fltr = arg
+        elif opt in ("-x", "--vmax"):
+            vmax_fltr = arg
         elif opt in ("-d", "--dis"):
             dis_fltr = arg
+        elif opt in ("-r", "--radius"):
+            cyl_rad = arg
         else:
             assert False, usage_visualizemapApp()
 
@@ -102,28 +126,29 @@ def handle_arguments_visualizemapApp():
     if sel_type is None:
         sel_type = "ndcc"
 
-    if val_fltr is None:
-        val_fltr = 0.75
+    # if vmin_fltr is None:
+    #     vmin_fltr = 0.75
 
     if dis_fltr is None:
         dis_fltr = 0.0
     
 
-    return inp_file, out_file, sel_type, pdb_file, val_fltr, dis_fltr
+    return inp_file, out_file, sel_type, pdb_file, \
+           vmin_fltr, vmax_fltr, dis_fltr, cyl_rad
 
 
 def visualizemapApp():
-    inp_file, out_file, sel_type, pdb_file, val_fltr, dis_fltr = \
-        handle_arguments_visualizemapApp()
+    inp_file, out_file, sel_type, pdb_file, \
+    vmin_fltr, vmax_fltr, \
+    dis_fltr, cyl_rad = handle_arguments_visualizemapApp()
     print(f"""
 @> Running 'visualize' app:
     
-@> Input file     : {inp_file}
-@> PDB file       : {pdb_file}
-@> Data type      : {sel_type}
-@> Value filter   : {val_fltr}
-@> Distance filter: {dis_fltr}
-@> Output         : {out_file}""")
+@> Input file       : {inp_file}
+@> PDB file         : {pdb_file}
+@> Data type        : {sel_type}
+@> Distance filter  : {dis_fltr}
+@> Output           : {out_file}""")
 
 
     ##########################################################################
@@ -135,55 +160,108 @@ def visualizemapApp():
 
     ##########################################################################
     # Read data file and assign to a numpy array
-    if sel_type == "ndcc":
+    if sel_type.lower() == "ndcc":
         ccMatrix = np.loadtxt(inp_file, dtype=float)
-    elif sel_type == "absndcc":
+        # Check the data range in the matrix.
+        minCorrelationValue = np.min(ccMatrix)
+        maxCorrelationValue = np.max(ccMatrix)
+        if minCorrelationValue < 0.0:
+        # Assume that it is an nDCC file
+            minColorBarLimit = -1.0
+        if maxCorrelationValue > 1.0:
+            print("This correlation map is not normalized!")
+            # TODO: At this point, one can ask the user if s/he wants to normalize it!
+            sys.exit(-1)
+        else:
+            maxColorBarLimit = 1.0
+    elif sel_type.lower() == "absndcc":
         ccMatrix = np.absolute(np.loadtxt(inp_file, dtype=float))
-    elif sel_type == "lmi":
+        minColorBarLimit = 0.0
+        maxColorBarLimit = 1.0
+    elif sel_type.lower() == "lmi":
         ccMatrix = convertLMIdata2Matrix(inp_file, writeAllOutput=True)
+        minCorrelationValue = np.min(ccMatrix)
+        maxCorrelationValue = np.max(ccMatrix)
+        minColorBarLimit = 0.0
+        if maxCorrelationValue > 1.0:
+            print("This LMI map is not normalized!")
+            # TODO: At this point, one can ask the user if s/he wants to normalize it!
+            sys.exit(-1)
+        else:
+            maxColorBarLimit = 1.0
+    elif sel_type.lower() == "coeviz":
+        ccMatrix = np.loadtxt(inp_file, dtype=float)
+        minColorBarLimit = 0.0
+        maxColorBarLimit = 1.0
+    
+    elif sel_type.lower() == "evcouplings":
+        ccMatrix = parseEVcouplingsScores(inp_file, selectedAtoms, False)
+        minCorrelationValue = np.min(ccMatrix)
+        maxCorrelationValue = np.max(ccMatrix)
+        minColorBarLimit = minCorrelationValue
+        maxColorBarLimit = maxCorrelationValue
     else:
         print("Unknown matrix data type: The type can only be ndcc, absndcc or lmi!\n")
         sys.exit(-1)
 
-    # Check the data type in the matrix.
-    minCorrelationValue = np.min(ccMatrix)
-
-    maxCorrelationValue = np.max(ccMatrix)
-
-    if minCorrelationValue < 0.0:
-        # Assume that it is an nDCC file
-        minColorBarLimit = -1.0
-    else:
-        # Assume that it is an LMI file
-        minColorBarLimit = 0.0
-
-    if maxCorrelationValue > 1.0:
-        print("This correlation map is not normalized!")
-        # TODO: At this point, one can ask the user if s/he wants to normalize it!
-        sys.exit(-1)
+    # Set vmin_fltr and vmax_fltr
+    if (vmin_fltr == None):
+        vmin_fltr = minColorBarLimit
+    if (vmax_fltr == None):
+        vmax_fltr = maxColorBarLimit
+    
+    print(f"""@> Min. value filter: {vmin_fltr}""")
+    print(f"""@> Max. value filter: {vmax_fltr}""")
+    
     ##########################################################################
     # Call overall correlation calculation
-    maxColorBarLimit = 1.0
+
     overallCorrelationMap(ccMatrix, minColorBarLimit, maxColorBarLimit,
                           out_file, " ", selectedAtoms)
 
     plotDistributions = True
+    VMDcylinderRadiusScale = 0.5
+    PMLcylinderRadiusScale = 0.3
+
+    if (cyl_rad == None):
+        if sel_type.lower() == "evcouplings":
+            VMDcylinderRadiusScale = 0.01
+            PMLcylinderRadiusScale = 0.01
+        else:
+            VMDcylinderRadiusScale = 0.5
+            PMLcylinderRadiusScale = 0.3
+        print(f"""@> VMD Cylinder radius: {VMDcylinderRadiusScale}""")
+        print(f"""@> PyMol Cylinder radius: {PMLcylinderRadiusScale}""")
+
+    else:
+        VMDcylinderRadiusScale = float(cyl_rad)
+        PMLcylinderRadiusScale = float(cyl_rad)
+        print(f"""@> Cylinder radius: {cyl_rad}""")
+
     if plotDistributions:
-        if sel_type == "ndcc":
+        if sel_type.lower() == "ndcc":
             distanceDistribution(ccMatrix, out_file, "nDCC", selectedAtoms,
                                  absoluteValues=False, writeAllOutput=True)
 
-        elif sel_type == "absndcc":
+        elif sel_type.lower() == "absndcc":
             distanceDistribution(ccMatrix, out_file, "Abs(nDCC)",
                                  selectedAtoms, absoluteValues=True, writeAllOutput=False)
 
-        elif sel_type == "lmi":
+        elif sel_type.lower() == "lmi":
             distanceDistribution(ccMatrix, out_file, "LMI", selectedAtoms,
                                  absoluteValues=True, writeAllOutput=True)
+        
+        elif sel_type.lower() == "coeviz":
+            distanceDistribution(ccMatrix, out_file, "CoeViz", selectedAtoms,
+                                 absoluteValues=True, writeAllOutput=True)
 
+        elif sel_type.lower() == "evcouplings":
+            distanceDistribution(ccMatrix, out_file, "EVcoupling Score", selectedAtoms,
+                                 absoluteValues=False, writeAllOutput=True)
         else:
             print("Warning: Unknows correlation data.\n")
-            print("         Correlations can be ndcc, absndcc, lmi!\n")
+            print("         Correlations can be ndcc, absndcc, lmi,\n")
+            print("         coeviz or evcouplings!\n")
 
     ##########################################################################
     # Check number of chains. If there are multiple chains, plot inter and
@@ -210,7 +288,18 @@ def visualizemapApp():
 
     # Overall projection
     projectCorrelationsOntoProteinVMD(pdb_file, ccMatrix, out_file,
-                                      selectedAtoms, valueFilter=float(val_fltr),
+                                      selectedAtoms, 
+                                      vminFilter=float(vmin_fltr),
+                                      vmaxFilter=float(vmax_fltr),
+                                      cylinderRadiusScaler=VMDcylinderRadiusScale,
+                                      absoluteValues=True, writeAllOutput=True)
+
+
+    projectCorrelationsOntoProteinPyMol(pdb_file, ccMatrix, out_file,
+                                      selectedAtoms, 
+                                      vminFilter=float(vmin_fltr),
+                                      vmaxFilter=float(vmax_fltr),
+                                      cylinderRadiusScaler=PMLcylinderRadiusScale,
                                       absoluteValues=True, writeAllOutput=True)
 
     print("\n@> Program finished successfully!\n")
