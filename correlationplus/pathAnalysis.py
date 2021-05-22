@@ -390,17 +390,49 @@ def buildDynamicsGraph(ccMatrix, distanceMatrix, \
                 # dynNetwork.add_edge(i, j, weight=fabs(correlationArray[i][j]))
 
     return dynNetwork
-def writePath2VMDFile(path, source, target, pdb, outfile):
+def writePath2VMDFile(suboptimalPaths, source, target, pdb, outfile):
+    """
+    Produces VMD output files for visualizing suboptimal paths.
+
+    This function writes a tcl file containing the (suboptimal) paths
+    between a source and a target residue. CA atoms on each path is 
+    colored in a different color. 
+    The output files can be visualized with VMD (Visual Molecular
+    dynamics) program as follows.
+    i) Load your pdb file, whether via command line or graphical interface.
+    ii) Go to Extensions -> Tk Console and then
+    iii) source vmd-output-general.tcl
+    It can take some time to load the general script.
+
+    Parameters
+    ----------
+    suboptimalPaths: list of lists
+        Each path is a list containing the indices of residues on the path.
+    source: int
+        This is the source residue index. Conversion from chainIDResID to 
+        index is performed internally by mapResid2ResIndex() function. 
+    target: int
+        This is the target residue index. Conversion from chainIDResID to 
+        index is performed internally by mapResid2ResIndex() function. 
+    pdb: string
+        This is a the name of the pdb file you submitted.
+    out_file: string
+        Prefix of the output file. Defaults value is 
+        paths-source{chainIDResID}-target{chainIDResID}.vmd
+
+    Returns
+    -------
+    Nothing
+    """
+
     vmdfile=open(outfile, "w+")
     vmdfile.write(f"mol new {pdb}\n")
     vmdfile.write("mol delrep 0 top\n\n")
 
     vmdfile.write("#Set general view\n")
-    #vmdfile.write("mol representation NewCartoon 0.300000 10.000000 4.100000 0\n")
     vmdfile.write("mol representation Tube\n")
     vmdfile.write("mol color chain\n")
     vmdfile.write("mol selection {all}\n")
-    vmdfile.write("#mol selection {protein and (chain A or chain B)}\n")
     vmdfile.write("mol material Transparent\n")
     vmdfile.write("mol addrep top\n\n")
 
@@ -418,29 +450,66 @@ def writePath2VMDFile(path, source, target, pdb, outfile):
     vmdfile.write("mol material Glossy\n")
     vmdfile.write("mol addrep top\n\n")
 
-    vmdfile.write("#Set atoms on the path\n")
-    vmdfile.write("mol representation VDW 0.6 20\n")
-    vmdfile.write("mol color colorID 7\n")
-    vmdfile.write("mol selection {(residue ")
-    for atom in path:
-        vmdfile.write(str(atom)+" ")
-    vmdfile.write("and name CA)}\n")
-    vmdfile.write("mol material Glossy\n")
-    vmdfile.write("mol addrep top\n")
+    k = 0
+    for path in suboptimalPaths:
+        vmdfile.write("#Set atoms on the path\n")
+        vmdfile.write("mol representation VDW 0.6 20\n")
+        vmdfile.write("mol color colorID "+str(k+7)+"\n")
+        vmdfile.write("mol selection {(residue ")
+        for atom in path:
+            vmdfile.write(str(atom)+" ")
+        vmdfile.write("and name CA)}\n")
+        vmdfile.write("mol material Glossy\n")
+        vmdfile.write("mol addrep top\n")
 
-    for i in range (0, (len(path)-1)):
-        vmdfile.write("draw cylinder [lindex [[atomselect top \"residue "+\
-            str(path[i])+" and name CA\"] get {x y z}] 0] [lindex [[atomselect top \"residue "+\
-            str(path[i+1])+" and name CA\"] get {x y z}] 0] radius 0.5 resolution 10 filled 0\n")
-
-    # for item in path:
-    #     print(item)
+        for i in range (0, (len(path)-1)):
+            vmdfile.write("draw cylinder [lindex [[atomselect top \"residue "+\
+                str(path[i])+" and name CA\"] get {x y z}] 0] [lindex [[atomselect top \"residue "+\
+                str(path[i+1])+" and name CA\"] get {x y z}] 0] radius 0.5 resolution 10 filled 0\n")
+        
+        k = k+1
 
     vmdfile.close()
+
+def mapResid2ResIndex(selectedAtoms):
+    """
+    Map resid to residue index.
+
+    The user enters a chainID and resid such as A41. This means the 
+    Calpha atom of resid 41 in chainA. This function converts this value
+    to a zero based index. 
+
+    Parameters
+    ----------
+    selectedAtoms: object
+        This is a prody.parsePDB object of typically CA atoms of a protein.
+
+    Return
+    ------
+    resDict: dictionary
+        Basically, each element of the dictionary is like {'A41': 40,...}
+
+    """
+
+    # Build a dictionary to convert resid to residue indices.
+    resnumList = selectedAtoms.getResnums()
+    resindexList = selectedAtoms.getResindices()
+    chidList = selectedAtoms.getChids()
+
+    # Merge chainID and resid lists
+    resnumList = list(map(str, resnumList))
+    chainAndResid = [i + j for i, j in zip(chidList, resnumList)]
+
+    # Create a dictionary for mathching 
+    # residue numbers with residue indices
+    resDict = dict(zip(chainAndResid, resindexList))
+
+    return resDict
+
 def pathAnalysis(ccMatrix, distanceMatrix,\
                  valueFilter, distanceFilter,\
                  sourceResid, targetResid, \
-                 out_file, selectedAtoms):
+                 selectedAtoms, num_paths):
     """
     This function calculates paths between a source and target residue.
 
@@ -465,11 +534,10 @@ def pathAnalysis(ccMatrix, distanceMatrix,\
         Chain and residue ID of the source residue. For example, A41, B145 etc..
     targetResid: str
         Chain and residue ID of the target residue. For example, A145, B41 etc.. 
-    out_file: string
-        Prefix of the output file. According to the centralty measure, it will be
-        extended.
     selectedAtoms: object
         This is a prody.parsePDB object of typically CA atoms of a protein.
+    num_paths: int
+        Number of shortest paths to write to tcl or pml files. Minimum is 1.
 
     Returns
     -------
@@ -480,78 +548,26 @@ def pathAnalysis(ccMatrix, distanceMatrix,\
     dynNetwork = buildDynamicsGraph(ccMatrix, distanceMatrix, \
                        valueFilter, distanceFilter,\
                        selectedAtoms)
-
-    #Build a dictionary to convert resid to residue indices.
-    # n = selectedAtoms.numAtoms()
-    resnumList = selectedAtoms.getResnums()
-    resindexList = selectedAtoms.getResindices()
-    chidList = selectedAtoms.getChids()
-
-    resnumList = list(map(str, resnumList))
-    chainAndResid = [i + j for i, j in zip(chidList, resnumList)]
-    #print(chainAndResid)
-    # Create a dictionaries for mathching 
-    # residue numbers with residue indices
-    resDict = dict(zip(chainAndResid, resindexList))
    
     shortestPathScoreList = []
-    suboptimalPaths = k_shortest_paths(dynNetwork, source=resDict[sourceResid], target=resDict[targetResid], k=5, weight='weight')
+    suboptimalPaths = k_shortest_paths(dynNetwork, source=sourceResid, target=targetResid, k=num_paths, weight='weight')
     #shortestPath = nx.shortest_path(dynNetwork, source=residue, target=targetResid, weight='weight', method='dijkstra')
     for path in suboptimalPaths:
         shortestPathScore = 0.0
         for j in range(len(path)-1):
-            print(path[j], end="\n")
+        #    print(path[j], end="\n")
         #    print(shortestPath[j+1], end="\n")
             shortestPathScore = shortestPathScore + ccMatrix[path[j]][path[j+1]]
         shortestPathScoreList.append(shortestPathScore)
 
-    #spNP = np.array(shortestPath)
-    #print(spNP)
-    print(shortestPathScoreList)
-    print("The shortest path score is: ", end='')
-    print(np.array(shortestPathScoreList).sum().round(3))
+    # spNP = np.array(shortestPath)
+    # print(spNP)
+    # print(shortestPathScoreList)
+    # print("The shortest path score is: ", end='')
+    # print(np.array(shortestPathScoreList).sum().round(3))
     for path in suboptimalPaths:
         path_length = nx.path_weight(dynNetwork, path, weight="weight")
-        print(path_length)
+        print("Path length: "+str(path_length))
 
     return suboptimalPaths
-    # n = selectedAtoms.numAtoms()
-    # ########################## Calculate degrees of all nodes
-    # if centrality == 'degree':
-    #     degreeResult = dynNetwork.degree(weight='weight')
-    #     degreeResultList = []
-    #     for i in range(0, len(degreeResult)):
-    #         degreeResultList.append(degreeResult[i])
-    #     # print(degreeResultList)
-    #     print("@> Degree calculation finished!")
 
-    #     # open a file for degree
-    #     degreeFile = open(f"{out_file}_degree_value_filter{valueFilter:.2f}.dat", "w")
-    #     for i in range(n):
-    #         #    print(str(i)+" "+(str(dynNetwork.degree(i, weight='weight'))))
-    #         degreeFile.write("{0:d}\t{1:.6f}\t{2:s}\n".format(selectedAtoms[i].getResnum(),
-    #                                                           degreeResult[i],
-    #                                                           selectedAtoms[i].getChid()))
-    #     degreeFile.close()
-    #     projectCentralitiesOntoProteinVMD(centrality,
-    #                                       degreeResultList,
-    #                                       out_file,
-    #                                       selectedAtoms,
-    #                                       scalingFactor=1)
-    #     projectCentralitiesOntoProteinPyMol(centrality,
-    #                                       degreeResultList,
-    #                                       out_file,
-    #                                       selectedAtoms,
-    #                                       scalingFactor=1)
-    #     plotCentralities(centrality,
-    #                      degreeResultList,
-    #                      out_file,
-    #                      selectedAtoms,
-    #                      scalingFactor=1)
-
-    # else:
-    #     print("ERROR: Unknown centrality selected! It can only be")
-    #     print("       'degree', 'betweenness', 'closeness',")
-    #     print("       'current_flow_betweenness', 'current_flow_closeness'")
-    #     print("       or 'eigenvector!'")
-    #     sys.exit(-1)

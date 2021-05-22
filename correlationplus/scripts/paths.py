@@ -31,6 +31,7 @@ from prody import parsePDB
 from prody import buildDistMatrix
 from correlationplus.visualize import convertLMIdata2Matrix
 from correlationplus.pathAnalysis import pathAnalysis, writePath2VMDFile
+from correlationplus.pathAnalysis import mapResid2ResIndex
 # from .visualizemap import handle_arguments_visualizemapApp
 
 
@@ -40,7 +41,7 @@ def usage_pathAnalysisApp():
     """
     print("""
 Example usage:
-correlationplus analyze -i 4z90-cross-correlations.txt -p 4z90.pdb
+correlationplus paths -i 4z90-cross-correlations.txt -p 4z90.pdb -b A78 -e A230
 
 Arguments: -i: A file containing dynamical correlations in 
                matrix format. (Mandatory)
@@ -59,9 +60,11 @@ Arguments: -i: A file containing dynamical correlations in
            -d: Distance filter. The residues with distances higher than this value 
                will be considered as zero. Default is 7.0 Angstrom. (Optional)
                               
-           -b: Residue ID of the source residue. (Mandatory)
+           -b: ChainID and residue ID of the beginning (source)  residue (Ex: A41). (Mandatory)
 
-           -e: Residue ID of the sink/target residue. (Mandatory)
+           -e: ChainID and residue ID of the end (sink/target) residue (Ex: B41). (Mandatory)
+
+           -n: Number of shortest paths to write to tcl or pml files. Default is 1. (Optional)
 """)
 
 
@@ -74,10 +77,11 @@ def handle_arguments_pathAnalysisApp():
     dis_fltr = None
     src_res = None
     trgt_res = None
+    num_path = None
 
     try:
-        opts, args = getopt.getopt(sys.argv[2:], "hi:o:t:p:v:d:b:e:", \
-            ["help", "inp=", "out=", "type=", "pdb=", "value=", "distance", "beginning=", "end=", "distance="])
+        opts, args = getopt.getopt(sys.argv[2:], "hi:o:t:p:v:d:b:e:n:", \
+            ["help", "inp=", "out=", "type=", "pdb=", "value=", "distance", "beginning=", "end=", "distance=", "npaths"])
     except getopt.GetoptError:
         usage_pathAnalysisApp()
     for opt, arg in opts:
@@ -100,6 +104,8 @@ def handle_arguments_pathAnalysisApp():
             src_res = arg
         elif opt in ("-e", "--end"):
             trgt_res = arg
+        elif opt in ("-n", "--npaths"):
+            num_path = arg
         else:
             assert False, usage_pathAnalysisApp()
 
@@ -111,7 +117,7 @@ def handle_arguments_pathAnalysisApp():
 
     # Assign a default name if the user forgets the output file prefix.
     if out_file is None:
-        out_file = "correlation"
+        out_file = "paths"
 
     # The user may prefer not to submit a title for the output.
     if sel_type is None:
@@ -122,6 +128,9 @@ def handle_arguments_pathAnalysisApp():
 
     if dis_fltr is None:
         dis_fltr = 7.0
+    
+    if num_path is None:
+        num_path = 1
 
     if src_res is None:
         print("You have to specify a source resid!")
@@ -134,11 +143,12 @@ def handle_arguments_pathAnalysisApp():
         sys.exit(-1)
 
     return inp_file, out_file, sel_type, pdb_file, \
-            val_fltr, dis_fltr, src_res, trgt_res
+            val_fltr, dis_fltr, src_res, trgt_res, num_path
 
 
 def pathAnalysisApp():
-    inp_file, out_file, sel_type, pdb_file,val_fltr, dis_fltr, src_res, trgt_res\
+    inp_file, out_file, sel_type, pdb_file,val_fltr, \
+    dis_fltr, src_res, trgt_res, num_paths\
             = handle_arguments_pathAnalysisApp()
 
     print(f"""
@@ -151,7 +161,8 @@ def pathAnalysisApp():
 @> Value filter   : {val_fltr}
 @> Distance filter: {dis_fltr}
 @> Source residue : {src_res}
-@> Target residue : {trgt_res}""")
+@> Target residue : {trgt_res}
+@> Number of paths: {num_paths}""")
 
     ##########################################################################
     # Read PDB file
@@ -175,9 +186,15 @@ def pathAnalysisApp():
     sourceResid = src_res
     targetResid = trgt_res
     distanceMatrix = buildDistMatrix(selectedAtoms)
+    resDict = mapResid2ResIndex(selectedAtoms)
+    suboptimalPaths = pathAnalysis(ccMatrix, distanceMatrix, \
+                                   val_fltr, dis_fltr,\
+                                   resDict[sourceResid], resDict[targetResid], \
+                                   selectedAtoms,\
+                                   int(num_paths))
 
-    suboptimalPaths = pathAnalysis(ccMatrix, distanceMatrix, val_fltr, dis_fltr,\
-                                    sourceResid, targetResid, out_file, selectedAtoms)
-    for path in suboptimalPaths:
-        writePath2VMDFile(path, sourceResid, targetResid, pdb_file, "test.vmd")
+    out_file_full_name = out_file+"-source"+sourceResid+"-target"+targetResid+".vmd"
+    writePath2VMDFile(suboptimalPaths, 
+                    resDict[sourceResid], resDict[targetResid], \
+                    pdb_file, out_file_full_name)
     
