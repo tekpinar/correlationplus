@@ -390,6 +390,94 @@ def buildDynamicsGraph(ccMatrix, distanceMatrix, \
                 # dynNetwork.add_edge(i, j, weight=fabs(correlationArray[i][j]))
 
     return dynNetwork
+
+def writePath2PMLFile(suboptimalPaths, selectedAtoms, source, target, pdb, outfile):
+    """
+    Produces PML output files for visualizing suboptimal paths.
+
+    This function writes a pml file containing the (suboptimal) paths
+    between a source and a target residue. CA atoms on each path is 
+    colored in a different color. 
+    The output files can be visualized with PyMol program.
+
+    Parameters
+    ----------
+    suboptimalPaths: list of lists
+        Each path is a list containing the indices of residues on the path.
+    source: int
+        This is the source residue index. Conversion from chainIDResID to 
+        index is performed internally by mapResid2ResIndex() function. 
+    target: int
+        This is the target residue index. Conversion from chainIDResID to 
+        index is performed internally by mapResid2ResIndex() function. 
+    pdb: string
+        This is a the name of the pdb file you submitted.
+    out_file: string
+        Prefix of the output file. Defaults value is 
+        paths-source{chainIDResID}-target{chainIDResID}.pml
+
+    Returns
+    -------
+    Nothing
+    """
+
+    pmlfile=open(outfile, "w+")
+    pmlfile.write("from pymol.cgo import *\n")
+    pmlfile.write("from pymol import cmd\n")
+
+    pmlfile.write(f"load {pdb} \n\n")
+    pmlfile.write("set cartoon_transparency, 0.5\n")
+    pmlfile.write("cartoon type = tube\n")
+    
+
+
+    vdw_representation_string = "show spheres, chain {0:s} and resi {1:d} and name ca\n"
+    draw_string = ("CYLINDER,  {0:.3f}, {1:.3f}, {2:.3f},\
+    {3:.3f}, {4:.3f}, {5:.3f}, {6:.3f},\
+    0.0, 0.0, 1.0, 0.0, 0.0, 1.0, \n ")
+    endpoints_string = "select endpoints, \
+                (chain {0:s} and resi {1:d} and name ca) \
+             or (chain {2:s} and resi {3:d} and name ca)\n"
+    pmlfile.write(endpoints_string.format(\
+                                    selectedAtoms.getChids()[source],\
+                                    selectedAtoms.getResnums()[source],\
+                                    selectedAtoms.getChids()[target],\
+                                    selectedAtoms.getResnums()[target]))
+    pmlfile.write("set sphere_color, blue, endpoints\n")
+    pmlfile.write("set sphere_scale, 1.25, endpoints\n")
+    pmlfile.write(vdw_representation_string.\
+                format(selectedAtoms.getChids()[source],\
+                       selectedAtoms.getResnums()[source]))
+    pmlfile.write(vdw_representation_string.\
+                format(selectedAtoms.getChids()[target],\
+                       selectedAtoms.getResnums()[target]))
+
+    pmlfile.write("set sphere_scale, 0.75\n")
+    pmlfile.write("set sphere_color, blue\n")
+    k = 0
+    for path in suboptimalPaths:
+        for atom in path:
+            pmlfile.write(vdw_representation_string.format(selectedAtoms.getChids()[atom],
+                                                            selectedAtoms.getResnums()[atom]))
+
+        pmlfile.write("python\n")
+        # Draw cylinders
+        pmlfile.write(f"path_{k} = [ \n")
+        for i in range (0, (len(path)-1)):  
+            pmlfile.write(draw_string.format(\
+                        selectedAtoms.getCoords()[path[i]][0],
+                        selectedAtoms.getCoords()[path[i]][1],
+                        selectedAtoms.getCoords()[path[i]][2],
+                        selectedAtoms.getCoords()[path[i+1]][0],
+                        selectedAtoms.getCoords()[path[i+1]][1],
+                        selectedAtoms.getCoords()[path[i+1]][2],0.5))
+        pmlfile.write("]\n")
+        pmlfile.write(f"cmd.load_cgo(path_{k},'path_{k}')\n")
+        pmlfile.write(f"cmd.set(\"cgo_line_width\",2.0,'path_{k}')\n")
+        pmlfile.write("python end\n")
+        k = k+1
+    pmlfile.close()
+
 def writePath2VMDFile(suboptimalPaths, source, target, pdb, outfile):
     """
     Produces VMD output files for visualizing suboptimal paths.

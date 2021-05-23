@@ -30,10 +30,9 @@ import numpy as np
 from prody import parsePDB
 from prody import buildDistMatrix
 from correlationplus.visualize import convertLMIdata2Matrix
-from correlationplus.pathAnalysis import pathAnalysis, writePath2VMDFile
+from correlationplus.pathAnalysis import pathAnalysis
 from correlationplus.pathAnalysis import mapResid2ResIndex
-# from .visualizemap import handle_arguments_visualizemapApp
-
+from correlationplus.pathAnalysis import writePath2VMDFile, writePath2PMLFile 
 
 def usage_pathAnalysisApp():
     """
@@ -195,6 +194,11 @@ def pathAnalysisApp():
 
     out_file_full_name = out_file+"-source"+sourceResid+"-target"+targetResid+".vmd"
     writePath2VMDFile(suboptimalPaths, 
+                    resDict[sourceResid], resDict[targetResid], \
+                    pdb_file, out_file_full_name)
+
+    out_file_full_name = out_file+"-source"+sourceResid+"-target"+targetResid+".pml"
+    writePath2PMLFile(suboptimalPaths, selectedAtoms,\
                     resDict[sourceResid], resDict[targetResid], \
                     pdb_file, out_file_full_name)
     
