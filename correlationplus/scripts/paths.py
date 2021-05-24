@@ -193,7 +193,7 @@ def pathAnalysisApp():
                                    int(num_paths))
 
     out_file_full_name = out_file+"-source"+sourceResid+"-target"+targetResid+".vmd"
-    writePath2VMDFile(suboptimalPaths, 
+    writePath2VMDFile(suboptimalPaths, selectedAtoms, \
                     resDict[sourceResid], resDict[targetResid], \
                     pdb_file, out_file_full_name)
 
