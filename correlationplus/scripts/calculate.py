@@ -1,10 +1,10 @@
 ##############################################################################
 # correlationplus - A Python package to calculate, visualize and analyze      #
-#                   dynamical correlations maps of proteins.                  #
+#                   correlations maps of proteins.                            #
 # Authors: Mustafa Tekpinar                                                   #
-# Copyright Mustafa Tekpinar 2017-2018                                        #
-# Copyright CNRS-UMR3528, 2019                                                #
-# Copyright Institut Pasteur Paris, 2020-2021                                 #
+# Copyright (C) Mustafa Tekpinar, 2017-2018                                   #
+# Copyright (C) CNRS-UMR3528, 2019                                            #
+# Copyright (C) Institut Pasteur Paris, 2020-2021                             #
 #                                                                             #
 # This file is part of correlationplus.                                       #
 #                                                                             #
@@ -20,7 +20,7 @@
 #                                                                             #
 # You should have received a copy of the GNU Lesser General Public License    #
 # along with correlationplus.  If not, see <https://www.gnu.org/licenses/>.   #
-############################################################################### 
+###############################################################################
 
 import sys
 import getopt

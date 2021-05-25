@@ -1,10 +1,10 @@
 ##############################################################################
 # correlationplus - A Python package to calculate, visualize and analyze      #
-#                   dynamical correlations maps of proteins.                  #
+#                   correlations maps of proteins.                            #
 # Authors: Mustafa Tekpinar                                                   #
-# Copyright Mustafa Tekpinar 2017-2018                                        #
-# Copyright CNRS-UMR3528, 2019                                                #
-# Copyright Institut Pasteur Paris, 2020-2021                                 #
+# Copyright (C) Mustafa Tekpinar, 2017-2018                                   #
+# Copyright (C) CNRS-UMR3528, 2019                                            #
+# Copyright (C) Institut Pasteur Paris, 2020-2021                             #
 #                                                                             #
 # This file is part of correlationplus.                                       #
 #                                                                             #
@@ -336,6 +336,58 @@ def projectCommunitiesOntoProteinPyMol(sortedCommunities, out_file, selectedAtom
 
     PML_FILE.close()
 
+def buildDynamicsNetwork(ccMatrix, distanceMatrix, \
+                        valueFilter, distanceFilter,\
+                        selectedAtoms):
+    """
+    This function calculates various network (graph) centralities of a protein.
+
+    This function calculates some network centrality measures such as
+    degree, betweenness, closeness, current flow betweenness and eigenvector.
+    This function needs Python 3.6 or later to maintain dictionary order.!!!
+
+    Parameters
+    ----------
+    ccMatrix: Numpy matrix
+        It is a numpy matrix of typically nDCC, LMI or Generalized Correlations.
+    distanceMatrix: Numpy matrix
+        The distances between Calpha atoms of the protein stored in a matrix.
+    valueFilter: float
+        The ccMatrix values lower than the valueFilter will be ignored.
+    distanceFilter: float
+        The distance values higher than the distanceFilter will be ignored
+        and they will not be considered as edges in a network. 
+        This kind of value pruning may work for low conformational change MD
+        simulations or ENM based calculations. However, if there are large
+        scale structural changes, it will be necessary to eliminate the edges 
+        based on contacts and their preservation in during the entire simulation.
+    selectedAtoms: object
+        This is a prody.parsePDB object of typically CA atoms of a protein.
+
+    Returns
+    -------
+    A networkx graph object
+
+    """
+    # Create your  graph
+    dynNetwork = nx.Graph()
+
+    n = selectedAtoms.numAtoms()
+
+    # Add all CA atoms as nodes
+    for i in range(n):
+        dynNetwork.add_node(i)
+
+    # Add all pairwise interactions greater than the valueFilter as edges.
+    # In addition, add only edges which has a distance of lower than the 
+    # distance filter
+    for i in range(n):
+        for j in range(n):
+            if fabs(ccMatrix[i][j]) > valueFilter and distanceMatrix[i][j] <= distanceFilter:
+                dynNetwork.add_edge(i, j, weight=-log(fabs(ccMatrix[i][j])))
+                # dynNetwork.add_edge(i, j, weight=fabs(correlationArray[i][j]))
+
+    return dynNetwork
 
 def centralityAnalysis(ccMatrix, distanceMatrix, valueFilter, \
                         distanceFilter, out_file, centrality, selectedAtoms):
@@ -366,7 +418,8 @@ def centralityAnalysis(ccMatrix, distanceMatrix, valueFilter, \
         extended.
     centrality: string
         It can have 'degree', 'betweenness', 'closeness',
-        'current_flow_betweenness' or 'current_flow_closeness'.
+        'current_flow_betweenness', 'current_flow_closeness', 'eigenvector'
+        or 'community'.
     selectedAtoms: object
         This is a prody.parsePDB object of typically CA atoms of a protein.
 
@@ -375,24 +428,11 @@ def centralityAnalysis(ccMatrix, distanceMatrix, valueFilter, \
     Nothing
 
     """
-    # Create your  graph
-    dynNetwork = nx.Graph()
+    dynNetwork = buildDynamicsNetwork(ccMatrix, distanceMatrix, \
+                                    valueFilter, distanceFilter,\
+                                    selectedAtoms)
 
     n = selectedAtoms.numAtoms()
-
-    # Add all CA atoms as nodes
-    for i in range(n):
-        dynNetwork.add_node(i)
-
-    # Add all pairwise interactions greater than the valueFilter as edges.
-    # In addition, add only edges which has a distance of lower than the 
-    # distance filter
-    for i in range(n):
-        for j in range(n):
-            if fabs(ccMatrix[i][j]) > valueFilter and distanceMatrix[i][j] <= distanceFilter:
-                dynNetwork.add_edge(i, j, weight=-log(fabs(ccMatrix[i][j])))
-                # dynNetwork.add_edge(i, j, weight=fabs(correlationArray[i][j]))
-
     ########################## Calculate degrees of all nodes
     if centrality == 'degree':
         degreeResult = dynNetwork.degree(weight='weight')

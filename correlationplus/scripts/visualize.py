@@ -1,8 +1,8 @@
-###############################################################################
-# correlationplus - Python module to plot dynamical correlations maps         #
-#                   for proteins.                                             #
+##############################################################################
+# correlationplus - A Python package to calculate, visualize and analyze      #
+#                   correlations maps of proteins.                            #
 # Authors: Mustafa Tekpinar                                                   #
-# Copyright (C) Mustafa Tekpinar 2017-2018                                    #
+# Copyright (C) Mustafa Tekpinar, 2017-2018                                   #
 # Copyright (C) CNRS-UMR3528, 2019                                            #
 # Copyright (C) Institut Pasteur Paris, 2020-2021                             #
 #                                                                             #
@@ -179,7 +179,7 @@ def visualizemapApp():
         minColorBarLimit = 0.0
         maxColorBarLimit = 1.0
     elif sel_type.lower() == "lmi":
-        ccMatrix = convertLMIdata2Matrix(inp_file, writeAllOutput=True)
+        ccMatrix = convertLMIdata2Matrix(inp_file, writeAllOutput=False)
         minCorrelationValue = np.min(ccMatrix)
         maxCorrelationValue = np.max(ccMatrix)
         minColorBarLimit = 0.0

@@ -1,10 +1,10 @@
 ##############################################################################
 # correlationplus - A Python package to calculate, visualize and analyze      #
-#                   dynamical correlations maps of proteins.                  #
+#                   correlations maps of proteins.                            #
 # Authors: Mustafa Tekpinar                                                   #
-# Copyright (C) Mustafa Tekpinar 2017-2018                                        #
-# Copyright (C) CNRS-UMR3528, 2019                                                #
-# Copyright (C) Institut Pasteur Paris, 2020-2021                                 #
+# Copyright (C) Mustafa Tekpinar, 2017-2018                                   #
+# Copyright (C) CNRS-UMR3528, 2019                                            #
+# Copyright (C) Institut Pasteur Paris, 2020-2021                             #
 #                                                                             #
 # This file is part of correlationplus.                                       #
 #                                                                             #
@@ -54,7 +54,15 @@ Arguments: -i: A file containing normalized dynamical cross correlations in
                (Optional)
 
            -c: Type of the centrality that you want to calculate. Default is 'all'.
-               (Optional)
+               (Optional). If you want only a particular centrality, you can select 
+               one of the following options: 
+                    * degree
+                    * betweenness
+                    * closeness
+                    * current_flow_betweenness
+                    * current_flow_closeness
+                    * eigenvector
+                    * community
                
            -v: Value filter. The values lower than this value in the map will be 
                considered as zero. Default is 0.3. (Optional)
@@ -153,7 +161,7 @@ def centralityAnalysisApp():
     elif sel_type == "absndcc":
         ccMatrix = np.absolute(np.loadtxt(inp_file, dtype=float))
     elif sel_type == "lmi":
-        ccMatrix = convertLMIdata2Matrix(inp_file, writeAllOutput=True)
+        ccMatrix = convertLMIdata2Matrix(inp_file, writeAllOutput=False)
     else:
         print("Unknown data type: Type can only be ndcc, absndcc or lmi!\n")
         sys.exit(-1)
@@ -175,8 +183,9 @@ def centralityAnalysisApp():
                            selectedAtoms)
         centralityAnalysis(ccMatrix, distanceMatrix, valueFilter, distanceFilter, out_file, "eigenvector",
                            selectedAtoms)
-        centralityAnalysis(ccMatrix, distanceMatrix, valueFilter, distanceFilter, out_file, "community",
-                           selectedAtoms)
+        # Community analysis is time consuming. Therefore, it will not be called by default.
+        # centralityAnalysis(ccMatrix, distanceMatrix, valueFilter, distanceFilter, out_file, "community",
+        #                    selectedAtoms)
     else:
         centralityAnalysis(ccMatrix, distanceMatrix, valueFilter, distanceFilter, out_file, centrality_type,
                            selectedAtoms)

@@ -122,8 +122,8 @@ def diffMapApp():
     selectedAtomSet1 = parsePDB(pdb_file1, subset='ca')
 
     if sel_type == 'lmi':
-        ccMatrix1 = convertLMIdata2Matrix(inp_file1, writeAllOutput=True)
-        ccMatrix2 = convertLMIdata2Matrix(inp_file2, writeAllOutput=True)
+        ccMatrix1 = convertLMIdata2Matrix(inp_file1, writeAllOutput=False)
+        ccMatrix2 = convertLMIdata2Matrix(inp_file2, writeAllOutput=False)
 
         minColorBarLimit = -1
         maxColorBarLimit = 1
