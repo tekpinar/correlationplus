@@ -1,6 +1,6 @@
 ##############################################################################
 # correlationplus - A Python package to calculate, visualize and analyze      #
-#                   correlations maps of proteins.                            #
+#                   correlation maps of proteins.                             #
 # Authors: Mustafa Tekpinar                                                   #
 # Copyright (C) Mustafa Tekpinar, 2017-2018                                   #
 # Copyright (C) CNRS-UMR3528, 2019                                            #
@@ -30,6 +30,7 @@ import numpy as np
 from prody import parsePDB
 from prody import buildDistMatrix
 from correlationplus.visualize import convertLMIdata2Matrix
+from correlationplus.visualize import parseEVcouplingsScores
 from correlationplus.centralityAnalysis import centralityAnalysis
 # from .visualizemap import handle_arguments_visualizemapApp
 
@@ -40,15 +41,17 @@ def usage_centralityAnalysisApp():
     """
     print("""
 Example usage:
-correlationplus analyze -i 4z90-cross-correlations.txt -p 4z90.pdb
+correlationplus analyze -i ndcc-6lu7-anm.dat -p 6lu7_dimer_with_N3_protein_sim1_ca.pdb
 
-Arguments: -i: A file containing normalized dynamical cross correlations in 
-               matrix format. (Mandatory)
+Arguments: -i: A file containing correlations in matrix format. (Mandatory)
 
            -p: PDB file of the protein. (Mandatory)
            
-           -t: Type of the matrix. It can be ndcc, lmi or absndcc 
-               (absolute values of ndcc). Default value is ndcc (Optional)
+           -t: Type of the matrix. It can be ndcc, lmi or absndcc (absolute values of ndcc).
+               In addition, coeviz and evcouplings are also some options to analyze sequence
+               correlations. If your data is in full matrix format, you can select generic
+               as your data type
+               Default value is ndcc (Optional)
 
            -o: This will be your output file. Output figures are in png format. 
                (Optional)
@@ -108,7 +111,7 @@ def handle_arguments_centralityAnalysisApp():
 
     # Input data matrix and PDB file are mandatory!
     if inp_file is None or pdb_file is None:
-        print("PDB file and a correlation matrix are mandatory!")
+        print("@> ERROR: A PDB file and a correlation matrix are mandatory!")
         usage_centralityAnalysisApp()
         sys.exit(-1)
 
@@ -156,14 +159,23 @@ def centralityAnalysisApp():
 
     ##########################################################################
     # Read data file and assign to a numpy array
-    if sel_type == "ndcc":
+    if sel_type.lower() == "ndcc":
         ccMatrix = np.loadtxt(inp_file, dtype=float)
-    elif sel_type == "absndcc":
+    elif sel_type.lower() == "absndcc":
         ccMatrix = np.absolute(np.loadtxt(inp_file, dtype=float))
-    elif sel_type == "lmi":
+    elif sel_type.lower()== "lmi":
         ccMatrix = convertLMIdata2Matrix(inp_file, writeAllOutput=False)
+    elif sel_type.lower() == "coeviz":
+        ccMatrix = np.loadtxt(inp_file, dtype=float) 
+    elif sel_type.lower() == "evcouplings":
+        ccMatrix = parseEVcouplingsScores(inp_file, selectedAtoms, False)
+    elif sel_type.lower() == "generic":
+        ccMatrix = np.loadtxt(inp_file, dtype=float)
     else:
-        print("Unknown data type: Type can only be ndcc, absndcc or lmi!\n")
+        print("@> ERROR: Unknown data type: Type can only be ndcc, absndcc, lmi,\n")
+        print("@>        coeviz or evcouplings. If you have your data in full \n")
+        print("@>        matrix format and your data type is none of the options\n")
+        print("@>        mentionned, you can set data type 'generic'.\n")
         sys.exit(-1)
 
     valueFilter = float(value_cutoff)

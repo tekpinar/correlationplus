@@ -1,6 +1,6 @@
 ##############################################################################
 # correlationplus - A Python package to calculate, visualize and analyze      #
-#                   correlations maps of proteins.                            #
+#                   correlation maps of proteins.                             #
 # Authors: Mustafa Tekpinar                                                   #
 # Copyright (C) Mustafa Tekpinar, 2017-2018                                   #
 # Copyright (C) CNRS-UMR3528, 2019                                            #

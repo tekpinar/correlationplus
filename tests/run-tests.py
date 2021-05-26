@@ -1,10 +1,10 @@
 ###############################################################################
 # correlationplus - A Python package to calculate, visualize and analyze      #
-#                    dynamical correlations maps of proteins.                 #
+#                     correlation maps of proteins.                           #
 # Authors: Mustafa Tekpinar                                                   #
-# Copyright (C) Mustafa Tekpinar 2017-2018                                        #
-# Copyright (C) CNRS-UMR3528, 2019                                                #
-# Copyright (C) Institut Pasteur Paris, 2020-2021                                 #
+# Copyright (C) Mustafa Tekpinar, 2017-2018                                   #
+# Copyright (C) CNRS-UMR3528, 2019                                            #
+# Copyright (C) Institut Pasteur Paris, 2020-2021                             #
 #                                                                             #
 # This file is part of correlationplus.                                       #
 #                                                                             #
@@ -86,6 +86,17 @@ def runTests():
               f"-p {prefix}/examples/6lu7_dimer_with_N3_protein_sim1_ca.pdb "
               "-t lmi")
 
+    # Test pathAnalysisApp for ndcc maps
+    os.system(f"correlationplus paths "
+              f"-i {prefix}/examples/ndcc-6lu7-anm.dat "
+              f"-p {prefix}/examples/6lu7_dimer_with_N3_protein_sim1_ca.pdb "
+              "-b A41 -e B41")
+
+    # Test pathAnalysisApp for LMI maps
+    os.system(f"correlationplus paths "
+              f"-i {prefix}/examples/6lu7_dimer_with_N3_protein_sim1-lmi.dat "
+              f"-p {prefix}/examples/6lu7_dimer_with_N3_protein_sim1_ca.pdb "
+              "-t lmi -b A41 -e B41")
 
 if __name__ == "__main__":
     import sys

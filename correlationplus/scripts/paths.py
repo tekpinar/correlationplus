@@ -1,6 +1,6 @@
 ##############################################################################
 # correlationplus - A Python package to calculate, visualize and analyze      #
-#                   dynamical correlations maps of proteins.                  #
+#                   correlation maps of proteins.                             #
 # Authors: Mustafa Tekpinar                                                   #
 # Copyright (C) Mustafa Tekpinar, 2017-2018                                   #
 # Copyright (C) CNRS-UMR3528, 2019                                            #
@@ -29,7 +29,10 @@ import getopt
 import numpy as np
 from prody import parsePDB
 from prody import buildDistMatrix
+
 from correlationplus.visualize import convertLMIdata2Matrix
+from correlationplus.visualize import parseEVcouplingsScores
+
 from correlationplus.pathAnalysis import pathAnalysis
 from correlationplus.pathAnalysis import mapResid2ResIndex
 from correlationplus.pathAnalysis import writePath2VMDFile, writePath2PMLFile 
@@ -40,15 +43,17 @@ def usage_pathAnalysisApp():
     """
     print("""
 Example usage:
-correlationplus paths -i 4z90-cross-correlations.txt -p 4z90.pdb -b A78 -e A230
+correlationplus paths -i ndcc-6lu7-anm.dat -p 6lu7_dimer_with_N3_protein_sim1_ca.pdb -b A41 -e B41
 
-Arguments: -i: A file containing dynamical correlations in 
-               matrix format. (Mandatory)
+Arguments: -i: A file containing correlations in matrix format. (Mandatory)
 
            -p: PDB file of the protein. (Mandatory)
            
-           -t: Type of the matrix. It can be ndcc, lmi or absndcc 
-               (absolute values of ndcc). Default value is ndcc (Optional)
+           -t: Type of the matrix. It can be ndcc, lmi or absndcc (absolute values of ndcc).
+               In addition, coeviz and evcouplings are also some options to analyze sequence
+               correlations. If your data is in full matrix format, you can select generic
+               as your data type
+               Default value is ndcc (Optional)
 
            -o: This will be your output file. Output figures are in png format. 
                (Optional)
@@ -110,7 +115,7 @@ def handle_arguments_pathAnalysisApp():
 
     # Input data matrix and PDB file are mandatory!
     if inp_file is None or pdb_file is None:
-        print("PDB file and a correlation matrix are mandatory!")
+        print("@> ERROR: A PDB file and a correlation matrix are mandatory!")
         usage_pathAnalysisApp()
         sys.exit(-1)
 
@@ -132,12 +137,12 @@ def handle_arguments_pathAnalysisApp():
         num_path = 1
 
     if src_res is None:
-        print("You have to specify a source resid!")
+        print("@>ERROR: You have to specify a source resid!")
         usage_pathAnalysisApp()
         sys.exit(-1)
 
     if trgt_res is None:
-        print("You have to specify a target resid!")
+        print("@>ERROR: You have to specify a target resid!")
         usage_pathAnalysisApp()
         sys.exit(-1)
 
@@ -172,14 +177,23 @@ def pathAnalysisApp():
 
     ##########################################################################
     # Read data file and assign to a numpy array
-    if sel_type == "ndcc":
+    if sel_type.lower() == "ndcc":
         ccMatrix = np.loadtxt(inp_file, dtype=float)
-    elif sel_type == "absndcc":
+    elif sel_type.lower() == "absndcc":
         ccMatrix = np.absolute(np.loadtxt(inp_file, dtype=float))
-    elif sel_type == "lmi":
-        ccMatrix = convertLMIdata2Matrix(inp_file, writeAllOutput=True)
+    elif sel_type.lower()== "lmi":
+        ccMatrix = convertLMIdata2Matrix(inp_file, writeAllOutput=False)
+    elif sel_type.lower() == "coeviz":
+        ccMatrix = np.loadtxt(inp_file, dtype=float) 
+    elif sel_type.lower() == "evcouplings":
+        ccMatrix = parseEVcouplingsScores(inp_file, selectedAtoms, False)
+    elif sel_type.lower() == "generic":
+        ccMatrix = np.loadtxt(inp_file, dtype=float)
     else:
-        print("Unknown data type: Type can only be ndcc, absndcc or lmi!\n")
+        print("@> ERROR: Unknown data type: Type can only be ndcc, absndcc, lmi,\n")
+        print("@>        coeviz or evcouplings. If you have your data in full \n")
+        print("@>        matrix format and your data type is none of the options\n")
+        print("@>        mentionned, you can set data type 'generic'.\n")
         sys.exit(-1)
 
     sourceResid = src_res
@@ -192,7 +206,7 @@ def pathAnalysisApp():
                                    selectedAtoms,\
                                    int(num_paths))
 
-    out_file_full_name = out_file+"-source"+sourceResid+"-target"+targetResid+".vmd"
+    out_file_full_name = out_file+"-source"+sourceResid+"-target"+targetResid+".tcl"
     writePath2VMDFile(suboptimalPaths, selectedAtoms, \
                     resDict[sourceResid], resDict[targetResid], \
                     pdb_file, out_file_full_name)

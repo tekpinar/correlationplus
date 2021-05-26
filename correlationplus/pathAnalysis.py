@@ -40,12 +40,13 @@ def k_shortest_paths(G, source, target, k, weight=None):
 
 def writePath2PMLFile(suboptimalPaths, selectedAtoms, source, target, pdb, outfile):
     """
-    Produces PML output files for visualizing suboptimal paths.
+    Produces PML output files for visualizing suboptimal paths with PyMol.
 
     This function writes a pml file containing the (suboptimal) paths
-    between a source and a target residue. CA atoms on each path is 
-    colored in a different color. 
-    The output files can be visualized with PyMol program.
+    between a source and a target residue. 
+    The output files can be visualized with PyMol program by issuing the
+    following command, if PyMol is in your path:
+    pymol paths-sourceA145-targetB145.pml
 
     Parameters
     ----------
@@ -111,7 +112,7 @@ def writePath2PMLFile(suboptimalPaths, selectedAtoms, source, target, pdb, outfi
 
         pmlfile.write("python\n")
         # Draw cylinders
-        pmlfile.write(f"path_{k} = [ \n")
+        pmlfile.write(f"path_{k+1} = [ \n")
         for i in range (0, (len(path)-1)):  
             pmlfile.write(draw_string.format(\
                         selectedAtoms.getCoords()[path[i]][0],
@@ -121,8 +122,8 @@ def writePath2PMLFile(suboptimalPaths, selectedAtoms, source, target, pdb, outfi
                         selectedAtoms.getCoords()[path[i+1]][1],
                         selectedAtoms.getCoords()[path[i+1]][2],0.5))
         pmlfile.write("]\n")
-        pmlfile.write(f"cmd.load_cgo(path_{k},'path_{k}')\n")
-        pmlfile.write(f"cmd.set(\"cgo_line_width\",2.0,'path_{k}')\n")
+        pmlfile.write(f"cmd.load_cgo(path_{k+1},'path_{k+1}')\n")
+        pmlfile.write(f"cmd.set(\"cgo_line_width\",2.0,'path_{k+1}')\n")
         pmlfile.write("python end\n")
         k = k+1
     pmlfile.close()
@@ -138,7 +139,7 @@ def writePath2VMDFile(suboptimalPaths, selectedAtoms, source, target, pdb, outfi
     dynamics) program as follows.
     i) Load your pdb file, whether via command line or graphical interface.
     ii) Go to Extensions -> Tk Console and then
-    iii) source vmd-output-general.tcl
+    iii) source path-sourceA41-targetB41.tcl
     It can take some time to load the general script.
 
     Parameters
@@ -157,7 +158,7 @@ def writePath2VMDFile(suboptimalPaths, selectedAtoms, source, target, pdb, outfi
         This is a the name of the pdb file you submitted.
     out_file: string
         Prefix of the output file. Defaults value is 
-        paths-source{chainIDResID}-target{chainIDResID}.vmd
+        paths-source{chainIDResID}-target{chainIDResID}.tcl
 
     Returns
     -------

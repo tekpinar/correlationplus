@@ -1,6 +1,6 @@
-###############################################################################
+##############################################################################
 # correlationplus - A Python package to calculate, visualize and analyze      #
-#                    dynamical correlations maps of proteins.                 #
+#                   correlation maps of proteins.                             #
 # Authors: Mustafa Tekpinar                                                   #
 # Copyright (C) Mustafa Tekpinar, 2017-2018                                   #
 # Copyright (C) CNRS-UMR3528, 2019                                            #
@@ -65,10 +65,11 @@ Example usage:
 
 correlationplus -h
 
-CorrelationPlus contains four apps:
+CorrelationPlus contains five apps:
  - calculate
  - visualize
  - analyze
+ - paths (Experimental)
  - diffMap
 
 You can get more information about each individual app as follows:

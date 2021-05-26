@@ -1,6 +1,6 @@
 ##############################################################################
 # correlationplus - A Python package to calculate, visualize and analyze      #
-#                   correlations maps of proteins.                            #
+#                   correlation maps of proteins.                             #
 # Authors: Mustafa Tekpinar                                                   #
 # Copyright (C) Mustafa Tekpinar, 2017-2018                                   #
 # Copyright (C) CNRS-UMR3528, 2019                                            #
@@ -31,11 +31,11 @@ from collections import Counter
 import numpy as np
 from prody import parsePDB
 
-from correlationplus.visualize import overallCorrelationMap, convertLMIdata2Matrix, distanceDistribution
+from correlationplus.visualize import overallCorrelationMap, distanceDistribution
 from correlationplus.visualize import intraChainCorrelationMaps, interChainCorrelationMaps
-from correlationplus.visualize import filterCorrelationMapByDistance, projectCorrelationsOntoProteinVMD
-from correlationplus.visualize import projectCorrelationsOntoProteinPyMol
-from correlationplus.visualize import parseEVcouplingsScores
+from correlationplus.visualize import filterCorrelationMapByDistance
+from correlationplus.visualize import projectCorrelationsOntoProteinVMD, projectCorrelationsOntoProteinPyMol
+from correlationplus.visualize import parseEVcouplingsScores,convertLMIdata2Matrix
 
 
 def usage_visualizemapApp():
@@ -44,7 +44,7 @@ def usage_visualizemapApp():
     """
     print("""
 Example usage:
-correlationplus visualize -i 4z90-cross-correlations.txt -p 4z90.pdb
+correlationplus visualize -i ndcc-6lu7-anm.dat -p 6lu7_dimer_with_N3_protein_sim1_ca.pdb
 
 Arguments: -i: A file containing correlations in matrix format. (Mandatory)
 
@@ -52,7 +52,8 @@ Arguments: -i: A file containing correlations in matrix format. (Mandatory)
            
            -t: Type of the matrix. It can be ndcc, lmi or absndcc (absolute values of ndcc).
                In addition, coeviz and evcouplings are also some options to analyze sequence
-               correlations. 
+               correlations. If your data is in full matrix format, you can select generic
+               as your data type
                Default value is ndcc (Optional)
 
            -v: Minimal correlation value. Any value equal or greater than this 
@@ -200,8 +201,17 @@ def visualizemapApp():
         maxCorrelationValue = np.max(ccMatrix)
         minColorBarLimit = minCorrelationValue
         maxColorBarLimit = maxCorrelationValue
+    elif sel_type.lower() == "generic":
+        ccMatrix = np.loadtxt(inp_file, dtype=float)
+        minCorrelationValue = np.min(ccMatrix)
+        maxCorrelationValue = np.max(ccMatrix)
+        minColorBarLimit = minCorrelationValue
+        maxColorBarLimit = maxCorrelationValue
     else:
-        print("Unknown matrix data type: The type can only be ndcc, absndcc or lmi!\n")
+        print("@> ERROR: Unknown data type: Type can only be ndcc, absndcc, lmi,\n")
+        print("@>        coeviz or evcouplings. If you have your data in full \n")
+        print("@>        matrix format and your data type is none of the options\n")
+        print("@>        mentionned, you can set data type 'generic'.\n")
         sys.exit(-1)
 
     # Set vmin_fltr and vmax_fltr
