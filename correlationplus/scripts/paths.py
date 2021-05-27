@@ -206,14 +206,15 @@ def pathAnalysisApp():
 
     if ((sel_type.lower() == "evcouplings") or (sel_type.lower() == "generic")):
         network = buildSequenceNetwork(ccMatrix, distanceMatrix, \
-                                    val_fltr, dis_fltr,\
+                                    float(val_fltr), float(dis_fltr),\
                                     selectedAtoms)
     else:
         network = buildDynamicsNetwork(ccMatrix, distanceMatrix, \
-                                    val_fltr, dis_fltr,\
+                                    float(val_fltr), float(dis_fltr),\
                                     selectedAtoms)
+                                    
     suboptimalPaths = pathAnalysis(network, \
-                                   val_fltr, dis_fltr,\
+                                   float(val_fltr), float(dis_fltr),\
                                    resDict[sourceResid], resDict[targetResid], \
                                    selectedAtoms,\
                                    int(num_paths))
