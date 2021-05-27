@@ -32,6 +32,8 @@ from prody import buildDistMatrix
 from correlationplus.visualize import convertLMIdata2Matrix
 from correlationplus.visualize import parseEVcouplingsScores
 from correlationplus.centralityAnalysis import centralityAnalysis
+from correlationplus.centralityAnalysis import buildDynamicsNetwork
+from correlationplus.centralityAnalysis import buildSequenceNetwork
 # from .visualizemap import handle_arguments_visualizemapApp
 
 
@@ -156,6 +158,9 @@ def centralityAnalysisApp():
     # Maybe, I can replace it with a library that only parses
     # PDB files. Prody does a lot more!
     selectedAtoms = parsePDB(pdb_file, subset='ca')
+    valueFilter = float(value_cutoff)
+    distanceFilter = float(distance_cutoff)
+    distanceMatrix = buildDistMatrix(selectedAtoms)
 
     ##########################################################################
     # Read data file and assign to a numpy array
@@ -178,26 +183,31 @@ def centralityAnalysisApp():
         print("@>        mentionned, you can set data type 'generic'.\n")
         sys.exit(-1)
 
-    valueFilter = float(value_cutoff)
-    distanceFilter = float(distance_cutoff)
-    distanceMatrix = buildDistMatrix(selectedAtoms)
+    if ((sel_type.lower() == "evcouplings") or (sel_type.lower() == "generic")):
+        network = buildSequenceNetwork(ccMatrix, distanceMatrix, \
+                                    valueFilter, distanceFilter,\
+                                    selectedAtoms)
+    else:
+        network = buildDynamicsNetwork(ccMatrix, distanceMatrix, \
+                                    valueFilter, distanceFilter,\
+                                    selectedAtoms)
 
     if centrality_type == "all":
-        centralityAnalysis(ccMatrix, distanceMatrix, valueFilter, distanceFilter, out_file, "degree",
+        centralityAnalysis(network, valueFilter, distanceFilter, out_file, "degree",
                            selectedAtoms)
-        centralityAnalysis(ccMatrix, distanceMatrix, valueFilter, distanceFilter, out_file, "betweenness",
+        centralityAnalysis(network, valueFilter, distanceFilter, out_file, "betweenness",
                            selectedAtoms)
-        centralityAnalysis(ccMatrix, distanceMatrix, valueFilter, distanceFilter, out_file, "closeness",
+        centralityAnalysis(network, valueFilter, distanceFilter, out_file, "closeness",
                            selectedAtoms)
-        centralityAnalysis(ccMatrix, distanceMatrix, valueFilter, distanceFilter, out_file, "current_flow_betweenness",
+        centralityAnalysis(network, valueFilter, distanceFilter, out_file, "current_flow_betweenness",
                            selectedAtoms)
-        centralityAnalysis(ccMatrix, distanceMatrix, valueFilter, distanceFilter, out_file, "current_flow_closeness",
+        centralityAnalysis(network, valueFilter, distanceFilter, out_file, "current_flow_closeness",
                            selectedAtoms)
-        centralityAnalysis(ccMatrix, distanceMatrix, valueFilter, distanceFilter, out_file, "eigenvector",
+        centralityAnalysis(network, valueFilter, distanceFilter, out_file, "eigenvector",
                            selectedAtoms)
         # Community analysis is time consuming. Therefore, it will not be called by default.
-        # centralityAnalysis(ccMatrix, distanceMatrix, valueFilter, distanceFilter, out_file, "community",
+        # centralityAnalysis(ccMatrix, valueFilter, distanceFilter, out_file, "community",
         #                    selectedAtoms)
     else:
-        centralityAnalysis(ccMatrix, distanceMatrix, valueFilter, distanceFilter, out_file, centrality_type,
+        centralityAnalysis(ccMatrix, valueFilter, distanceFilter, out_file, centrality_type,
                            selectedAtoms)
