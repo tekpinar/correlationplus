@@ -457,8 +457,6 @@ def centralityAnalysis(graph, valueFilter, distanceFilter, \
     ----------
     graph: object
         It is a Networkx Graph object.
-    distanceMatrix: Numpy matrix
-        The distances between Calpha atoms of the protein stored in a matrix.
     valueFilter: float
         The ccMatrix values lower than the valueFilter will be ignored.
     distanceFilter: float

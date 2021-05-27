@@ -255,7 +255,7 @@ def mapResid2ResIndex(selectedAtoms):
 
     return resDict
 
-def pathAnalysis(ccMatrix, distanceMatrix,\
+def pathAnalysis(graph, \
                  valueFilter, distanceFilter,\
                  sourceResid, targetResid, \
                  selectedAtoms, num_paths):
@@ -266,10 +266,8 @@ def pathAnalysis(ccMatrix, distanceMatrix,\
     target (end) residue from the graph build out of your ccMatrix.
     Parameters
     ----------
-    ccMatrix: Numpy matrix
-        It is a numpy matrix of typically nDCC, LMI or Generalized Correlations.
-    distanceMatrix: Numpy matrix
-        The distances between Calpha atoms of the protein stored in a matrix.
+    graph: object
+        It is a Networkx Graph object.
     valueFilter: float
         The ccMatrix values lower than the valueFilter will be ignored.
     distanceFilter: float
@@ -293,21 +291,22 @@ def pathAnalysis(ccMatrix, distanceMatrix,\
     Nothing
 
     """
-    # Build the graph
-    dynNetwork = buildDynamicsNetwork(ccMatrix, distanceMatrix, \
-                       valueFilter, distanceFilter,\
-                       selectedAtoms)
+    # # Build the graph
+    # graph = buildDynamicsNetwork(ccMatrix, distanceMatrix, \
+    #                    valueFilter, distanceFilter,\
+    #                    selectedAtoms)
    
-    shortestPathScoreList = []
-    suboptimalPaths = k_shortest_paths(dynNetwork, source=sourceResid, target=targetResid, k=num_paths, weight='weight')
-    #shortestPath = nx.shortest_path(dynNetwork, source=residue, target=targetResid, weight='weight', method='dijkstra')
-    for path in suboptimalPaths:
-        shortestPathScore = 0.0
-        for j in range(len(path)-1):
-        #    print(path[j], end="\n")
-        #    print(shortestPath[j+1], end="\n")
-            shortestPathScore = shortestPathScore + ccMatrix[path[j]][path[j+1]]
-        shortestPathScoreList.append(shortestPathScore)
+
+    suboptimalPaths = k_shortest_paths(graph, source=sourceResid, target=targetResid, k=num_paths, weight='weight')
+    # #shortestPath = nx.shortest_path(graph, source=residue, target=targetResid, weight='weight', method='dijkstra')
+    # shortestPathScoreList = []
+    # for path in suboptimalPaths:
+    #     shortestPathScore = 0.0
+    #     for j in range(len(path)-1):
+    #     #    print(path[j], end="\n")
+    #     #    print(shortestPath[j+1], end="\n")
+    #         shortestPathScore = shortestPathScore + ccMatrix[path[j]][path[j+1]]
+    #     shortestPathScoreList.append(shortestPathScore)
 
     # spNP = np.array(shortestPath)
     # print(spNP)
@@ -317,7 +316,7 @@ def pathAnalysis(ccMatrix, distanceMatrix,\
     k = 0
     for path in suboptimalPaths:
         k = k + 1
-        path_length = nx.path_weight(dynNetwork, path, weight="weight")
+        path_length = nx.path_weight(graph, path, weight="weight")
         print("Path "+str(k)+" length: "+str(path_length))
 
     return suboptimalPaths

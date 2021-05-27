@@ -33,6 +33,9 @@ from prody import buildDistMatrix
 from correlationplus.visualize import convertLMIdata2Matrix
 from correlationplus.visualize import parseEVcouplingsScores
 
+from correlationplus.centralityAnalysis import buildDynamicsNetwork
+from correlationplus.centralityAnalysis import buildSequenceNetwork
+
 from correlationplus.pathAnalysis import pathAnalysis
 from correlationplus.pathAnalysis import mapResid2ResIndex
 from correlationplus.pathAnalysis import writePath2VMDFile, writePath2PMLFile 
@@ -200,7 +203,16 @@ def pathAnalysisApp():
     targetResid = trgt_res
     distanceMatrix = buildDistMatrix(selectedAtoms)
     resDict = mapResid2ResIndex(selectedAtoms)
-    suboptimalPaths = pathAnalysis(ccMatrix, distanceMatrix, \
+
+    if ((sel_type.lower() == "evcouplings") or (sel_type.lower() == "generic")):
+        network = buildSequenceNetwork(ccMatrix, distanceMatrix, \
+                                    val_fltr, dis_fltr,\
+                                    selectedAtoms)
+    else:
+        network = buildDynamicsNetwork(ccMatrix, distanceMatrix, \
+                                    val_fltr, dis_fltr,\
+                                    selectedAtoms)
+    suboptimalPaths = pathAnalysis(network, \
                                    val_fltr, dis_fltr,\
                                    resDict[sourceResid], resDict[targetResid], \
                                    selectedAtoms,\

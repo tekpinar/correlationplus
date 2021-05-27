@@ -65,7 +65,7 @@ Arguments: -i: A file containing correlations in matrix format. (Mandatory)
 
            -r: Cylinder radius scaling coefficient to multiply with the correlation quantity.
                It can be used to improve tcl and pml outputs to view the interaction 
-               strengths properly. (Optional)
+               strengths properly. Recommended values are between 0.0 and 2.0. (Optional)
 
            -o: This will be your output file. Output figures are in png format. (Optional)
 """)
@@ -235,8 +235,8 @@ def visualizemapApp():
 
     if (cyl_rad == None):
         if sel_type.lower() == "evcouplings":
-            VMDcylinderRadiusScale = 0.01
-            PMLcylinderRadiusScale = 0.01
+            VMDcylinderRadiusScale = 0.02
+            PMLcylinderRadiusScale = 0.02
         else:
             VMDcylinderRadiusScale = 0.5
             PMLcylinderRadiusScale = 0.3
@@ -267,6 +267,10 @@ def visualizemapApp():
 
         elif sel_type.lower() == "evcouplings":
             distanceDistribution(ccMatrix, out_file, "EVcoupling Score", selectedAtoms,
+                                 absoluteValues=False, writeAllOutput=True)
+
+        elif sel_type.lower() == "generic":
+            distanceDistribution(ccMatrix, out_file, "Correlation", selectedAtoms,
                                  absoluteValues=False, writeAllOutput=True)
         else:
             print("Warning: Unknows correlation data.\n")

@@ -827,7 +827,8 @@ def projectCorrelationsOntoProteinVMD(pdb_file, ccMatrix, vmd_out_file,
         correlations in an interval.
     cylinderRadiusScaler: a float value.
         It adjust radius of cylinders to be displayed in VMD.
-        The value is multiplied with the corresponding correlation value.
+        The value is multiplied with the corresponding correlation value. 
+        Recommended values are between 0.01-2.00.
     absoluteValues: bool
         If True, an absolute values of correlations will be consideered. 
     writeAllOutput: bool
@@ -1017,6 +1018,7 @@ def projectCorrelationsOntoProteinPyMol(pdb_file, ccMatrix, pml_out_file,
     cylinderRadiusScaler: a float value.
         It adjust radius of cylinders to be displayed in PyMol.
         The value is multiplied with the corresponding correlation value.
+        Recommended values are between 0.01-2.00.
     absoluteValues: bool
         If True, an absolute values of correlations will be consideered. 
     writeAllOutput: bool
