@@ -160,6 +160,8 @@ def visualizemapApp():
     selectedAtoms = parsePDB(pdb_file, subset='ca')
 
     ##########################################################################
+    minColorBarLimit = 0.0
+    maxColorBarLimit = 1.0
     # Read data file and assign to a numpy array
     if sel_type.lower() == "ndcc":
         ccMatrix = np.loadtxt(inp_file, dtype=float)

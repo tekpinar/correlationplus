@@ -209,5 +209,5 @@ def centralityAnalysisApp():
         # centralityAnalysis(ccMatrix, valueFilter, distanceFilter, out_file, "community",
         #                    selectedAtoms)
     else:
-        centralityAnalysis(ccMatrix, valueFilter, distanceFilter, out_file, centrality_type,
+        centralityAnalysis(network, valueFilter, distanceFilter, out_file, centrality_type,
                            selectedAtoms)
