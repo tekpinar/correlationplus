@@ -24,6 +24,7 @@
 import sys
 
 from collections import Counter, OrderedDict
+from typing import ValuesView
 import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.cm import get_cmap
@@ -202,6 +203,76 @@ def parseEVcouplingsScores(inp_file, selectedAtoms, writeAllOutput: bool):
             cc[resDict[int(words[resid_j_Index])]][resDict[int(words[resid_i_Index])]] = \
             (float(words[scoreIndex]))
             #print(cc[resDict[int(words[resid_i_Index])]][resDict[int(words[resid_j_Index])]])
+   
+    return cc
+
+def parseSparseCorrData(inp_file, selectedAtoms, \
+                        Ctype: bool, 
+                        symmetric: bool,
+                        writeAllOutput: bool):
+    """
+        This function parses correlation data given in sparse format.
+
+        In a sparse matrix, only nonzero elements of the matrix are 
+        given in 3 columns format:
+        i j C_ij
+        i and j are the indices of the matrix positions (or residue indices).
+        It returns a numpy array. 
+
+    Parameters
+    ----------
+    inp_file: string
+        Couplings file to read.
+    selectedAtoms: prody object
+        A list of -typically CA- atoms selected from the parsed PDB file.
+    Ctype: boolean
+        If Ctype=True, location indices i and j indices start from 0.
+        Otherwise, it is assumed to be starting from 1.
+    symmetric: boolean
+        If you select it True, it will make the matrix symmetric.
+    writeAllOutput: bool
+        If True, an output file for the coupling values will be written in matrix 
+        format. The matrix does not contain residue names etc. They are obtained
+        from a pdb file you provided.
+
+    Returns
+    -------
+    cc: A numpy array of float value arrays. 
+
+    """
+    data_file = open(inp_file, 'r')
+    allLines = data_file.readlines()
+    data_file.close()
+    # data_list = []
+    n = selectedAtoms.numAtoms()
+    cc = np.zeros((n, n), np.double)
+
+    # Read the first line to determine the location of the
+    # correct fields
+    words = allLines[0].split()
+
+    # Read the 1st line and check if it has 3 columns
+    # A good C programmer can write a C program even in Python
+    # That's not the most Pythonic way to do it!!!
+    if (len(words) == 3):
+        for line in allLines:
+            columns = line.split()
+            if(symmetric == True):
+                if (Ctype == True):
+                    cc[int(columns[0])][int(columns[1])] = float(columns[2])
+                    cc[int(columns[1])][int(columns[0])] = float(columns[2])
+                else:
+                    cc[int(columns[0])-1][int(columns[1])-1] = float(columns[2])
+                    cc[int(columns[1])-1][int(columns[0])-1] = float(columns[2])
+            else:
+                if (Ctype == True):
+                    cc[int(columns[0])][int(columns[1])] = float(columns[2])
+                else:
+                    cc[int(columns[0])-1][int(columns[1])-1] = float(columns[2])
+        print("@> Finished reading correlation matrix!")
+    else:
+        print("@> ERROR: This data is not in 3 columns format?")
+        sys.exit(-1)
    
     return cc
 

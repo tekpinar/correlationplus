@@ -35,7 +35,7 @@ from correlationplus.visualize import overallCorrelationMap, distanceDistributio
 from correlationplus.visualize import intraChainCorrelationMaps, interChainCorrelationMaps
 from correlationplus.visualize import filterCorrelationMapByDistance
 from correlationplus.visualize import projectCorrelationsOntoProteinVMD, projectCorrelationsOntoProteinPyMol
-from correlationplus.visualize import parseEVcouplingsScores,convertLMIdata2Matrix
+from correlationplus.visualize import parseEVcouplingsScores,convertLMIdata2Matrix, parseSparseCorrData
 
 
 def usage_visualizemapApp():
@@ -164,7 +164,22 @@ def visualizemapApp():
     maxColorBarLimit = 1.0
     # Read data file and assign to a numpy array
     if sel_type.lower() == "ndcc":
-        ccMatrix = np.loadtxt(inp_file, dtype=float)
+        # Check if the data type is sparse matrix
+        data_file = open(inp_file, 'r')
+        allLines = data_file.readlines()
+        data_file.close()
+ 
+        # Read the first line to determine if the matrix is sparse format
+        words = allLines[0].split()
+
+        # Read the 1st line and check if it has three columns
+        if (len(words) == 3):
+            ccMatrix = parseSparseCorrData(inp_file, selectedAtoms, \
+                                            Ctype=True, 
+                                            symmetric=True,
+                                            writeAllOutput=False)
+        else:
+            ccMatrix = np.loadtxt(inp_file, dtype=float)
         # Check the data range in the matrix.
         minCorrelationValue = np.min(ccMatrix)
         maxCorrelationValue = np.max(ccMatrix)
@@ -178,11 +193,41 @@ def visualizemapApp():
         else:
             maxColorBarLimit = 1.0
     elif sel_type.lower() == "absndcc":
-        ccMatrix = np.absolute(np.loadtxt(inp_file, dtype=float))
+                # Check if the data type is sparse matrix
+        data_file = open(inp_file, 'r')
+        allLines = data_file.readlines()
+        data_file.close()
+ 
+        # Read the first line to determine if the matrix is sparse format
+        words = allLines[0].split()
+
+        # Read the 1st line and check if it has three columns
+        if (len(words) == 3):
+            ccMatrix = np.absolute(parseSparseCorrData(inp_file, selectedAtoms, \
+                                                        Ctype=True, 
+                                                        symmetric=True,
+                                                        writeAllOutput=False))
+        else:
+            ccMatrix = np.absolute(np.loadtxt(inp_file, dtype=float))
         minColorBarLimit = 0.0
         maxColorBarLimit = 1.0
     elif sel_type.lower() == "lmi":
-        ccMatrix = convertLMIdata2Matrix(inp_file, writeAllOutput=False)
+        # Check if the data type is sparse matrix
+        data_file = open(inp_file, 'r')
+        allLines = data_file.readlines()
+        data_file.close()
+ 
+        # Read the first line to determine if the matrix is sparse format
+        words = allLines[0].split()
+
+        # Read the 1st line and check if it has three columns
+        if (len(words) == 3):
+            ccMatrix = parseSparseCorrData(inp_file, selectedAtoms, \
+                                            Ctype=True, 
+                                            symmetric=True,
+                                            writeAllOutput=False)
+        else:
+            ccMatrix = convertLMIdata2Matrix(inp_file, writeAllOutput=False)
         minCorrelationValue = np.min(ccMatrix)
         maxCorrelationValue = np.max(ccMatrix)
         minColorBarLimit = 0.0
@@ -204,7 +249,23 @@ def visualizemapApp():
         minColorBarLimit = minCorrelationValue
         maxColorBarLimit = maxCorrelationValue
     elif sel_type.lower() == "generic":
-        ccMatrix = np.loadtxt(inp_file, dtype=float)
+                # Check if the data type is sparse matrix
+        data_file = open(inp_file, 'r')
+        allLines = data_file.readlines()
+        data_file.close()
+ 
+        # Read the first line to determine if the matrix is sparse format
+        words = allLines[0].split()
+
+        # Read the 1st line and check if it has three columns
+        if (len(words) == 3):
+            ccMatrix = parseSparseCorrData(inp_file, selectedAtoms, \
+                                            Ctype=True, 
+                                            symmetric=True,
+                                            writeAllOutput=False)
+        else:
+            ccMatrix = np.loadtxt(inp_file, dtype=float)
+
         minCorrelationValue = np.min(ccMatrix)
         maxCorrelationValue = np.max(ccMatrix)
         minColorBarLimit = minCorrelationValue
