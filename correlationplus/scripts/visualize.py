@@ -193,7 +193,7 @@ def visualizemapApp():
         else:
             maxColorBarLimit = 1.0
     elif sel_type.lower() == "absndcc":
-                # Check if the data type is sparse matrix
+        # Check if the data type is sparse matrix
         data_file = open(inp_file, 'r')
         allLines = data_file.readlines()
         data_file.close()
@@ -249,7 +249,7 @@ def visualizemapApp():
         minColorBarLimit = minCorrelationValue
         maxColorBarLimit = maxCorrelationValue
     elif sel_type.lower() == "generic":
-                # Check if the data type is sparse matrix
+        # Check if the data type is sparse matrix
         data_file = open(inp_file, 'r')
         allLines = data_file.readlines()
         data_file.close()
