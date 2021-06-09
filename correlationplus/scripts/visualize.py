@@ -31,12 +31,7 @@ from collections import Counter
 import numpy as np
 from prody import parsePDB
 
-from correlationplus.visualize import overallCorrelationMap, distanceDistribution
-from correlationplus.visualize import intraChainCorrelationMaps, interChainCorrelationMaps
-from correlationplus.visualize import filterCorrelationMapByDistance
-from correlationplus.visualize import projectCorrelationsOntoProteinVMD, projectCorrelationsOntoProteinPyMol
-from correlationplus.visualize import parseEVcouplingsScores,convertLMIdata2Matrix, parseSparseCorrData
-
+from correlationplus.visualize import *
 
 def usage_visualizemapApp():
     """
@@ -270,6 +265,15 @@ def visualizemapApp():
         maxCorrelationValue = np.max(ccMatrix)
         minColorBarLimit = minCorrelationValue
         maxColorBarLimit = maxCorrelationValue
+    elif sel_type.lower() == "eg":
+        # The data type is elasticity graph
+        ccMatrix = parseElasticityGraph(inp_file, selectedAtoms, \
+                                            writeAllOutput=False)
+
+        minCorrelationValue = np.min(ccMatrix)
+        maxCorrelationValue = np.max(ccMatrix)
+        minColorBarLimit = minCorrelationValue
+        maxColorBarLimit = maxCorrelationValue
     else:
         print("@> ERROR: Unknown data type: Type can only be ndcc, absndcc, lmi,\n")
         print("@>        coeviz or evcouplings. If you have your data in full \n")
@@ -334,6 +338,9 @@ def visualizemapApp():
 
         elif sel_type.lower() == "generic":
             distanceDistribution(ccMatrix, out_file, "Correlation", selectedAtoms,
+                                 absoluteValues=False, writeAllOutput=True)
+        elif sel_type.lower() == "eg":
+            distanceDistribution(ccMatrix, out_file, "Force Constants", selectedAtoms,
                                  absoluteValues=False, writeAllOutput=True)
         else:
             print("Warning: Unknows correlation data.\n")

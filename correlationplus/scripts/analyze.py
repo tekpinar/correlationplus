@@ -32,6 +32,7 @@ from prody import buildDistMatrix
 from correlationplus.visualize import convertLMIdata2Matrix
 from correlationplus.visualize import parseEVcouplingsScores
 from correlationplus.visualize import parseSparseCorrData
+from correlationplus.visualize import parseElasticityGraph
 from correlationplus.centralityAnalysis import centralityAnalysis
 from correlationplus.centralityAnalysis import buildDynamicsNetwork
 from correlationplus.centralityAnalysis import buildSequenceNetwork
@@ -237,6 +238,10 @@ def centralityAnalysisApp():
                                             writeAllOutput=False)
         else:
             ccMatrix = np.loadtxt(inp_file, dtype=float)
+    elif sel_type.lower() == "eg":
+        # The data type is elasticity graph
+        ccMatrix = parseElasticityGraph(inp_file, selectedAtoms, \
+                                            writeAllOutput=False)
     else:
         print("@> ERROR: Unknown data type: Type can only be ndcc, absndcc, lmi,\n")
         print("@>        coeviz or evcouplings. If you have your data in full \n")
@@ -244,7 +249,9 @@ def centralityAnalysisApp():
         print("@>        mentionned, you can set data type 'generic'.\n")
         sys.exit(-1)
 
-    if ((sel_type.lower() == "evcouplings") or (sel_type.lower() == "generic")):
+    if ((sel_type.lower() == "evcouplings") or \
+        (sel_type.lower() == "generic")  or \
+        (sel_type.lower() == "eg")):
         network = buildSequenceNetwork(ccMatrix, distanceMatrix, \
                                     valueFilter, distanceFilter,\
                                     selectedAtoms)
