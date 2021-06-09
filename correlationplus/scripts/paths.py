@@ -29,22 +29,25 @@ import getopt
 import numpy as np
 from prody import parsePDB
 from prody import buildDistMatrix
+
 from correlationplus.visualize import convertLMIdata2Matrix
 from correlationplus.visualize import parseEVcouplingsScores
 from correlationplus.visualize import parseSparseCorrData
-from correlationplus.centralityAnalysis import centralityAnalysis
+
 from correlationplus.centralityAnalysis import buildDynamicsNetwork
 from correlationplus.centralityAnalysis import buildSequenceNetwork
-# from .visualizemap import handle_arguments_visualizemapApp
 
+from correlationplus.pathAnalysis import pathAnalysis
+from correlationplus.pathAnalysis import mapResid2ResIndex
+from correlationplus.pathAnalysis import writePath2VMDFile, writePath2PMLFile 
 
-def usage_centralityAnalysisApp():
+def usage_pathAnalysisApp():
     """
     Show how to use this program!
     """
     print("""
 Example usage:
-correlationplus analyze -i ndcc-6lu7-anm.dat -p 6lu7_dimer_with_N3_protein_sim1_ca.pdb
+correlationplus paths -i ndcc-6lu7-anm.dat -p 6lu7_dimer_with_N3_protein_sim1_ca.pdb -b A41 -e B41
 
 Arguments: -i: A file containing correlations in matrix format. (Mandatory)
 
@@ -59,41 +62,39 @@ Arguments: -i: A file containing correlations in matrix format. (Mandatory)
            -o: This will be your output file. Output figures are in png format. 
                (Optional)
 
-           -c: Type of the centrality that you want to calculate. Default is 'all'.
-               (Optional). If you want only a particular centrality, you can select 
-               one of the following options: 
-                    * degree
-                    * betweenness
-                    * closeness
-                    * current_flow_betweenness
-                    * current_flow_closeness
-                    * eigenvector
-                    * community
-               
            -v: Value filter. The values lower than this value in the map will be 
                considered as zero. Default is 0.3. (Optional)
 
            -d: Distance filter. The residues with distances higher than this value 
                will be considered as zero. Default is 7.0 Angstrom. (Optional)
+                              
+           -b: ChainID and residue ID of the beginning (source)  residue (Ex: A41). (Mandatory)
+
+           -e: ChainID and residue ID of the end (sink/target) residue (Ex: B41). (Mandatory)
+
+           -n: Number of shortest paths to write to tcl or pml files. Default is 1. (Optional)
 """)
 
 
-def handle_arguments_centralityAnalysisApp():
+def handle_arguments_pathAnalysisApp():
     inp_file = None
     pdb_file = None
     out_file = None
     sel_type = None
-    centrality_type = None
-    value_cutoff = None
-    distance_cutoff = None
+    val_fltr = None
+    dis_fltr = None
+    src_res = None
+    trgt_res = None
+    num_path = None
 
     try:
-        opts, args = getopt.getopt(sys.argv[2:], "hi:o:t:p:c:v:d:", ["help", "inp=", "out=", "type=", "pdb=", "centrality=", "value=", "distance="])
+        opts, args = getopt.getopt(sys.argv[2:], "hi:o:t:p:v:d:b:e:n:", \
+            ["help", "inp=", "out=", "type=", "pdb=", "value=", "distance", "beginning=", "end=", "distance=", "npaths"])
     except getopt.GetoptError:
-        usage_centralityAnalysisApp()
+        usage_pathAnalysisApp()
     for opt, arg in opts:
         if opt in ('-h', "--help"):
-            usage_centralityAnalysisApp()
+            usage_pathAnalysisApp()
             sys.exit(-1)
         elif opt in ("-i", "--inp"):
             inp_file = arg
@@ -103,55 +104,73 @@ def handle_arguments_centralityAnalysisApp():
             sel_type = arg
         elif opt in ("-p", "--pdb"):
             pdb_file = arg
-        elif opt in ("-c", "--centrality"):
-            centrality_type = arg
         elif opt in ("-v", "--value"):
-            value_cutoff = arg
+            val_fltr = arg
         elif opt in ("-d", "--distance"):
-            distance_cutoff = arg
+            dis_fltr = arg
+        elif opt in ("-b", "--beginning"):
+            src_res = arg
+        elif opt in ("-e", "--end"):
+            trgt_res = arg
+        elif opt in ("-n", "--npaths"):
+            num_path = arg
         else:
-            assert False, usage_centralityAnalysisApp()
+            assert False, usage_pathAnalysisApp()
 
     # Input data matrix and PDB file are mandatory!
     if inp_file is None or pdb_file is None:
         print("@> ERROR: A PDB file and a correlation matrix are mandatory!")
-        usage_centralityAnalysisApp()
+        usage_pathAnalysisApp()
         sys.exit(-1)
 
     # Assign a default name if the user forgets the output file prefix.
     if out_file is None:
-        out_file = "correlation"
+        out_file = "paths"
 
     # The user may prefer not to submit a title for the output.
     if sel_type is None:
         sel_type = "ndcc"
 
-    if centrality_type is None:
-        centrality_type = "all"
+    if val_fltr is None:
+        val_fltr = 0.3
 
-    if value_cutoff is None:
-        value_cutoff = 0.3
+    if dis_fltr is None:
+        dis_fltr = 7.0
+    
+    if num_path is None:
+        num_path = 1
 
-    if distance_cutoff is None:
-        distance_cutoff = 7.0
+    if src_res is None:
+        print("@>ERROR: You have to specify a source resid!")
+        usage_pathAnalysisApp()
+        sys.exit(-1)
 
-    return inp_file, out_file, sel_type, pdb_file, centrality_type, value_cutoff, distance_cutoff
+    if trgt_res is None:
+        print("@>ERROR: You have to specify a target resid!")
+        usage_pathAnalysisApp()
+        sys.exit(-1)
+
+    return inp_file, out_file, sel_type, pdb_file, \
+            val_fltr, dis_fltr, src_res, trgt_res, num_path
 
 
-def centralityAnalysisApp():
-    inp_file, out_file, sel_type, pdb_file, centrality_type, value_cutoff,\
-            distance_cutoff = handle_arguments_centralityAnalysisApp()
+def pathAnalysisApp():
+    inp_file, out_file, sel_type, pdb_file,val_fltr, \
+    dis_fltr, src_res, trgt_res, num_paths\
+            = handle_arguments_pathAnalysisApp()
 
     print(f"""
-@> Running 'analyze' app
+@> Running 'paths' app
 
 @> Input file     : {inp_file}
 @> PDB file       : {pdb_file}
 @> Data type      : {sel_type}
 @> Output         : {out_file}
-@> Centrality     : {centrality_type}
-@> Value filter   : {value_cutoff}
-@> Distance filter: {distance_cutoff}""")
+@> Value filter   : {val_fltr}
+@> Distance filter: {dis_fltr}
+@> Source residue : {src_res}
+@> Target residue : {trgt_res}
+@> Number of paths: {num_paths}""")
 
     ##########################################################################
     # Read PDB file
@@ -159,9 +178,6 @@ def centralityAnalysisApp():
     # Maybe, I can replace it with a library that only parses
     # PDB files. Prody does a lot more!
     selectedAtoms = parsePDB(pdb_file, subset='ca')
-    valueFilter = float(value_cutoff)
-    distanceFilter = float(distance_cutoff)
-    distanceMatrix = buildDistMatrix(selectedAtoms)
 
     ##########################################################################
     # Read data file and assign to a numpy array
@@ -244,31 +260,33 @@ def centralityAnalysisApp():
         print("@>        mentionned, you can set data type 'generic'.\n")
         sys.exit(-1)
 
+    sourceResid = src_res
+    targetResid = trgt_res
+    distanceMatrix = buildDistMatrix(selectedAtoms)
+    resDict = mapResid2ResIndex(selectedAtoms)
+
     if ((sel_type.lower() == "evcouplings") or (sel_type.lower() == "generic")):
         network = buildSequenceNetwork(ccMatrix, distanceMatrix, \
-                                    valueFilter, distanceFilter,\
+                                    float(val_fltr), float(dis_fltr),\
                                     selectedAtoms)
     else:
         network = buildDynamicsNetwork(ccMatrix, distanceMatrix, \
-                                    valueFilter, distanceFilter,\
+                                    float(val_fltr), float(dis_fltr),\
                                     selectedAtoms)
+                                    
+    suboptimalPaths = pathAnalysis(network, \
+                                   float(val_fltr), float(dis_fltr),\
+                                   resDict[sourceResid], resDict[targetResid], \
+                                   selectedAtoms,\
+                                   int(num_paths))
 
-    if centrality_type == "all":
-        centralityAnalysis(network, valueFilter, distanceFilter, out_file, "degree",
-                           selectedAtoms)
-        centralityAnalysis(network, valueFilter, distanceFilter, out_file, "betweenness",
-                           selectedAtoms)
-        centralityAnalysis(network, valueFilter, distanceFilter, out_file, "closeness",
-                           selectedAtoms)
-        centralityAnalysis(network, valueFilter, distanceFilter, out_file, "current_flow_betweenness",
-                           selectedAtoms)
-        centralityAnalysis(network, valueFilter, distanceFilter, out_file, "current_flow_closeness",
-                           selectedAtoms)
-        centralityAnalysis(network, valueFilter, distanceFilter, out_file, "eigenvector",
-                           selectedAtoms)
-        # Community analysis is time consuming. Therefore, it will not be called by default.
-        # centralityAnalysis(ccMatrix, valueFilter, distanceFilter, out_file, "community",
-        #                    selectedAtoms)
-    else:
-        centralityAnalysis(network, valueFilter, distanceFilter, out_file, centrality_type,
-                           selectedAtoms)
+    out_file_full_name = out_file+"-source"+sourceResid+"-target"+targetResid+".tcl"
+    writePath2VMDFile(suboptimalPaths, selectedAtoms, \
+                    resDict[sourceResid], resDict[targetResid], \
+                    pdb_file, out_file_full_name)
+
+    out_file_full_name = out_file+"-source"+sourceResid+"-target"+targetResid+".pml"
+    writePath2PMLFile(suboptimalPaths, selectedAtoms,\
+                    resDict[sourceResid], resDict[targetResid], \
+                    pdb_file, out_file_full_name)
+    

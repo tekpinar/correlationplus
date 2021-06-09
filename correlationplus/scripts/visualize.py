@@ -1,8 +1,8 @@
-###############################################################################
-# correlationplus - Python module to plot dynamical correlations maps         #
-#                   for proteins.                                             #
+##############################################################################
+# correlationplus - A Python package to calculate, visualize and analyze      #
+#                   correlation maps of proteins.                             #
 # Authors: Mustafa Tekpinar                                                   #
-# Copyright (C) Mustafa Tekpinar 2017-2018                                    #
+# Copyright (C) Mustafa Tekpinar, 2017-2018                                   #
 # Copyright (C) CNRS-UMR3528, 2019                                            #
 # Copyright (C) Institut Pasteur Paris, 2020-2021                             #
 #                                                                             #
@@ -31,11 +31,11 @@ from collections import Counter
 import numpy as np
 from prody import parsePDB
 
-from correlationplus.visualize import overallCorrelationMap, convertLMIdata2Matrix, distanceDistribution
+from correlationplus.visualize import overallCorrelationMap, distanceDistribution
 from correlationplus.visualize import intraChainCorrelationMaps, interChainCorrelationMaps
-from correlationplus.visualize import filterCorrelationMapByDistance, projectCorrelationsOntoProteinVMD
-from correlationplus.visualize import projectCorrelationsOntoProteinPyMol
-from correlationplus.visualize import parseEVcouplingsScores
+from correlationplus.visualize import filterCorrelationMapByDistance
+from correlationplus.visualize import projectCorrelationsOntoProteinVMD, projectCorrelationsOntoProteinPyMol
+from correlationplus.visualize import parseEVcouplingsScores,convertLMIdata2Matrix, parseSparseCorrData
 
 
 def usage_visualizemapApp():
@@ -44,7 +44,7 @@ def usage_visualizemapApp():
     """
     print("""
 Example usage:
-correlationplus visualize -i 4z90-cross-correlations.txt -p 4z90.pdb
+correlationplus visualize -i ndcc-6lu7-anm.dat -p 6lu7_dimer_with_N3_protein_sim1_ca.pdb
 
 Arguments: -i: A file containing correlations in matrix format. (Mandatory)
 
@@ -52,7 +52,8 @@ Arguments: -i: A file containing correlations in matrix format. (Mandatory)
            
            -t: Type of the matrix. It can be ndcc, lmi or absndcc (absolute values of ndcc).
                In addition, coeviz and evcouplings are also some options to analyze sequence
-               correlations. 
+               correlations. If your data is in full matrix format, you can select generic
+               as your data type
                Default value is ndcc (Optional)
 
            -v: Minimal correlation value. Any value equal or greater than this 
@@ -64,7 +65,7 @@ Arguments: -i: A file containing correlations in matrix format. (Mandatory)
 
            -r: Cylinder radius scaling coefficient to multiply with the correlation quantity.
                It can be used to improve tcl and pml outputs to view the interaction 
-               strengths properly. (Optional)
+               strengths properly. Recommended values are between 0.0 and 2.0. (Optional)
 
            -o: This will be your output file. Output figures are in png format. (Optional)
 """)
@@ -159,9 +160,26 @@ def visualizemapApp():
     selectedAtoms = parsePDB(pdb_file, subset='ca')
 
     ##########################################################################
+    minColorBarLimit = 0.0
+    maxColorBarLimit = 1.0
     # Read data file and assign to a numpy array
     if sel_type.lower() == "ndcc":
-        ccMatrix = np.loadtxt(inp_file, dtype=float)
+        # Check if the data type is sparse matrix
+        data_file = open(inp_file, 'r')
+        allLines = data_file.readlines()
+        data_file.close()
+ 
+        # Read the first line to determine if the matrix is sparse format
+        words = allLines[0].split()
+
+        # Read the 1st line and check if it has three columns
+        if (len(words) == 3):
+            ccMatrix = parseSparseCorrData(inp_file, selectedAtoms, \
+                                            Ctype=True, 
+                                            symmetric=True,
+                                            writeAllOutput=False)
+        else:
+            ccMatrix = np.loadtxt(inp_file, dtype=float)
         # Check the data range in the matrix.
         minCorrelationValue = np.min(ccMatrix)
         maxCorrelationValue = np.max(ccMatrix)
@@ -175,11 +193,41 @@ def visualizemapApp():
         else:
             maxColorBarLimit = 1.0
     elif sel_type.lower() == "absndcc":
-        ccMatrix = np.absolute(np.loadtxt(inp_file, dtype=float))
+        # Check if the data type is sparse matrix
+        data_file = open(inp_file, 'r')
+        allLines = data_file.readlines()
+        data_file.close()
+ 
+        # Read the first line to determine if the matrix is sparse format
+        words = allLines[0].split()
+
+        # Read the 1st line and check if it has three columns
+        if (len(words) == 3):
+            ccMatrix = np.absolute(parseSparseCorrData(inp_file, selectedAtoms, \
+                                                        Ctype=True, 
+                                                        symmetric=True,
+                                                        writeAllOutput=False))
+        else:
+            ccMatrix = np.absolute(np.loadtxt(inp_file, dtype=float))
         minColorBarLimit = 0.0
         maxColorBarLimit = 1.0
     elif sel_type.lower() == "lmi":
-        ccMatrix = convertLMIdata2Matrix(inp_file, writeAllOutput=True)
+        # Check if the data type is sparse matrix
+        data_file = open(inp_file, 'r')
+        allLines = data_file.readlines()
+        data_file.close()
+ 
+        # Read the first line to determine if the matrix is sparse format
+        words = allLines[0].split()
+
+        # Read the 1st line and check if it has three columns
+        if (len(words) == 3):
+            ccMatrix = parseSparseCorrData(inp_file, selectedAtoms, \
+                                            Ctype=True, 
+                                            symmetric=True,
+                                            writeAllOutput=False)
+        else:
+            ccMatrix = convertLMIdata2Matrix(inp_file, writeAllOutput=False)
         minCorrelationValue = np.min(ccMatrix)
         maxCorrelationValue = np.max(ccMatrix)
         minColorBarLimit = 0.0
@@ -200,8 +248,33 @@ def visualizemapApp():
         maxCorrelationValue = np.max(ccMatrix)
         minColorBarLimit = minCorrelationValue
         maxColorBarLimit = maxCorrelationValue
+    elif sel_type.lower() == "generic":
+        # Check if the data type is sparse matrix
+        data_file = open(inp_file, 'r')
+        allLines = data_file.readlines()
+        data_file.close()
+ 
+        # Read the first line to determine if the matrix is sparse format
+        words = allLines[0].split()
+
+        # Read the 1st line and check if it has three columns
+        if (len(words) == 3):
+            ccMatrix = parseSparseCorrData(inp_file, selectedAtoms, \
+                                            Ctype=True, 
+                                            symmetric=True,
+                                            writeAllOutput=False)
+        else:
+            ccMatrix = np.loadtxt(inp_file, dtype=float)
+
+        minCorrelationValue = np.min(ccMatrix)
+        maxCorrelationValue = np.max(ccMatrix)
+        minColorBarLimit = minCorrelationValue
+        maxColorBarLimit = maxCorrelationValue
     else:
-        print("Unknown matrix data type: The type can only be ndcc, absndcc or lmi!\n")
+        print("@> ERROR: Unknown data type: Type can only be ndcc, absndcc, lmi,\n")
+        print("@>        coeviz or evcouplings. If you have your data in full \n")
+        print("@>        matrix format and your data type is none of the options\n")
+        print("@>        mentionned, you can set data type 'generic'.\n")
         sys.exit(-1)
 
     # Set vmin_fltr and vmax_fltr
@@ -225,8 +298,8 @@ def visualizemapApp():
 
     if (cyl_rad == None):
         if sel_type.lower() == "evcouplings":
-            VMDcylinderRadiusScale = 0.01
-            PMLcylinderRadiusScale = 0.01
+            VMDcylinderRadiusScale = 0.02
+            PMLcylinderRadiusScale = 0.02
         else:
             VMDcylinderRadiusScale = 0.5
             PMLcylinderRadiusScale = 0.3
@@ -257,6 +330,10 @@ def visualizemapApp():
 
         elif sel_type.lower() == "evcouplings":
             distanceDistribution(ccMatrix, out_file, "EVcoupling Score", selectedAtoms,
+                                 absoluteValues=False, writeAllOutput=True)
+
+        elif sel_type.lower() == "generic":
+            distanceDistribution(ccMatrix, out_file, "Correlation", selectedAtoms,
                                  absoluteValues=False, writeAllOutput=True)
         else:
             print("Warning: Unknows correlation data.\n")

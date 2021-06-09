@@ -1,10 +1,10 @@
 ##############################################################################
 # correlationplus - A Python package to calculate, visualize and analyze      #
-#                   dynamical correlations maps of proteins.                  #
+#                   correlations maps of proteins.                            #
 # Authors: Mustafa Tekpinar                                                   #
-# Copyright Mustafa Tekpinar 2017-2018                                        #
-# Copyright CNRS-UMR3528, 2019                                                #
-# Copyright Institut Pasteur Paris, 2020-2021                                 #
+# Copyright (C) Mustafa Tekpinar, 2017-2018                                   #
+# Copyright (C) CNRS-UMR3528, 2019                                            #
+# Copyright (C) Institut Pasteur Paris, 2020-2021                             #
 #                                                                             #
 # This file is part of correlationplus.                                       #
 #                                                                             #
@@ -32,6 +32,68 @@ from MDAnalysis.analysis import align
 from MDAnalysis.analysis.rms import rmsd
 import numba
 
+def writeSparseCorrData(out_file, cMatrix, \
+                        selectedAtoms, \
+                        Ctype: bool, 
+                        symmetric: bool):
+    """
+        This function writes correlation data in sparse format.
+
+        In a sparse matrix, only nonzero elements of the matrix are 
+        given in 3 columns format:
+        i j C_ij
+        i and j are the indices of the matrix positions (or residue indices,
+        not residue IDs given in PDB files).
+        It returns nothing. 
+
+    Parameters
+    ----------
+    out_file: string
+        Correlation file to write.
+    cMatrix: A numpy square matrix of floats
+        Correlation matrix.
+    selectedAtoms: prody object
+        A list of -typically CA- atoms selected from the parsed PDB file.
+    Ctype: boolean
+        If Ctype=True, location indices i and j indices start from 0.
+        Otherwise, it is assumed to be starting from 1.
+    symmetric: boolean
+        If you select it True, it will write the upper (or lower) triangle.
+
+    Returns
+    -------
+    Nothing. 
+
+    """
+    data_file = open(out_file, 'w')
+    n = selectedAtoms.numAtoms()
+ 
+    if(symmetric == True):
+        if (Ctype == True):
+            for i in range(0, n):
+                for j in range(i, n):
+                    if(np.absolute(cMatrix[i][j]) >= 0.000001):
+                        data_file.write("{0:d} {1:d} {2:.6f}\n".format(i, j, cMatrix[i][j]))
+        else:
+            for i in range(0, n):
+                for j in range(i, n):
+                    if(np.absolute(cMatrix[i][j]) >= 0.000001):
+                        data_file.write("{0:d} {1:d} {2:.6f}\n".format((i+1), (j+1), cMatrix[i][j]))
+    else:
+        if (Ctype == True):
+            for i in range(0, n):
+                for j in range(0, n):
+                    if(np.absolute(cMatrix[i][j]) >= 0.000001):
+                        data_file.write("{0:d} {1:d} {2:.6f}\n".format(i, j, cMatrix[i][j]))
+        else:
+            for i in range(0, n):
+                for j in range(0, n):
+                    if(np.absolute(cMatrix[i][j]) >= 0.000001):
+                        data_file.write("{0:d} {1:d} {2:.6f}\n".format((i+1), (j+1), cMatrix[i][j]))
+
+    print("@> Finished writing correlation matrix in sparse format!")
+
+    data_file.close()
 
 def calcENMnDCC(selectedAtoms, cut_off, method="ANM", nmodes=100, \
                 normalized=True, saveMatrix=True, out_file="nDCC.dat"):
@@ -64,6 +126,7 @@ def calcENMnDCC(selectedAtoms, cut_off, method="ANM", nmodes=100, \
         Cross-correlation matrix.
 
     """
+    saveSparse = False
     if method == "ANM":
         modes, sel = calcANM(selectedAtoms, cutoff=cut_off, n_modes=nmodes)
     elif method == "GNM":
@@ -77,7 +140,12 @@ def calcENMnDCC(selectedAtoms, cut_off, method="ANM", nmodes=100, \
     else:
         ccMatrix = calcCrossCorr(modes, n_cpu=1, norm=False)
     if saveMatrix:
-        np.savetxt(out_file, ccMatrix, fmt='%.6f')
+        if(saveSparse):
+            writeSparseCorrData(out_file, ccMatrix, \
+                                selectedAtoms, Ctype=True,\
+                                symmetric=True)
+        else:
+            np.savetxt(out_file, ccMatrix, fmt='%.6f')
 
     return ccMatrix
 

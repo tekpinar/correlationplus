@@ -1,10 +1,10 @@
 ##############################################################################
 # correlationplus - A Python package to calculate, visualize and analyze      #
-#                   dynamical correlations maps of proteins.                  #
+#                   correlation maps of proteins.                             #
 # Authors: Mustafa Tekpinar                                                   #
-# Copyright Mustafa Tekpinar 2017-2018                                        #
-# Copyright CNRS-UMR3528, 2019                                                #
-# Copyright Institut Pasteur Paris, 2020-2021                                 #
+# Copyright (C) Mustafa Tekpinar, 2017-2018                                   #
+# Copyright (C) CNRS-UMR3528, 2019                                            #
+# Copyright (C) Institut Pasteur Paris, 2020-2021                             #
 #                                                                             #
 # This file is part of correlationplus.                                       #
 #                                                                             #
@@ -336,15 +336,17 @@ def projectCommunitiesOntoProteinPyMol(sortedCommunities, out_file, selectedAtom
 
     PML_FILE.close()
 
-
-def centralityAnalysis(ccMatrix, distanceMatrix, valueFilter, \
-                        distanceFilter, out_file, centrality, selectedAtoms):
+def buildDynamicsNetwork(ccMatrix, distanceMatrix, \
+                        valueFilter, distanceFilter,\
+                        selectedAtoms):
     """
-    This function calculates various network (graph) centralities of a protein.
+    This function build a network (graph) from a dynamical correlation
+    matrix. 
 
-    This function calculates some network centrality measures such as
-    degree, betweenness, closeness, current flow betweenness and eigenvector.
-    This function needs Python 3.6 or later to maintain dictionary order.!!!
+    The C_ij correlation values are converted to network edges according 
+    to -log(abs(C_ij)) (See https://doi.org/10.1073/pnas.0810961106 for 
+    details). When only C_ij values are between [0-1], it gives consistent 
+    results.
 
     Parameters
     ----------
@@ -360,19 +362,13 @@ def centralityAnalysis(ccMatrix, distanceMatrix, valueFilter, \
         This kind of value pruning may work for low conformational change MD
         simulations or ENM based calculations. However, if there are large
         scale structural changes, it will be necessary to eliminate the edges 
-        based on contacts and their preservation in during the entire simulation. 
-    out_file: string
-        Prefix of the output file. According to the centralty measure, it will be
-        extended.
-    centrality: string
-        It can have 'degree', 'betweenness', 'closeness',
-        'current_flow_betweenness' or 'current_flow_closeness'.
+        based on contacts and their preservation in during the entire simulation.
     selectedAtoms: object
         This is a prody.parsePDB object of typically CA atoms of a protein.
 
     Returns
     -------
-    Nothing
+    A networkx graph object
 
     """
     # Create your  graph
@@ -393,9 +389,106 @@ def centralityAnalysis(ccMatrix, distanceMatrix, valueFilter, \
                 dynNetwork.add_edge(i, j, weight=-log(fabs(ccMatrix[i][j])))
                 # dynNetwork.add_edge(i, j, weight=fabs(correlationArray[i][j]))
 
+    return dynNetwork
+
+def buildSequenceNetwork(ccMatrix, distanceMatrix, \
+                        valueFilter, distanceFilter,\
+                        selectedAtoms):
+    """
+    This function build a network (graph) from a dynamical correlation
+    matrix. 
+
+    The C_ij correlation values are converted to network edges according 
+    to (1.0/abs(C_ij)). It diminishes very fast but it doesn't give negative 
+    weigths for values greater than 1.0. 
+
+    Parameters
+    ----------
+    ccMatrix: Numpy matrix
+        It is a numpy matrix of typically nDCC, LMI or Generalized Correlations.
+    distanceMatrix: Numpy matrix
+        The distances between Calpha atoms of the protein stored in a matrix.
+    valueFilter: float
+        The ccMatrix values lower than the valueFilter will be ignored.
+    distanceFilter: float
+        The distance values higher than the distanceFilter will be ignored
+        and they will not be considered as edges in a network. 
+        This kind of value pruning may work for low conformational change MD
+        simulations or ENM based calculations. However, if there are large
+        scale structural changes, it will be necessary to eliminate the edges 
+        based on contacts and their preservation in during the entire simulation.
+    selectedAtoms: object
+        This is a prody.parsePDB object of typically CA atoms of a protein.
+
+    Returns
+    -------
+    A networkx graph object
+
+    """
+    # Create your  graph
+    seqNetwork = nx.Graph()
+
+    n = selectedAtoms.numAtoms()
+
+    # Add all CA atoms as nodes
+    for i in range(n):
+        seqNetwork.add_node(i)
+
+    # Add all pairwise interactions greater than the valueFilter as edges.
+    # In addition, add only edges which has a distance of lower than the 
+    # distance filter
+    for i in range(n):
+        for j in range(n):
+            if fabs(ccMatrix[i][j]) > valueFilter and distanceMatrix[i][j] <= distanceFilter:
+                seqNetwork.add_edge(i, j, weight=(1.0/fabs(ccMatrix[i][j])))
+ 
+    return seqNetwork
+
+def centralityAnalysis(graph, valueFilter, distanceFilter, \
+                        out_file, centrality, selectedAtoms):
+    """
+    This function calculates various network (graph) centralities of a protein.
+
+    This function calculates some network centrality measures such as
+    degree, betweenness, closeness, current flow betweenness and eigenvector.
+    This function needs Python 3.6 or later to maintain dictionary order.!!!
+
+    Parameters
+    ----------
+    graph: object
+        It is a Networkx Graph object.
+    valueFilter: float
+        The ccMatrix values lower than the valueFilter will be ignored.
+    distanceFilter: float
+        The distance values higher than the distanceFilter will be ignored
+        and they will not be considered as edges in a network. 
+        This kind of value pruning may work for low conformational change MD
+        simulations or ENM based calculations. However, if there are large
+        scale structural changes, it will be necessary to eliminate the edges 
+        based on contacts and their preservation in during the entire simulation. 
+    out_file: string
+        Prefix of the output file. According to the centralty measure, it will be
+        extended.
+    centrality: string
+        It can have 'degree', 'betweenness', 'closeness',
+        'current_flow_betweenness', 'current_flow_closeness', 'eigenvector'
+        or 'community'.
+    selectedAtoms: object
+        This is a prody.parsePDB object of typically CA atoms of a protein.
+
+    Returns
+    -------
+    Nothing
+
+    """
+    # dynNetwork = buildDynamicsNetwork(ccMatrix, distanceMatrix, \
+    #                                 valueFilter, distanceFilter,\
+    #                                 selectedAtoms)
+
+    n = selectedAtoms.numAtoms()
     ########################## Calculate degrees of all nodes
     if centrality == 'degree':
-        degreeResult = dynNetwork.degree(weight='weight')
+        degreeResult = graph.degree(weight='weight')
         degreeResultList = []
         for i in range(0, len(degreeResult)):
             degreeResultList.append(degreeResult[i])
@@ -405,7 +498,7 @@ def centralityAnalysis(ccMatrix, distanceMatrix, valueFilter, \
         # open a file for degree
         degreeFile = open(f"{out_file}_degree_value_filter{valueFilter:.2f}.dat", "w")
         for i in range(n):
-            #    print(str(i)+" "+(str(dynNetwork.degree(i, weight='weight'))))
+            #    print(str(i)+" "+(str(graph.degree(i, weight='weight'))))
             degreeFile.write("{0:d}\t{1:.6f}\t{2:s}\n".format(selectedAtoms[i].getResnum(),
                                                               degreeResult[i],
                                                               selectedAtoms[i].getChid()))
@@ -429,7 +522,7 @@ def centralityAnalysis(ccMatrix, distanceMatrix, valueFilter, \
 
     ########################## Calculate betweenness
     elif centrality == 'betweenness':
-        betweennessResult = nx.betweenness_centrality(dynNetwork, k=None,
+        betweennessResult = nx.betweenness_centrality(graph, k=None,
                                                       normalized=True, weight='weight',
                                                       endpoints=False, seed=None)
         print("@> Betweenness calculation finished!")
@@ -458,14 +551,14 @@ def centralityAnalysis(ccMatrix, distanceMatrix, valueFilter, \
 
     ########################## Calculate closeness
     elif centrality == 'closeness':
-        closenessResult = nx.closeness_centrality(dynNetwork, u=None, distance='weight')
+        closenessResult = nx.closeness_centrality(graph, u=None, distance='weight')
         print("@> Closeness calculation finished!")
 
         # open a file for closeness
         closenessFile = open(out_file + "_closeness_value_filter" + "{:.2f}".format(valueFilter) + '.dat', "w")
 
         for i in range(n):
-            #    print(str(i)+" "+(str(dynNetwork.closeness(i, weight='weight'))))
+            #    print(str(i)+" "+(str(graph.closeness(i, weight='weight'))))
             closenessFile.write("{0:d}\t{1:.6f}\t{2:s}\n".format(selectedAtoms[i].getResnum(),
                                                                  closenessResult[i],
                                                                  selectedAtoms[i].getChid()))
@@ -487,7 +580,7 @@ def centralityAnalysis(ccMatrix, distanceMatrix, valueFilter, \
 
     ########################## Calculate current_flow_betweenness
     elif centrality == 'current_flow_betweenness':
-        current_flow_betweennessResult = nx.current_flow_betweenness_centrality(dynNetwork, normalized=True,
+        current_flow_betweennessResult = nx.current_flow_betweenness_centrality(graph, normalized=True,
                                                                                 weight='weight')
 
         print("@> Current flow betweenness calculation finished!")
@@ -497,7 +590,7 @@ def centralityAnalysis(ccMatrix, distanceMatrix, valueFilter, \
                                             "w")
 
         for i in range(n):
-            #    print(str(i)+" "+(str(dynNetwork.betweenness(i, weight='weight'))))
+            #    print(str(i)+" "+(str(graph.betweenness(i, weight='weight'))))
             current_flow_betweennessFile.write("{0:d}\t{1:.6f}\t{2:s}\n".\
                 format(selectedAtoms[i].getResnum(),
                         current_flow_betweennessResult[i],
@@ -518,7 +611,7 @@ def centralityAnalysis(ccMatrix, distanceMatrix, valueFilter, \
                          selectedAtoms, scalingFactor=1)
     ########################## Calculate closeness
     elif centrality == 'current_flow_closeness':
-        current_flow_closenessResult = nx.current_flow_closeness_centrality(dynNetwork, weight='weight')
+        current_flow_closenessResult = nx.current_flow_closeness_centrality(graph, weight='weight')
 
         print("@> Current flow closeness calculation finished!")
 
@@ -527,7 +620,7 @@ def centralityAnalysis(ccMatrix, distanceMatrix, valueFilter, \
                                           "w")
 
         for i in range(n):
-            #    print(str(i)+" "+(str(dynNetwork.closeness(i, weight='weight'))))
+            #    print(str(i)+" "+(str(graph.closeness(i, weight='weight'))))
             current_flow_closenessFile.write("{0:d}\t{1:.6f}\t{2:s}\n".\
                 format(selectedAtoms[i].getResnum(),
                         current_flow_closenessResult[i],
@@ -548,14 +641,14 @@ def centralityAnalysis(ccMatrix, distanceMatrix, valueFilter, \
                          selectedAtoms, scalingFactor=1)
     ########################## Calculate eigenvector centrality
     elif centrality == 'eigenvector':
-        eigenvectorResult = nx.eigenvector_centrality_numpy(dynNetwork, weight='weight')
+        eigenvectorResult = nx.eigenvector_centrality_numpy(graph, weight='weight')
         print("@> Eigenvector calculation finished!")
 
         # open a file for eigenvectors
         eigenvectorFile = open(f"{out_file}_eigenvector_value_filter{valueFilter:.2f}.dat", "w")
 
         for i in range(n):
-            #    print(str(i)+" "+(str(dynNetwork.closeness(i, weight='weight'))))
+            #    print(str(i)+" "+(str(graph.closeness(i, weight='weight'))))
             eigenvectorFile.write("{0:d}\t{1:.6f}\t{2:s}\n".format(selectedAtoms[i].getResnum(),
                                                                    eigenvectorResult[i],
                                                                    selectedAtoms[i].getChid()))
@@ -576,7 +669,7 @@ def centralityAnalysis(ccMatrix, distanceMatrix, valueFilter, \
     ########################## Calculate communities with Girvan-Newman
     elif centrality == 'community':
         from networkx.algorithms import community
-        communities = community.girvan_newman(dynNetwork)
+        communities = community.girvan_newman(graph)
         sortedCommunities = tuple(sorted(c) for c in next(communities))
         print("@> There are " + str(len(sortedCommunities)) + \
                 " communities in your structure.")
