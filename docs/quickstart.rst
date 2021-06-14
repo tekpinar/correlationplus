@@ -5,14 +5,17 @@ There are three main scrips of correlationplus package:
 * calculate
 * visualize
 * analyze
+* paths
 
-You can find more information about each module as follows::
+You can find more information about each script as follows::
 
     correlationplus calculate -h
 
     correlationplus visualize -h
 
     correlationplus analyze -h
+    
+    correlationplus paths -h
 
 Here are some examples of the correlationplus commandline interface.
 You can find all required files in the examples folder at our `github page <https://github.com/tekpinar/correlationplus>`_
@@ -66,7 +69,7 @@ and all individual intra-chain correlations, if exist. Moreover, the program
 will give you inter-chain correlations, if you have more than one chain. 
 
 You can analyze the correlations with `VMD <https://www.ks.uiuc.edu/Research/vmd/>`_ just by loading the tcl files produced by 
-visualize app. To reduce the clutter, the command above will only dump the correlations greater than 0.75 to your tcl or pml file.
+visualize app.  To reduce the clutter, the command above will only dump the correlations greater than 0.75 to your tcl or pml file.
 If you would like to visualize an interval, you can specify the maximal value as well with '-x ' parameter.
 
 You can call VMD and go to *Extensions->Tk Console menu*. 
@@ -129,6 +132,25 @@ in VDW representation.::
 With PyMol::
   
   pymol correlation_degree.pml
+
+**paths** script
+------------------
+To calculate suboptimal paths between two active site residues in chain A and chain B of 
+SARS-CoV2 main protease::
+
+    correlationplus paths -i ndcc-6lu7-anm.dat\
+              		  -p 6lu7_dimer_with_N3_protein_sim1_ca.pdb\
+              		  -b A41 -e B41
+   
+This command will only produce the optimal path and print out the path length. If you would like
+to calculate suboptimal paths as well, you can append -n argument. Here is the example command to 
+calculate 10 paths between residue 41 of chain A and residue 41 of chain B::
+
+    correlationplus paths -i ndcc-6lu7-anm.dat\
+              		  -p 6lu7_dimer_with_N3_protein_sim1_ca.pdb\
+              		  -b A41 -e B41 -n 10
+
+
 
 Ipython Interface
 -----------------
