@@ -276,6 +276,68 @@ def parseSparseCorrData(inp_file, selectedAtoms, \
    
     return cc
 
+def parseElasticityGraph(inp_file, selectedAtoms, \
+                        writeAllOutput: bool):
+    """
+        This function parses force constants data (a file with .enm extensio) 
+        produced by FitNMA program of Patrice Koehl. 
+
+        The data in this file is in the following format:
+        i_Num   i_Type  i_Resname   i_ChainID   i_ResID j_Num   j_Type  j_Resname   j_ChainID   j_ResID forceConstant
+        2       CA      THR         A           1       9       CA      THR         A           2       0.844158
+        Comment lines start with # character.
+        It returns a numpy array. 
+
+    Parameters
+    ----------
+    inp_file: string
+        Force constants file to read.
+    selectedAtoms: prody object
+        A list of -typically CA- atoms selected from the parsed PDB file.
+    writeAllOutput: bool
+        If True, an output file for the coupling values will be written in matrix 
+        format. The matrix does not contain residue names etc. They are obtained
+        from a pdb file you provided.
+
+    Returns
+    -------
+    cc: A numpy array of float value arrays. 
+
+    """
+    data_file = open(inp_file, 'r')
+    allLines = data_file.readlines()
+    data_file.close()
+
+    n = selectedAtoms.numAtoms()
+    cc = np.zeros((n, n), np.double)
+    idx_i = 0
+    idx_j = 0
+    k = 0
+    print("@> Started reading elasiticity graph data!")
+    numLines = len(allLines) 
+    for line in allLines:
+        if(line[0] != "#"):
+            fields = line.split()
+            sys.stdout.write('\r')
+            # the exact output you're looking for:
+            sys.stdout.write("@> Percentage: {0:.1f}".format((float(k)*100/numLines)))
+            sys.stdout.flush()
+
+            for i in range(0, n):
+                if( (selectedAtoms.getResnums()[i] == int(fields[4])) and \
+                    (selectedAtoms.getChids()[i] == fields[3])):
+                    idx_i = i
+                if( (selectedAtoms.getResnums()[i] == int(fields[9])) and \
+                    (selectedAtoms.getChids()[i] == fields[8])):
+                    idx_j = i
+
+            cc[idx_i][idx_j] = float(fields[10])
+            cc[idx_j][idx_i] = float(fields[10])
+            k = k + 1 
+    print("\n@> Finished reading elasiticity graph data!")
+
+    return cc
+
 def filterCorrelationMapByDistance(ccMatrix, out_file, title,
                                    selectedAtoms, distanceValue,
                                    absoluteValues: bool, writeAllOutput: bool):

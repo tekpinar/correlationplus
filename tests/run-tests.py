@@ -47,9 +47,11 @@ def runTests():
     os.system(command)
 
     # Test calculate module to produce nDCC map from an MD trajectory.
-    os.system(f"correlationplus calculate "
-              f"-p {prefix}/examples/6lu7_dimer_with_N3_protein_sim1_ca.pdb "
-              f"-f {prefix}/examples/6lu7_dimer_with_N3_protein_sim1_ca_short.trr -o dcc-6lu7-md.dat")
+    command = f"correlationplus calculate "\
+              f"-p {prefix}/examples/6lu7_dimer_with_N3_protein_sim1_ca.pdb "\
+              f"-f {prefix}/examples/6lu7_dimer_with_N3_protein_sim1_ca_short.trr -o dcc-6lu7-md.dat"
+    print(f"\n@> Testing the nDCC calculation from an MD trajectory with the following command:\n\n{command}\n\n")
+    os.system(command)
 
     # Test calculate module to produce LMI map with ANM modes.
     os.system(f"correlationplus calculate "
@@ -98,6 +100,19 @@ def runTests():
               f"-p {prefix}/examples/6lu7_dimer_with_N3_protein_sim1_ca.pdb "
               "-t lmi -b A41 -e B41")
 
+    # Test to visualize elasticity graphs (FitNMA) obtained from
+    # https://onlinelibrary.wiley.com/doi/10.1002/jcc.26701?af=R
+    os.system(f"correlationplus visualize -i {prefix}/examples/crn.enm -p {prefix}/examples/1crn.pdb -t eg -r 0.05")
+
+    # Test to analyze elasticity graphs (FitNMA) obtained from
+    # https://onlinelibrary.wiley.com/doi/10.1002/jcc.26701?af=R
+    os.system(f"correlationplus analyze -i {prefix}/examples/crn.enm -p {prefix}/examples/1crn.pdb -t eg -v 0.1 -d 30")
+
+    # Test to visualize paths in elasticity graphs (FitNMA) obtained from
+    # https://onlinelibrary.wiley.com/doi/10.1002/jcc.26701?af=R
+    os.system(f"correlationplus paths -i {prefix}/examples/crn.enm -p {prefix}/examples/1crn.pdb -t eg -v 0.1 -d 30 -b A10 -e A41")
+    
+    
 if __name__ == "__main__":
     import sys
     COR_PLUS_HOME = os.path.abspath(os.path.join(__file__, '..', '..'))
