@@ -1,12 +1,13 @@
 # correlationplus
 
-A Python package to calculate, visualize and analyze correlations maps of proteins.
+A Python package to calculate, visualize and analyze correlation maps of proteins.
 
 correlationplus contains four main scripts that you can use to calculate, visualize
-and analyze dynamical correlations of proteins. 
+and analyze correlation maps of proteins. 
 These correlations can be dynamical cross-correlations, linear mutual
-information. You can use elastic network models or your
-your molecular dynamics trajectories for calculation, visualizations and analyses. 
+information, sequence based covariation/coevolution or any other pairwise coupling metric. 
+You can use elastic network models or your molecular dynamics trajectories for calculation 
+of dynamical correlations.  
 
 ## Video Tutorials
 * Installation: https://www.youtube.com/watch?v=Fc_xpnrbbWU
@@ -56,8 +57,6 @@ or if you do not have administration rights
 python3 -m pip install --user numpy==1.16.1
 python3 -m pip install --user correlationplus
 ```
-
-
 
 Most of the time, at least one these methods will be sufficient for the installation.
 However, if these two methods didn't work for any reason, you can take a look 
