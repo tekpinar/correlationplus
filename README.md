@@ -1,8 +1,8 @@
 # correlationplus
 
-A Python package to calculate, visualize and analyze dynamical correlations of proteins.
+A Python package to calculate, visualize and analyze correlations maps of proteins.
 
-correlationplus contains three main scripts that you can use to calculate, visualize
+correlationplus contains four main scripts that you can use to calculate, visualize
 and analyze dynamical correlations of proteins. 
 These correlations can be dynamical cross-correlations, linear mutual
 information. You can use elastic network models or your
@@ -66,10 +66,11 @@ https://correlationplus.readthedocs.io/en/latest/installation.html#advanced-inst
 
 
 ## Quickstart
-There are three main scrips: 
+There are four main scrips: 
 * calculate
 * visualize
 * analyze
+* paths
 
 You can find details of each script with the following commands:
 
@@ -77,6 +78,7 @@ You can find details of each script with the following commands:
 correlationplus calculate -h
 correlationplus visualize -h
 correlationplus analyze -h
+correlationplus paths -h
 ```
 
 Go to our [readthedocs](https://correlationplus.readthedocs.io/en/latest/quickstart.html) for 
