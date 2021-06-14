@@ -45,10 +45,12 @@ Arguments: -i: A file containing correlations in matrix format. (Mandatory)
 
            -p: PDB file of the protein. (Mandatory)
            
-           -t: Type of the matrix. It can be ndcc, lmi or absndcc (absolute values of ndcc).
+           -t: Type of the matrix. It can be ndcc, lmi, absndcc (absolute values of ndcc)
+               or eg (elasticity graph).
                In addition, coeviz and evcouplings are also some options to analyze sequence
-               correlations. If your data is in full matrix format, you can select generic
-               as your data type
+               correlations. 
+               If your data any other coupling data in full matrix format, you can select generic
+               as your data type. 
                Default value is ndcc (Optional)
 
            -v: Minimal correlation value. Any value equal or greater than this 

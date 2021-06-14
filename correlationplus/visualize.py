@@ -320,7 +320,7 @@ def parseElasticityGraph(inp_file, selectedAtoms, \
             fields = line.split()
             sys.stdout.write('\r')
             # the exact output you're looking for:
-            sys.stdout.write("@> Percentage: {0:.2f}".format((float(k)/numLines)))
+            sys.stdout.write("@> Percentage: {0:.1f}".format((float(k)*100/numLines)))
             sys.stdout.flush()
 
             for i in range(0, n):

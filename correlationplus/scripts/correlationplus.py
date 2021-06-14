@@ -69,7 +69,7 @@ CorrelationPlus contains five apps:
  - calculate
  - visualize
  - analyze
- - paths (Experimental)
+ - paths
  - diffMap
 
 You can get more information about each individual app as follows:
