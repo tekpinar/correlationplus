@@ -1,7 +1,8 @@
 Quickstart
 ==========
 
-There are three main scrips of correlationplus package: 
+There are four main scrips of correlationplus package:
+
 * calculate
 * visualize
 * analyze
@@ -20,10 +21,28 @@ You can find more information about each script as follows::
 Here are some examples of the correlationplus commandline interface.
 You can find all required files in the examples folder at our `github page <https://github.com/tekpinar/correlationplus>`_
 
+Correlation Data Types
+----------------------
+Correlationplus can handle the following correlation/coupling data types:
+
+* ndcc: Normalized dynamical cross-correlations in full matrix format.
+* absndcc: Absolute values normalized dynamical cross-correlations in full matrix format
+* lmi: Normalized linear mutual information in full matrix format or output of g_correlation program. 
+* coeviz: After removing the header lines, the data is in matrix format. 
+* evcouplings: The sequence coupling csv files obtained from https://evcouplings.org/ can be parsed directly. 
+* generic: If you have some coupling data (from dynamics, sequences or any other data) in full matrix format, select this option. 
+
+You can control data types in correlationplus script with '-t' option. For example, '-t generic' will tell the script that it is 
+a generic data, etc.
+
+
 **calculate** script
 --------------------
 With this module, you can calculate dynamical cross-correlation and linear mutual information from
 elastic network models and molecular dynamics trajectories. 
+
+The only input file needed is a PDB file. The file can contain single or multiple chains. In all of 
+the computations via script interfaces, only Calpha atoms are selected and used.    
 
 To calculate **dynamical cross-correlations** with **Gaussian** network model::
 
@@ -52,21 +71,21 @@ To calculate **linear mutual informations** from a molecular dynamics trajectory
 **visualize** script
 --------------------
 Visualize module plots all 2D correlation maps. It prepares tcl and pml files so that the correlated residue pairs can
-be visualized with the help of **VMD** and **PyMol** programs. This interface needs only a pdb file with N residues and
+be visualized with the help of **VMD** and **PyMOL** programs. This interface needs only a pdb file with N residues and
 a square matrix of NxN. The correlation data has to be in matrix format, where only A(i,j) values are 
 listed in a square matrix format. LMI matrices produced by g_correlation program of Lange and Grubmuller
 can also be parsed. 
 
 
-To run a simple example of visualization, you can use data and pdb files in the examples folder::
+To run a simple example of visualization, you can use the data and pdb files in the examples folder::
 
   correlationplus visualize -i ndcc-6lu7-anm.dat -p 6lu7_dimer_with_N3_protein_sim1_ca.pdb -t absndcc -v 0.75
 
 In addition, the command above will produce plots of absolute values of dynamical cross correlations vs interresidue distances.
+This information can be quite useful if you are particularly looking for long-distance interactions. 
 
-The visualize app will produce an output for overall structure 
-and all individual intra-chain correlations, if exist. Moreover, the program 
-will give you inter-chain correlations, if you have more than one chain. 
+The visualize app will produce an output for overall structure and all individual intra-chain correlations, if exist. 
+Moreover, the program will give you inter-chain correlations, if you have more than one chain. 
 
 You can analyze the correlations with `VMD <https://www.ks.uiuc.edu/Research/vmd/>`_ just by loading the tcl files produced by 
 visualize app.  To reduce the clutter, the command above will only dump the correlations greater than 0.75 to your tcl or pml file.
@@ -87,9 +106,11 @@ number of correlations and the min-max correlation limits that you imposed.
 Additionally, vmd command has to be in your path if you want to do this 
 with the command above.
 
-If you would like to use PyMol, the following command will be sufficient::
+If you would like to use PyMOL, the following command will be sufficient::
   
   pymol correlation-interchain-chainsA-B.pml
+
+
 
 Sometimes, we may need to plot difference map of two correlation maps. 
 You may want to see the differences of linear mutual information 
