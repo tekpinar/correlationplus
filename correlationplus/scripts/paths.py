@@ -22,7 +22,7 @@
 # along with correlationplus.  If not, see <https://www.gnu.org/licenses/>.   #
 ###############################################################################
 
-
+import os
 import sys
 import getopt
 
@@ -144,12 +144,14 @@ def handle_arguments_pathAnalysisApp():
         num_path = 1
 
     if src_res is None:
-        print("@>ERROR: You have to specify a source resid!")
+        print("@>ERROR: You have to specify a chain ID and source resid!")
+        print("@>Example: To specify resid 41 in chain A, use A41.")
         usage_pathAnalysisApp()
         sys.exit(-1)
 
     if trgt_res is None:
-        print("@>ERROR: You have to specify a target resid!")
+        print("@>ERROR: You have to specify a chain ID and a target resid!")
+        print("@>Example: To specify resid 41 in chain B, use B41.")
         usage_pathAnalysisApp()
         sys.exit(-1)
 
@@ -174,6 +176,16 @@ def pathAnalysisApp():
 @> Source residue : {src_res}
 @> Target residue : {trgt_res}
 @> Number of paths: {num_paths}""")
+
+    if (os.path.isfile(inp_file) == False):
+        print("@> ERROR: Could not find the correlation matrix: "+inp_file+"!")
+        print("@>        The file does not exist or it is not in the folder!\n")
+        sys.exit(-1)
+
+    if (os.path.isfile(pdb_file)  == False):
+        print("@> ERROR: Could not find the pdb file: "+pdb_file+"!")
+        print("@>        The file does not exist or it is not in the folder!\n")
+        sys.exit(-1)
 
     ##########################################################################
     # Read PDB file

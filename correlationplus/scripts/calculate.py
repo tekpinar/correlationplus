@@ -21,7 +21,7 @@
 # You should have received a copy of the GNU Lesser General Public License    #
 # along with correlationplus.  If not, see <https://www.gnu.org/licenses/>.   #
 ###############################################################################
-
+import os
 import sys
 import getopt
 
@@ -173,6 +173,11 @@ def calculateApp():
 @> Output          : {out_file}
 @> Correlation     : {sel_type}
 @> PDB file        : {pdb_file}""")
+
+    if (os.path.isfile(pdb_file)  == False):
+        print("@> ERROR: Could not find the pdb file: "+pdb_file+"!")
+        print("@>        The file does not exist or it is not in the folder!\n")
+        sys.exit(-1)
 
     if out_file.lower().endswith(('.dat', '.txt')) is False:
         out_file = out_file + ".dat"
