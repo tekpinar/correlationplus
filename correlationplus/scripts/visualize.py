@@ -228,7 +228,10 @@ def visualizemapApp():
         minCorrelationValue = np.min(ccMatrix)
         maxCorrelationValue = np.max(ccMatrix)
         minColorBarLimit = 0.0
-        if maxCorrelationValue > 1.0:
+
+        # Ideally, it is supposed to be 1 but I used 1.00001 to avoid  
+        # rounding problems
+        if maxCorrelationValue > 1.00001:
             print("This LMI map is not normalized!")
             # TODO: At this point, one can ask the user if s/he wants to normalize it!
             sys.exit(-1)
