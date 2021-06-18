@@ -22,7 +22,7 @@
 # along with correlationplus.  If not, see <https://www.gnu.org/licenses/>.   #
 ###############################################################################
 
-
+import os
 import sys
 import getopt
 
@@ -155,6 +155,16 @@ def centralityAnalysisApp():
 @> Centrality     : {centrality_type}
 @> Value filter   : {value_cutoff}
 @> Distance filter: {distance_cutoff}""")
+
+    if (os.path.isfile(inp_file) == False):
+        print("@> ERROR: Could not find the correlation matrix: "+inp_file+"!")
+        print("@>        The file does not exist or it is not in the folder!\n")
+        sys.exit(-1)
+
+    if (os.path.isfile(pdb_file)  == False):
+        print("@> ERROR: Could not find the pdb file: "+pdb_file+"!")
+        print("@>        The file does not exist or it is not in the folder!\n")
+        sys.exit(-1)
 
     ##########################################################################
     # Read PDB file
