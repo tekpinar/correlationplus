@@ -23,7 +23,7 @@
 ###############################################################################
 
 import sys
-
+from correlationplus import __version__ as cp_vers
 # cannot use relative imports
 # as it does not work in tests/run_test
 # ImportError: attempted relative import with no known parent package
@@ -92,9 +92,10 @@ def main():
 |                         Author: Mustafa Tekpinar                           |
 |                       Email: tekpinar@buffalo.edu                          |
 |                           Licence: GNU LGPL V3                             |
+|                              Version: {0}                                |
 |--------------------------------------------------------------------------- |
 
-""")
+""".format(cp_vers))
 
     if len(sys.argv) > 1:
         if sys.argv[1] == "calculate":

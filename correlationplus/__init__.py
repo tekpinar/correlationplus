@@ -31,7 +31,7 @@ Purpose     : A Python package to calculate, visualize and analyze dynamical
               correlations maps of proteins.
 """
 
-__all__ = ['calculate', 'visualize', 'centralityAnalysis']
+__all__ = ['calculate', 'visualize', 'centralityAnalysis', 'pathAnalysis']
 
-__version__ = '0.2.0rc1'
+__version__ = '0.2.0rc6'
 
