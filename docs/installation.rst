@@ -13,22 +13,33 @@ You can also install correlationplus with conda as follows::
     conda install -c bioconda correlationplus
 with pip
 ~~~~~~~~
-We recommend to use pip as follows::
+We **strongly** encourage you to install correlationplus in a virtualenv::
 
-	python3 -m pip install numpy==1.16.1
+	python3 -m venv correlationplus
+	cd correlationplus
+	source bin/activate
+
+Then, you can upgrade pip and install it as follows::
+
+	python3 -m pip install -U pip
 	python3 -m pip install correlationplus
 
 
 or if you do not have administration rights::
 
-	python3 -m pip install --user numpy==1.16.1
+	python3 -m pip install --user -U pip
 	python3 -m pip install --user correlationplus
 
+If you want to install it without using a virtualenv and encounter an error related to llvmlite, 
+you can solve it as follows::
+
+	python3 -m pip install llvmlite --ignore-installed
+	python3 -m pip install correlationplus
 
 		
 Most of the time, at least one these methods will be sufficient for the installation.
 However, if these two methods didn't work for any reason, you can take a look 
-at the 'Advanced Installation' instructions.
+at the 'Advanced Installation' instructions to install it from the source.
 
 Advanced Installation
 ---------------------
