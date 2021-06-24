@@ -41,20 +41,17 @@ python3 -m pip install -U pip
 python3 -m pip install correlationplus
 ```
 
-if you still want to install it without using a virtualenv
-or you hate to upgrade pip version to a version >=21.0.1,
-install numpy==1.16
-and the install correlationplus
-
-We recommend to use pip as follows:
+if you want to install it without using a virtualenv
+and encounter an error related to llvmlite, you can
+solve it as follows:
 ```bash
-python3 -m pip install numpy==1.16.1
+python3 -m pip install llvmlite --ignore-installed
 python3 -m pip install correlationplus
 ```
 
 or if you do not have administration rights
 ```bash
-python3 -m pip install --user numpy==1.16.1
+python3 -m pip install --user llvmlite --ignore-installed
 python3 -m pip install --user correlationplus
 ```
 
