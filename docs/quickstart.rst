@@ -175,9 +175,11 @@ calculate 10 paths between residue 41 of chain A and residue 41 of chain B::
 
 Ipython Interface
 -----------------
-For a detailed analysis, script interfaces provided by calculate, visualize, analyze and 
-diffMap apps may not be sufficient. Therefore, you can use IPython 
-to load the functions and do a detailed analysis as follows. 
+For a detailed analysis, script interfaces provided by calculate, visualize, analyze, paths and 
+diffMap scripts may not be sufficient. Therefore, you can use IPython 
+to load the modules and do a detailed analysis as follows. 
+
+``from correlationplus.calculate import *``
 
 ``from correlationplus.visualize import *``
  
@@ -188,3 +190,20 @@ You can get help for each function with
 You can check different valueFilters, distanceFilters for your analysis. 
 Also, you can scan a range of values by calling the functions in a 
 loop. 
+
+There is a minor but important difference between the scripts and the modules for centrality and path 
+analyses. If you want to use the module for centrality analysis:
+
+``from correlationplus.centralityAnalysis import *``
+
+Please notice that the name of the script was 'analyze' but the name of the module is 'centralityAnalysis'. 
+
+Similarly, the name of the path analysis script is 'paths' while the name of the module is 'pathAnalysis'. 
+Therefore, you have to call path analysis module interactively as follows:
+
+``from correlationplus.pathAnalysis import *``
+
+
+
+
+
