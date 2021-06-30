@@ -29,11 +29,6 @@ of dynamical correlations.
 
 We recommend one of the installation methods for regular users:
 
-### with conda
-```bash
-conda install -c bioconda correlationplus
-
-```
 
 ### with pip
 
@@ -61,6 +56,12 @@ or if you do not have administration rights
 ```bash
 python3 -m pip install --user llvmlite --ignore-installed
 python3 -m pip install --user correlationplus
+```
+
+### with conda
+```bash
+conda install -c bioconda correlationplus
+
 ```
 
 Most of the time, at least one these methods will be sufficient for the installation.
