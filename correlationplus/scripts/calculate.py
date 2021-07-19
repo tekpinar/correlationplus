@@ -69,7 +69,7 @@ Arguments:
                is number of Calpha atoms.)
            -c: Cutoff radius in Angstrom for ANM or GNM. (Optional) 
                Default is 15 for ANM and 10 for GNM. 
-           -t: Type of the correlation matrix. It can be ndcc or lmi.
+           -t: Type of the correlation matrix. It can be dcc, ndcc or lmi.
                Default value is ndcc. (Optional)
            -o: This will be your output data file.
                Default is DCC.dat. (Optional)
@@ -152,11 +152,13 @@ def handle_arguments_calculateApp():
     if out_file is None:
         if sel_type.lower() == "ndcc":
             out_file = "DCC"
+        if sel_type.lower() == "dcc":
+            out_file = "DCC"
         elif sel_type.lower() == "lmi":
             out_file = "LMI"
         else:
             print("@> ERROR: Unknown correlation matrix calculation requested!")
-            print("@> This app can only calculate lmi or ndcc matrices.")
+            print("@> This app can only calculate lmi, dcc or ndcc matrices.")
             print("@> Please check what you specified with -t option!")
             usage_calculateApp()
             sys.exit(-1)
@@ -215,6 +217,22 @@ def calculateApp():
                        startingFrame=beg_frm,
                        endingFrame=end_frm,
                        normalized=True,
+                       alignTrajectory=True,
+                       saveMatrix=True,
+                       out_file=out_file)
+        elif sel_type == "ndcc":
+            calcMDnDCC(pdb_file, trj_file,
+                       startingFrame=beg_frm,
+                       endingFrame=end_frm,
+                       normalized=True,
+                       alignTrajectory=True,
+                       saveMatrix=True,
+                       out_file=out_file)
+        elif sel_type == "dcc":
+            calcMDnDCC(pdb_file, trj_file,
+                       startingFrame=beg_frm,
+                       endingFrame=end_frm,
+                       normalized=False,
                        alignTrajectory=True,
                        saveMatrix=True,
                        out_file=out_file)

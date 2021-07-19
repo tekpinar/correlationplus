@@ -45,12 +45,12 @@ Arguments: -i: A file containing correlations in matrix format. (Mandatory)
 
            -p: PDB file of the protein. (Mandatory)
            
-           -t: Type of the matrix. It can be ndcc, lmi, absndcc (absolute values of ndcc)
+           -t: Type of the matrix. It can be dcc, ndcc, lmi, absndcc (absolute values of ndcc)
                or eg (elasticity graph).
                In addition, coeviz and evcouplings are also some options to analyze sequence
                correlations. 
-               If your data any other coupling data in full matrix format, you can select generic
-               as your data type. 
+               If your data any other coupling data is in full matrix format, you can select 
+               your data type as 'generic'. 
                Default value is ndcc (Optional)
 
            -v: Minimal correlation value. Any value equal or greater than this 
@@ -183,12 +183,34 @@ def visualizemapApp():
         if minCorrelationValue < 0.0:
         # Assume that it is an nDCC file
             minColorBarLimit = -1.0
-        if maxCorrelationValue > 1.0:
+        if maxCorrelationValue > 1.00001:
             print("This correlation map is not normalized!")
             # TODO: At this point, one can ask the user if s/he wants to normalize it!
             sys.exit(-1)
         else:
             maxColorBarLimit = 1.0
+    elif sel_type.lower() == "dcc":
+        # Check if the data type is sparse matrix
+        data_file = open(inp_file, 'r')
+        allLines = data_file.readlines()
+        data_file.close()
+ 
+        # Read the first line to determine if the matrix is sparse format
+        words = allLines[0].split()
+
+        # Read the 1st line and check if it has three columns
+        if (len(words) == 3):
+            ccMatrix = parseSparseCorrData(inp_file, selectedAtoms, \
+                                            Ctype=True, 
+                                            symmetric=True,
+                                            writeAllOutput=False)
+        else:
+            ccMatrix = np.loadtxt(inp_file, dtype=float)
+        # Check the data range in the matrix.
+        minCorrelationValue = np.min(ccMatrix)
+        maxCorrelationValue = np.max(ccMatrix)
+        minColorBarLimit = minCorrelationValue
+        maxColorBarLimit = maxCorrelationValue
     elif sel_type.lower() == "absndcc":
         # Check if the data type is sparse matrix
         data_file = open(inp_file, 'r')
@@ -324,6 +346,9 @@ def visualizemapApp():
         if sel_type.lower() == "ndcc":
             distanceDistribution(ccMatrix, out_file, "nDCC", selectedAtoms,
                                  absoluteValues=False, writeAllOutput=True)
+        elif sel_type.lower() == "dcc":
+            distanceDistribution(ccMatrix, out_file, "DCC", selectedAtoms,
+                                 absoluteValues=False, writeAllOutput=True)
 
         elif sel_type.lower() == "absndcc":
             distanceDistribution(ccMatrix, out_file, "Abs(nDCC)",
@@ -349,7 +374,7 @@ def visualizemapApp():
                                  absoluteValues=False, writeAllOutput=True)
         else:
             print("Warning: Unknows correlation data.\n")
-            print("         Correlations can be ndcc, absndcc, lmi,\n")
+            print("         Correlations can be dcc, ndcc, absndcc, lmi,\n")
             print("         coeviz or evcouplings!\n")
 
     ##########################################################################

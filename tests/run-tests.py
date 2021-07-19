@@ -46,11 +46,19 @@ def runTests():
     print(f"\n@> Testing the nDCC calculation from ANM with the following command:\n\n{command}\n\n")
     os.system(command)
 
-    # Test calculate module to produce nDCC map from an MD trajectory.
+    # Test calculate module to produce nDCC (normalized dynamical cross-correlation) map from an MD trajectory.
     command = f"correlationplus calculate "\
               f"-p {prefix}/examples/6lu7_dimer_with_N3_protein_sim1_ca.pdb "\
               f"-f {prefix}/examples/6lu7_dimer_with_N3_protein_sim1_ca_short.trr -o dcc-6lu7-md.dat"
     print(f"\n@> Testing the nDCC calculation from an MD trajectory with the following command:\n\n{command}\n\n")
+    os.system(command)
+
+    # Test calculate module to produce DCC (dynamical cross-correlation) map from an MD trajectory.
+    # Please note that DCC values are not normalized here!
+    command = f"correlationplus calculate "\
+              f"-p {prefix}/examples/6lu7_dimer_with_N3_protein_sim1_ca.pdb "\
+              f"-f {prefix}/examples/6lu7_dimer_with_N3_protein_sim1_ca_short.trr -o dcc-6lu7-md.dat -t dcc"
+    print(f"\n@> Testing the DCC calculation from an MD trajectory with the following command:\n\n{command}\n\n")
     os.system(command)
 
     # Test calculate module to produce LMI map with ANM modes.
