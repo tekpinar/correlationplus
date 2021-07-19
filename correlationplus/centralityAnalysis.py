@@ -58,7 +58,7 @@ def projectCentralitiesOntoProteinVMD(centrality, centralityArray, \
     centralityArray: A numpy data array ?
         It is a numpy matrix of typically nDCC, LMI or Generalized Correlations.
     out_file: string
-        Prefix of the output file. According to the centralty measure, it will be
+        Prefix of the output file. According to the centrality measure, it will be
         extended.
     selectedAtoms: object
         This is a prody.parsePDB object of typically CA atoms of a protein.
@@ -351,7 +351,7 @@ def buildDynamicsNetwork(ccMatrix, distanceMatrix, \
     Parameters
     ----------
     ccMatrix: Numpy matrix
-        It is a numpy matrix of typically nDCC, LMI or Generalized Correlations.
+        It is a numpy matrix of typically nDCC, nLMI or Generalized Correlations.
     distanceMatrix: Numpy matrix
         The distances between Calpha atoms of the protein stored in a matrix.
     valueFilter: float
@@ -405,7 +405,8 @@ def buildSequenceNetwork(ccMatrix, distanceMatrix, \
     Parameters
     ----------
     ccMatrix: Numpy matrix
-        It is a numpy matrix of typically nDCC, LMI or Generalized Correlations.
+        It is a numpy matrix of typically DCC, LMI or any other matrix where 
+        absolute values correlations are not between zero and one.
     distanceMatrix: Numpy matrix
         The distances between Calpha atoms of the protein stored in a matrix.
     valueFilter: float

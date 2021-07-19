@@ -51,8 +51,8 @@ Arguments: -i: A file containing correlations in matrix format. (Mandatory)
 
            -p: PDB file of the protein. (Mandatory)
            
-           -t: Type of the matrix. It can be ndcc, lmi, absndcc (absolute values of ndcc)
-               or eg (elasticity graph).
+           -t: Type of the matrix. It can be dcc, ndcc, lmi, nlmi (normalized lmi), 
+               absndcc (absolute values of ndcc) or eg (elasticity graph).
                In addition, coeviz and evcouplings are also some options to analyze sequence
                correlations. 
                If your data any other coupling data in full matrix format, you can select generic
@@ -178,7 +178,7 @@ def centralityAnalysisApp():
 
     ##########################################################################
     # Read data file and assign to a numpy array
-    if sel_type.lower() == "ndcc":
+    if ((sel_type.lower() == "dcc") or (sel_type.lower() == "ndcc")):
         # Check if the data type is sparse matrix
         data_file = open(inp_file, 'r')
         allLines = data_file.readlines()
@@ -212,7 +212,7 @@ def centralityAnalysisApp():
                                                         writeAllOutput=False))
         else:
             ccMatrix = np.absolute(np.loadtxt(inp_file, dtype=float))
-    elif sel_type.lower()== "lmi":
+    elif ((sel_type.lower()== "lmi") or (sel_type.lower()== "nlmi")):
         # Check if the data type is sparse matrix
         data_file = open(inp_file, 'r')
         allLines = data_file.readlines()
@@ -255,20 +255,19 @@ def centralityAnalysisApp():
         ccMatrix = parseElasticityGraph(inp_file, selectedAtoms, \
                                             writeAllOutput=False)
     else:
-        print("@> ERROR: Unknown data type: Type can only be ndcc, absndcc, lmi,\n")
-        print("@>        coeviz or evcouplings. If you have your data in full \n")
+        print("@> ERROR: Unknown data type: Type can only be dcc, ndcc, absndcc, lmi,\n")
+        print("@>        nlmi, coeviz or evcouplings. If you have your data in full \n")
         print("@>        matrix format and your data type is none of the options\n")
-        print("@>        mentionned, you can set data type 'generic'.\n")
+        print("@>        mentionned, you can set data type as 'generic'.\n")
         sys.exit(-1)
 
-    if ((sel_type.lower() == "evcouplings") or \
-        (sel_type.lower() == "generic")  or \
-        (sel_type.lower() == "eg")):
-        network = buildSequenceNetwork(ccMatrix, distanceMatrix, \
+    if ((sel_type.lower() == "ndcc") or \
+        (sel_type.lower() == "nlmi")):
+        network = buildDynamicsNetwork(ccMatrix, distanceMatrix, \
                                     valueFilter, distanceFilter,\
                                     selectedAtoms)
     else:
-        network = buildDynamicsNetwork(ccMatrix, distanceMatrix, \
+        network = buildSequenceNetwork(ccMatrix, distanceMatrix, \
                                     valueFilter, distanceFilter,\
                                     selectedAtoms)
 

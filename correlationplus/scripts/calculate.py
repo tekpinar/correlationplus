@@ -69,7 +69,8 @@ Arguments:
                is number of Calpha atoms.)
            -c: Cutoff radius in Angstrom for ANM or GNM. (Optional) 
                Default is 15 for ANM and 10 for GNM. 
-           -t: Type of the correlation matrix. It can be dcc, ndcc or lmi.
+           -t: Type of the correlation matrix. It can be dcc, ndcc,
+               lmi or nlmi (normalized lmi).
                Default value is ndcc. (Optional)
            -o: This will be your output data file.
                Default is DCC.dat. (Optional)
@@ -156,9 +157,11 @@ def handle_arguments_calculateApp():
             out_file = "DCC"
         elif sel_type.lower() == "lmi":
             out_file = "LMI"
+        elif sel_type.lower() == "nlmi":
+            out_file = "LMI"
         else:
             print("@> ERROR: Unknown correlation matrix calculation requested!")
-            print("@> This app can only calculate lmi, dcc or ndcc matrices.")
+            print("@> This app can only calculate dcc, ndcc, lmi or nlmi matrices.")
             print("@> Please check what you specified with -t option!")
             usage_calculateApp()
             sys.exit(-1)
@@ -193,8 +196,15 @@ def calculateApp():
         print("@> Cutoff radius   : " + str(cut_off))
         # Read pdb file
         selectedAtoms = parsePDB(pdb_file, subset='ca')
-        if sel_type == "lmi":
+        if ((sel_type == "lmi") or (sel_type == "nlmi")):
             calcENM_LMI(selectedAtoms, cut_off,
+                        method=method, 
+                        nmodes=num_mod,
+                        normalized=True,
+                        saveMatrix=True,
+                        out_file=out_file)
+        elif ((sel_type == "dcc") or (sel_type == "ndcc")):
+            calcENMnDCC(selectedAtoms, cut_off,
                         method=method, 
                         nmodes=num_mod,
                         normalized=True,
@@ -213,6 +223,14 @@ def calculateApp():
         print("@> Beginning frame : " + str(beg_frm))
         print("@> Ending frame    : " + str(end_frm))
         if sel_type == "lmi":
+            calcMD_LMI(pdb_file, trj_file,
+                       startingFrame=beg_frm,
+                       endingFrame=end_frm,
+                       normalized=False,
+                       alignTrajectory=True,
+                       saveMatrix=True,
+                       out_file=out_file)
+        elif sel_type == "nlmi":
             calcMD_LMI(pdb_file, trj_file,
                        startingFrame=beg_frm,
                        endingFrame=end_frm,

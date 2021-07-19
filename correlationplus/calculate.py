@@ -348,8 +348,7 @@ def calcMD_LMI(topology, trajectory, startingFrame=0, endingFrame=(-1),
 
     lmiMatrix = np.zeros((N, N), np.double)
 
-    # Just to make the diagonal element 1.0 when normalized!
-    np.fill_diagonal(lmiMatrix, 2000.0) 
+
     
     #TODO: This part can be put under @numba.njit to accelarate it!
     for i in range(0, N):
@@ -387,6 +386,8 @@ def calcMD_LMI(topology, trajectory, startingFrame=0, endingFrame=(-1),
     #########################################################################
 
     if normalized:
+        # Just to make the diagonal element 1.0 when normalized!
+        np.fill_diagonal(lmiMatrix, 2000.0) 
         lmi_normalized = np.zeros((N, N), np.double)
         lmi_normalized = np.sqrt(1.0 - np.exp(-2.0 / 3.0 * lmiMatrix))
         

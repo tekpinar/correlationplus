@@ -66,10 +66,15 @@ def runTests():
               f"-p {prefix}/examples/6lu7_dimer_with_N3_protein_sim1_ca.pdb "
                "-t lmi -o lmi-6lu7-anm.dat")
 
-    # Test calculate module to produce LMI map from an MD trajectory.
+    # Test calculate module to produce NON-normalized LMI map from an MD trajectory.
     os.system(f"correlationplus calculate "
               f"-p {prefix}/examples/6lu7_dimer_with_N3_protein_sim1_ca.pdb "
               f"-f {prefix}/examples/6lu7_dimer_with_N3_protein_sim1_ca_short.trr -t lmi -o lmi-6lu7-md.dat")
+
+    # Test calculate module to produce normalized LMI map from an MD trajectory.
+    os.system(f"correlationplus calculate "
+              f"-p {prefix}/examples/6lu7_dimer_with_N3_protein_sim1_ca.pdb "
+              f"-f {prefix}/examples/6lu7_dimer_with_N3_protein_sim1_ca_short.trr -t nlmi -o lmi-6lu7-md.dat")
 
     # Test visualizemapApp for absolute nDCC maps
     os.system(f"correlationplus visualize "
@@ -81,20 +86,20 @@ def runTests():
     os.system(f"correlationplus visualize "
               f"-i {prefix}/examples/6lu7_dimer_with_N3_protein_sim1-lmi.dat "
               f"-p {prefix}/examples/6lu7_dimer_with_N3_protein_sim1_ca.pdb "
-              "-t lmi -v 0.75 ")
+              "-t nlmi -v 0.75 ")
  
-    # Test diffMapApp for LMI maps
+    # Test diffMapApp for nLMI maps
     os.system(f"correlationplus diffMap "
               f"-i {prefix}/examples/6lu7_dimer_with_N3_protein_sim1-lmi.dat  "
               f"-j {prefix}/examples/6lu7_dimer_no_ligand_protein_sim1-lmi.dat  "
               f"-p {prefix}/examples/6lu7_dimer_with_N3_protein_sim1_ca.pdb "
-              "-t lmi")
+              "-t nlmi")
 
     # Test centralityAnalysisApp for LMI maps
     os.system(f"correlationplus analyze "
               f"-i {prefix}/examples/6lu7_dimer_with_N3_protein_sim1-lmi.dat "
               f"-p {prefix}/examples/6lu7_dimer_with_N3_protein_sim1_ca.pdb "
-              "-t lmi")
+              "-t nlmi")
 
     # Test pathAnalysisApp for ndcc maps
     os.system(f"correlationplus paths "
@@ -106,7 +111,7 @@ def runTests():
     os.system(f"correlationplus paths "
               f"-i {prefix}/examples/6lu7_dimer_with_N3_protein_sim1-lmi.dat "
               f"-p {prefix}/examples/6lu7_dimer_with_N3_protein_sim1_ca.pdb "
-              "-t lmi -b A41 -e B41")
+              "-t nlmi -b A41 -e B41")
 
     # Test to visualize elasticity graphs (FitNMA) obtained from
     # https://onlinelibrary.wiley.com/doi/10.1002/jcc.26701?af=R
