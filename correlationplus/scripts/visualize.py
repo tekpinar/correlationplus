@@ -54,7 +54,10 @@ Arguments: -i: A file containing correlations in matrix format. (Mandatory)
                Default value is ndcc (Optional)
 
            -v: Minimal correlation value. Any value equal or greater than this 
-               will be projected onto protein structure. Default is 0.75. (Optional)
+               will be projected onto protein structure. Default is minimal value of the map. (Optional)
+            
+           -x: Maximal correlation value. Any value equal or lower than this 
+               will be projected onto protein structure. Default is maximal value of the map. (Optional)
 
            -d: If the minimal distance between two C_alpha atoms is bigger 
                than the specified distance, it will be projected onto protein structure. 
@@ -75,11 +78,13 @@ def handle_arguments_visualizemapApp():
     sel_type = None
     vmin_fltr = None
     vmax_fltr = None
-    dis_fltr = None
+    dmin_fltr = None
+    dmax_fltr = None
     cyl_rad = None
     try:
-        opts, args = getopt.getopt(sys.argv[2:], "hi:o:t:p:v:x:d:r:", \
-            ["help", "inp=", "out=", "type=", "pdb=", "vmin=", "vmax=", "dis=", "radius="])
+        opts, args = getopt.getopt(sys.argv[2:], "hi:o:t:p:v:x:d:D:r:", \
+            ["help", "inp=", "out=", "type=", "pdb=", "vmin=", "vmax=", \
+            "dmin=", "dmax=", "radius="])
     except getopt.GetoptError:
         usage_visualizemapApp()
     for opt, arg in opts:
@@ -98,8 +103,10 @@ def handle_arguments_visualizemapApp():
             vmin_fltr = arg
         elif opt in ("-x", "--vmax"):
             vmax_fltr = arg
-        elif opt in ("-d", "--dis"):
-            dis_fltr = arg
+        elif opt in ("-d", "--dmin"):
+            dmin_fltr = arg
+        elif opt in ("-D", "--dmax"):
+            dmax_fltr = arg
         elif opt in ("-r", "--radius"):
             cyl_rad = arg
         else:
@@ -127,25 +134,29 @@ def handle_arguments_visualizemapApp():
     # if vmin_fltr is None:
     #     vmin_fltr = 0.75
 
-    if dis_fltr is None:
-        dis_fltr = 0.0
+    if dmin_fltr is None:
+        dmin_fltr = 0.0
     
+    if dmax_fltr is None:
+        dmax_fltr = 9999.9
 
     return inp_file, out_file, sel_type, pdb_file, \
-           vmin_fltr, vmax_fltr, dis_fltr, cyl_rad
+            vmin_fltr, vmax_fltr, \
+            dmin_fltr, dmax_fltr, cyl_rad
 
 
 def visualizemapApp():
     inp_file, out_file, sel_type, pdb_file, \
     vmin_fltr, vmax_fltr, \
-    dis_fltr, cyl_rad = handle_arguments_visualizemapApp()
+    dmin_fltr, dmax_fltr, cyl_rad = handle_arguments_visualizemapApp()
     print(f"""
 @> Running 'visualize' app:
     
 @> Input file       : {inp_file}
 @> PDB file         : {pdb_file}
 @> Data type        : {sel_type}
-@> Distance filter  : {dis_fltr}
+@> Min. dist. filter: {dmin_fltr}
+@> Max. dist. filter: {dmax_fltr}
 @> Output           : {out_file}""")
 
 
@@ -420,9 +431,11 @@ def visualizemapApp():
     # same secondary structure etc.
     filterByDistance = True
     if filterByDistance:
-        distanceValue = float(dis_fltr)
+        disMinValue = float(dmin_fltr)
+        disMaxValue = float(dmax_fltr)
         ccMatrix = filterCorrelationMapByDistance(ccMatrix, out_file, " ",
-                                                  selectedAtoms, distanceValue,
+                                                  selectedAtoms, 
+                                                  disMinValue, disMaxValue,
                                                   absoluteValues=False,
                                                   writeAllOutput=False)
 
