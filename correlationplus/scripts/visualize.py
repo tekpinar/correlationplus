@@ -59,9 +59,13 @@ Arguments: -i: A file containing correlations in matrix format. (Mandatory)
            -x: Maximal correlation value. Any value equal or lower than this 
                will be projected onto protein structure. Default is maximal value of the map. (Optional)
 
-           -d: If the minimal distance between two C_alpha atoms is bigger 
+           -d: If the distance between two C_alpha atoms is bigger 
                than the specified distance, it will be projected onto protein structure. 
-               Default is 0. (Optional)
+               Default is 0.0 Angstroms. (Optional)
+
+           -D: If the distance between two C_alpha atoms is smaller 
+               than the specified distance, it will be projected onto protein structure. 
+               Default is 9999.9 Angstroms. (Optional)
 
            -r: Cylinder radius scaling coefficient to multiply with the correlation quantity.
                It can be used to improve tcl and pml outputs to view the interaction 
