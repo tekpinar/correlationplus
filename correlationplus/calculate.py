@@ -242,6 +242,104 @@ def calcMDnDCC(topology, trajectory, startingFrame=0, endingFrame=(-1),
             np.savetxt(out_file, ccMatrix, fmt='%.6f')
         return ccMatrix
 
+def calcMD_DCC(topology, trajectory, startingFrame=0, endingFrame=(-1),
+               timeLag=0, normalized=True, alignTrajectory=True, 
+               saveMatrix=True, out_file="DCC"):
+    """
+        Calculate normalized dynamical cross-correlations when a topology
+        and a trajectory file is given. 
+
+    Parameters
+    ----------
+    topology: string
+        A PDB file.
+    trajectory: string
+        A trajectory file in dcd, xtc or trr format.
+    startingFrame: int
+        You can specify this value if you want to exclude some initial frames
+        from your cross-correlation calculations. Default value is 0.
+    endingFrame: int
+        You can specify this value if you want to calculate cross-correlation 
+        calculations up to a certain ending frame. Default value is -1 and it 
+        indicates the last frame in your trajectory.
+    timeLag: int
+        timeLag is not a time. In fact, it is just an integer specifying frame delay.
+        You have to multiply it with sampling time to obtain real time lag or time delay.
+        For example, if you select timeLag=5 and your sampling time is 200 ps, your 
+        time delay/lag is 1 ns.  
+    normalized: bool
+        Default value is True and it means that the cross-correlation matrix
+        will be normalized.
+    alignTrajectory: bool
+        Default value is True and it means that all frames in the trajectory 
+        will be aligned to the initial frame.  
+    saveMatrix: bool
+        If True, cross-correlation matrix will be written to an output file. 
+    out_file: string
+        Output file name for the cross-correlation matrix. 
+        Default value is DCC and the file extension is .dat. 
+
+    Returns
+    -------
+    ccMatrix: A numpy square matrix of floats
+        time lagged cross-correlation matrix.
+
+    """
+    # Create the universe (That sounds really fancy :)
+    universe = mda.Universe(topology, trajectory)
+
+    # Create an atomgroup from the alpha carbon selection
+    calphas = universe.select_atoms("protein and name CA")
+    N = calphas.n_atoms
+    print(f"@> Parsed {N} Calpha atoms.")
+    # Set your frame window for your trajectory that you want to analyze
+    # startingFrame = 0
+    if endingFrame == -1:
+        endingFrame = universe.trajectory.n_frames
+    skip = 1 
+    
+
+
+    # First, perform Calpha alignment
+    if alignTrajectory:
+        print("@> Aligning only Calpha atoms to the initial frame!")
+        alignment = align.AlignTraj(universe, universe, select="protein and name CA", in_memory=True)
+        alignment.run()
+    
+    Rvector = []
+    # Iterate through the universe trajectory
+    for timestep in universe.trajectory[startingFrame:endingFrame:skip]:
+        Rvector.append(calphas.positions.flatten())
+
+    # I reassign this bc in ccMatrix calculation, we may skip some part of the trajectory!
+    N_Frames = len(Rvector)
+
+    R_average = np.mean(Rvector, axis=0)
+    print("@> Calculating cross-correlation matrix:")
+    ccMatrix = timeLaggedDCCmatrixCalculation(N, np.array(Rvector), R_average, timeLag)
+
+    # Do the averaging
+    #ccMatrix = ccMatrix / float(N_Frames)
+    ccMatrix = ccMatrix / float(N_Frames - timeLag)
+
+    if normalized:
+        cc_normalized = np.zeros((N, N), np.double)
+        for i in range(0, N):
+            for j in range (i, N):
+                cc_normalized[i][j] = ccMatrix[i][j] / ((ccMatrix[i][i] * ccMatrix[j][j]) ** 0.5)
+                cc_normalized[j][i] = cc_normalized[i][j]
+        
+        if saveMatrix:
+            np.savetxt(out_file, cc_normalized, fmt='%.6f')
+
+        return cc_normalized
+    else:
+        for i in range(0, N):
+            for j in range(i + 1, N):
+                ccMatrix[j][i] = ccMatrix[i][j]
+        if saveMatrix:
+            np.savetxt(out_file, ccMatrix, fmt='%.6f')
+        return ccMatrix
 
 @numba.njit
 def DCCmatrixCalculation(N, Rvector, R_average):
@@ -261,6 +359,29 @@ def DCCmatrixCalculation(N, Rvector, R_average):
                 ccMatrix[i][j] += (deltaR[ind_3i]*deltaR[ind_3j] +
                                    deltaR[ind_3i + 1] * deltaR[ind_3j + 1] +
                                    deltaR[ind_3i + 2] * deltaR[ind_3j + 2])
+    return ccMatrix
+
+@numba.njit
+def timeLaggedDCCmatrixCalculation(N, Rvector, R_average, timeLag):
+    """
+        This function calculates upper triangle of time-lagged dynamical
+        cross-correlation matrix. 
+    """
+    #DeltaR is the fluctuation matrix
+    deltaR = Rvector - R_average
+    ccMatrix = np.zeros((N, N), np.double)
+    for k in range(0, len(Rvector)-timeLag):
+        if k % 100 == 0:
+            print("@> Frame: " + str(k))
+        deltaR_k = deltaR[k]
+        deltaR_kPlusTimeLag = deltaR[k+timeLag]
+        for i in range(0, N):
+            ind_3i = 3 * i
+            for j in range(i, N):
+                ind_3j = 3 * j
+                ccMatrix[i][j] += (deltaR_k[ind_3i]*deltaR_kPlusTimeLag[ind_3j] +
+                                   deltaR_k[ind_3i + 1] * deltaR_kPlusTimeLag[ind_3j + 1] +
+                                   deltaR_k[ind_3i + 2] * deltaR_kPlusTimeLag[ind_3j + 2])
     return ccMatrix
 
 

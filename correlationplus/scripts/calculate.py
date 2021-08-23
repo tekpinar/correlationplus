@@ -145,15 +145,26 @@ def handle_arguments_calculateApp():
             usage_calculateApp()
             sys.exit(-1)
 
-    # Assign a default matrix type                                                                                                                               
+    # Assign a default matrix type, if none is specified!                                                                                                                               
     if sel_type is None:
         sel_type = "ndcc"
+    
+    # Raise an error if an unknown correlation type is requested!
+    if ((sel_type.lower() != "ndcc") and \
+        (sel_type.lower() != "dcc") and \
+        (sel_type.lower() != "nlmi") and \
+        (sel_type.lower() != "lmi")):
+        print("@> ERROR: Unknown correlation matrix calculation requested!")
+        print("@> This app can only calculate dcc, ndcc, lmi or nlmi matrices!")
+        print("@> Please check what you specified with -t option!")
+        usage_calculateApp()
+        sys.exit(-1)
 
     # Assign a default name if the user forgets the output file prefix.                                                                                                                      
     if out_file is None:
         if sel_type.lower() == "ndcc":
-            out_file = "DCC"
-        if sel_type.lower() == "dcc":
+            out_file = "nDCC"
+        elif sel_type.lower() == "dcc":
             out_file = "DCC"
         elif sel_type.lower() == "lmi":
             out_file = "LMI"
@@ -238,10 +249,19 @@ def calculateApp():
                        alignTrajectory=True,
                        saveMatrix=True,
                        out_file=out_file)
+        # elif sel_type == "ndcc":
+        #     calcMDnDCC(pdb_file, trj_file,
+        #                startingFrame=beg_frm,
+        #                endingFrame=end_frm,
+        #                normalized=True,
+        #                alignTrajectory=True,
+        #                saveMatrix=True,
+        #                out_file=out_file)
         elif sel_type == "ndcc":
-            calcMDnDCC(pdb_file, trj_file,
+            calcMD_DCC(pdb_file, trj_file,
                        startingFrame=beg_frm,
                        endingFrame=end_frm,
+                       timeLag=0,
                        normalized=True,
                        alignTrajectory=True,
                        saveMatrix=True,
