@@ -136,7 +136,7 @@ def calcENMnDCC(selectedAtoms, cut_off, method="ANM", nmodes=100, \
         sys.exit(-1)
     if normalized:
         ccMatrix = calcCrossCorr(modes, n_cpu=1, norm=True)
-        out_file = "n" + out_file
+        # out_file = "n" + out_file
     else:
         ccMatrix = calcCrossCorr(modes, n_cpu=1, norm=False)
     if saveMatrix:
@@ -231,7 +231,7 @@ def calcMDnDCC(topology, trajectory, startingFrame=0, endingFrame=(-1),
                 cc_normalized[j][i] = cc_normalized[i][j]
         
         if saveMatrix:
-            np.savetxt("n" + out_file, cc_normalized, fmt='%.6f')
+            np.savetxt(out_file, cc_normalized, fmt='%.6f')
 
         return cc_normalized
     else:
@@ -242,7 +242,7 @@ def calcMDnDCC(topology, trajectory, startingFrame=0, endingFrame=(-1),
             np.savetxt(out_file, ccMatrix, fmt='%.6f')
         return ccMatrix
 
-def calcMD_DCC(topology, trajectory, startingFrame=0, endingFrame=(-1),
+def calcMDtlDCC(topology, trajectory, startingFrame=0, endingFrame=(-1),
                timeLag=0, normalized=True, alignTrajectory=True, 
                saveMatrix=True, out_file="DCC"):
     """
@@ -269,7 +269,9 @@ def calcMD_DCC(topology, trajectory, startingFrame=0, endingFrame=(-1),
         time delay/lag is 1 ns.  
     normalized: bool
         Default value is True and it means that the cross-correlation matrix
-        will be normalized.
+        will be normalized. In fact, we should note that time-lagged dynamical 
+        cross-correlation matrices are not truly 'normalized' like equal time
+        dynamical cross-correlations.
     alignTrajectory: bool
         Default value is True and it means that all frames in the trajectory 
         will be aligned to the initial frame.  
@@ -298,8 +300,6 @@ def calcMD_DCC(topology, trajectory, startingFrame=0, endingFrame=(-1),
         endingFrame = universe.trajectory.n_frames
     skip = 1 
     
-
-
     # First, perform Calpha alignment
     if alignTrajectory:
         print("@> Aligning only Calpha atoms to the initial frame!")
@@ -315,28 +315,21 @@ def calcMD_DCC(topology, trajectory, startingFrame=0, endingFrame=(-1),
     N_Frames = len(Rvector)
 
     R_average = np.mean(Rvector, axis=0)
-    print("@> Calculating cross-correlation matrix:")
+    print("@> Warning: Time-lagged correlations feature is experimental!")
+    print("@> Calculating time-lagged cross-correlation matrix:")
     ccMatrix = timeLaggedDCCmatrixCalculation(N, np.array(Rvector), R_average, timeLag)
-
-    # Do the averaging
-    #ccMatrix = ccMatrix / float(N_Frames)
-    ccMatrix = ccMatrix / float(N_Frames - timeLag)
 
     if normalized:
         cc_normalized = np.zeros((N, N), np.double)
-        for i in range(0, N):
-            for j in range (i, N):
-                cc_normalized[i][j] = ccMatrix[i][j] / ((ccMatrix[i][i] * ccMatrix[j][j]) ** 0.5)
-                cc_normalized[j][i] = cc_normalized[i][j]
-        
+        diagonal = np.diag(ccMatrix)
+        normalization_matrix = np.outer(diagonal, diagonal)
+        normalization_matrix = np.sqrt(np.absolute(normalization_matrix))
+        cc_normalized = np.divide(ccMatrix, normalization_matrix)
+
         if saveMatrix:
             np.savetxt(out_file, cc_normalized, fmt='%.6f')
-
         return cc_normalized
     else:
-        for i in range(0, N):
-            for j in range(i + 1, N):
-                ccMatrix[j][i] = ccMatrix[i][j]
         if saveMatrix:
             np.savetxt(out_file, ccMatrix, fmt='%.6f')
         return ccMatrix
@@ -365,11 +358,16 @@ def DCCmatrixCalculation(N, Rvector, R_average):
 def timeLaggedDCCmatrixCalculation(N, Rvector, R_average, timeLag):
     """
         This function calculates upper triangle of time-lagged dynamical
-        cross-correlation matrix. 
+        cross-correlation matrix. If time lag is zero, it gives (equal-time)
+        dynamical cross-correlations.
     """
     #DeltaR is the fluctuation matrix
     deltaR = Rvector - R_average
+    # print(deltaR)
+    # print(Rvector)
+    # print(R_average)
     ccMatrix = np.zeros((N, N), np.double)
+    
     for k in range(0, len(Rvector)-timeLag):
         if k % 100 == 0:
             print("@> Frame: " + str(k))
@@ -379,9 +377,31 @@ def timeLaggedDCCmatrixCalculation(N, Rvector, R_average, timeLag):
             ind_3i = 3 * i
             for j in range(i, N):
                 ind_3j = 3 * j
-                ccMatrix[i][j] += (deltaR_k[ind_3i]*deltaR_kPlusTimeLag[ind_3j] +
-                                   deltaR_k[ind_3i + 1] * deltaR_kPlusTimeLag[ind_3j + 1] +
+                part1 = (deltaR_k[ind_3i]*deltaR_kPlusTimeLag[ind_3j] + \
+                                   deltaR_k[ind_3i + 1] * deltaR_kPlusTimeLag[ind_3j + 1] + \
                                    deltaR_k[ind_3i + 2] * deltaR_kPlusTimeLag[ind_3j + 2])
+                part2 = (deltaR_k[ind_3j]*deltaR_kPlusTimeLag[ind_3i] + \
+                                   deltaR_k[ind_3j + 1] * deltaR_kPlusTimeLag[ind_3i + 1] + \
+                                   deltaR_k[ind_3j + 2] * deltaR_kPlusTimeLag[ind_3i + 2])
+                # norm_i = (deltaR_k[ind_3i]*deltaR_k[ind_3i] + \
+                #                    deltaR_k[ind_3i + 1] * deltaR_k[ind_3i + 1] + \
+                #                    deltaR_k[ind_3i + 2] * deltaR_k[ind_3i + 2])
+                # norm_j = (deltaR_kPlusTimeLag[ind_3j]*deltaR_kPlusTimeLag[ind_3j] + \
+                #                    deltaR_kPlusTimeLag[ind_3j + 1] * deltaR_kPlusTimeLag[ind_3j + 1] + \
+                #                    deltaR_kPlusTimeLag[ind_3j + 2] * deltaR_kPlusTimeLag[ind_3j + 2])
+                # cosAngle = part1 / (np.sqrt(norm_i*norm_j))
+                # if(i == j):
+                #     print(part1, part2)
+                #     # print(deltaR_k[ind_3i], deltaR_k[ind_3i+1], deltaR_k[ind_3i+2])
+                #     # print(deltaR_kPlusTimeLag[ind_3j], deltaR_kPlusTimeLag[ind_3j + 1], deltaR_kPlusTimeLag[ind_3j + 2])
+                #     print(i, j, cosAngle)
+
+                ccMatrix[i][j] += (part1)
+                ccMatrix[j][i] += (part2)
+    
+
+    ccMatrix = ccMatrix / float(len(Rvector)-timeLag)
+   
     return ccMatrix
 
 
@@ -513,7 +533,8 @@ def calcMD_LMI(topology, trajectory, startingFrame=0, endingFrame=(-1),
         lmi_normalized = np.sqrt(1.0 - np.exp(-2.0 / 3.0 * lmiMatrix))
         
         if saveMatrix:
-            np.savetxt("n" + out_file, lmi_normalized, fmt='%.6f')
+            np.savetxt(out_file, lmi_normalized, fmt='%.6f')
+            #np.savetxt("n" + out_file, lmi_normalized, fmt='%.6f')
 
         return lmi_normalized
     else:
@@ -642,7 +663,8 @@ def calcENM_LMI(selectedAtoms, cut_off, method="ANM", nmodes=100,
         lmi_normalized = np.sqrt(1.0 - np.exp(-2.0 / 3.0 * lmiMatrix))
         
         if saveMatrix:
-            np.savetxt("n" + out_file, lmi_normalized, fmt='%.6f')
+            np.savetxt(out_file, lmi_normalized, fmt='%.6f')
+            # np.savetxt("n" + out_file, lmi_normalized, fmt='%.6f')
 
         return lmi_normalized
     else:

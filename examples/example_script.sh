@@ -30,7 +30,7 @@ then
 
     #Step 1: Calculate normalized LMI matrix from CG-ANM
     echo "Calculating normalized LMI matrix from CG-ANM."
-    correlationplus calculate -p ${protein}.pdb -t lmi
+    correlationplus calculate -p ${protein}.pdb -t nlmi
 
     #Step 2: Visualize the normalized LMI matrix
     echo "Visualizing normalized LMI matrix"
