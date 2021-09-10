@@ -200,18 +200,18 @@ def calcMDnDCC(topology, trajectory, startingFrame=0, endingFrame=(-1),
     if endingFrame == -1:
         endingFrame = universe.trajectory.n_frames
     skip = 1 
-    
+
+    # Perform Calpha alignment first
+    if alignTrajectory:
+        print("@> Aligning only Calpha atoms to the initial frame!")
+        alignment = align.AlignTraj(universe, universe, select="protein and name CA", in_memory=True)
+        alignment.run()
+
     Rvector = []
     # Iterate through the universe trajectory
     for timestep in universe.trajectory[startingFrame:endingFrame:skip]:
         Rvector.append(calphas.positions.flatten())
     ##############################################
-
-    # Perform Calpha alignment
-    if alignTrajectory:
-        print("@> Aligning only Calpha atoms to the initial frame!")
-        alignment = align.AlignTraj(universe, universe, select="protein and name CA", in_memory=True)
-        alignment.run()
 
     # I reassign this bc in ccMatrix calculation, we may skip some part of the trajectory!
     N_Frames = len(Rvector)
@@ -455,20 +455,21 @@ def calcMD_LMI(topology, trajectory, startingFrame=0, endingFrame=(-1),
     #startingFrame = 0
     if endingFrame == -1:
         endingFrame = universe.trajectory.n_frames
-    skip = 1 
-    
-    Rvector = []
-    # Iterate through the universe trajectory
-    for timestep in universe.trajectory[startingFrame:endingFrame:skip]:
-        Rvector.append(calphas.positions.flatten())
-    ##############################################
+    skip = 1
 
+    #Align trajectory first 
     if alignTrajectory:
         # Perform Calpha alignment
         print("@> Aligning only Calpha atoms to the initial frame!")
         alignment = align.AlignTraj(universe, universe,
                                     select="protein and name CA", in_memory=True)
         alignment.run()
+
+    Rvector = []
+    # Iterate through the universe trajectory
+    for timestep in universe.trajectory[startingFrame:endingFrame:skip]:
+        Rvector.append(calphas.positions.flatten())
+    ##############################################
 
     # I reassign this bc in lmiMatrix calculation, we may skip some part of the trajectory!
     N_Frames = len(Rvector)
