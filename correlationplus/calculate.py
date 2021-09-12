@@ -404,9 +404,9 @@ def timeLaggedDCCmatrixCalculation(N, Rvector, R_average, timeLag):
    
     return ccMatrix
 
-
 def calcMD_LMI(topology, trajectory, startingFrame=0, endingFrame=(-1),
                normalized=True, alignTrajectory=True,
+               atomSelection="protein and name CA",
                saveMatrix=True, out_file="LMI"):
     """
         Calculate linear mutual information when a topology
@@ -430,7 +430,12 @@ def calcMD_LMI(topology, trajectory, startingFrame=0, endingFrame=(-1),
         matrix will be normalized. 
     alignTrajectory: bool
         Default value is True and it means that all frames in the trajectory 
-        will be aligned to the initial frame. 
+        will be aligned to the initial frame.
+    atomSelection: string 
+        Default atomSelection string is "protein and name CA". However, this argument gives 
+        flexibility to select some other atoms of the protein or even non protein atoms. 
+        Please note that even if you select some other atoms, (if alignTrajectory=True)
+        alignment of the system will still be performed using only Calpha atoms. 
     saveMatrix: bool
         If True, linear mutual information matrix will be written to an output
         file. 
@@ -447,10 +452,13 @@ def calcMD_LMI(topology, trajectory, startingFrame=0, endingFrame=(-1),
     # Create the universe (That sounds really fancy :)
     universe = mda.Universe(topology, trajectory)
 
-    # Create an atomgroup from the alpha carbon selection
-    calphas = universe.select_atoms("protein and name CA")
-    N = calphas.n_atoms
-    print(f"@> Parsed {N} Calpha atoms.")
+    # Create an atomgroup selection
+    # Typically, we select Calpha atoms but atomSelection string gives us more 
+    # more flexibility.
+    selectedAtoms = universe.select_atoms(atomSelection)
+    
+    N = selectedAtoms.n_atoms
+    print(f"@> Parsed {N} atoms.")
     # Set your frame window for your trajectory that you want to analyze
     #startingFrame = 0
     if endingFrame == -1:
@@ -468,7 +476,7 @@ def calcMD_LMI(topology, trajectory, startingFrame=0, endingFrame=(-1),
     Rvector = []
     # Iterate through the universe trajectory
     for timestep in universe.trajectory[startingFrame:endingFrame:skip]:
-        Rvector.append(calphas.positions.flatten())
+        Rvector.append(selectedAtoms.positions.flatten())
     ##############################################
 
     # I reassign this bc in lmiMatrix calculation, we may skip some part of the trajectory!
@@ -545,6 +553,7 @@ def calcMD_LMI(topology, trajectory, startingFrame=0, endingFrame=(-1),
         if saveMatrix:
             np.savetxt(out_file, lmiMatrix, fmt='%.6f')
         return lmiMatrix
+
 
 
 def calcENM_LMI(selectedAtoms, cut_off, method="ANM", nmodes=100,

@@ -264,6 +264,7 @@ def calculateApp():
                        endingFrame=end_frm,
                        normalized=False,
                        alignTrajectory=True,
+                       atomSelection="(protein and name CA)",
                        saveMatrix=True,
                        out_file=out_file)
         elif sel_type == "nlmi":
@@ -272,6 +273,7 @@ def calculateApp():
                        endingFrame=end_frm,
                        normalized=True,
                        alignTrajectory=True,
+                       atomSelection="(protein and name CA)",
                        saveMatrix=True,
                        out_file=out_file)
         elif sel_type == "ndcc":

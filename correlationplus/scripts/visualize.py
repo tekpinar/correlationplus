@@ -166,11 +166,9 @@ def visualizemapApp():
 
     ##########################################################################
     # Read PDB file
-    # TODO: This is the only place where I use Prody.
-    # Maybe, I can replace it with a library that only parses
-    # PDB files. Prody does a lot more!
-    selectedAtoms = parsePDB(pdb_file, subset='ca')
-
+    protein= parsePDB(pdb_file)
+    selectedAtoms = protein.select('(protein and name CA)')
+    print("@> Selected only "+str(selectedAtoms.numAtoms())+" atoms!\n")
     ##########################################################################
     minColorBarLimit = 0.0
     maxColorBarLimit = 1.0
