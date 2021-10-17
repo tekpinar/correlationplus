@@ -89,6 +89,15 @@ correlationplus paths -h
 Go to our [readthedocs](https://correlationplus.readthedocs.io/en/latest/quickstart.html) for 
 detailed usage examples for each script.
 
+## Cite
+If you use correlationplus, please cite us:
+
+**Extracting Dynamical Correlations and Identifying Key Residues for Allosteric Communication in Proteins by correlationplus**
+Mustafa Tekpinar, Bertrand Neron, and Marc Delarue
+Journal of Chemical Information and Modeling Article ASAP
+[DOI: 10.1021/acs.jcim.1c00742](https://pubs.acs.org/doi/10.1021/acs.jcim.1c00742)
+
+
 ## Licensing
 
 *correlationplus* is developed and released under [GNU Lesser GPL Licence](https://www.gnu.org/licenses/lgpl-3.0.en.html). 
