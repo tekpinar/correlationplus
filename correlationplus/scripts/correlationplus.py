@@ -92,6 +92,7 @@ def main():
 |                         Author: Mustafa Tekpinar                           |
 |                       Email: tekpinar@buffalo.edu                          |
 |                           Licence: GNU LGPL V3                             |
+|     Please cite us: https://pubs.acs.org/doi/10.1021/acs.jcim.1c00742      |
 |                              Version: {0}                                |
 |--------------------------------------------------------------------------- |
 
