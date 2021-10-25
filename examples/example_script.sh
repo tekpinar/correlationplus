@@ -30,12 +30,12 @@ then
 
     #Step 1: Calculate normalized LMI matrix from CG-ANM
     echo "Calculating normalized LMI matrix from CG-ANM."
-    correlationplus calculate -p ${protein}.pdb -t nlmi
+    correlationplus calculate -p ${protein}.pdb -t nlmi -o nLMI.dat
 
     #Step 2: Visualize the normalized LMI matrix
     echo "Visualizing normalized LMI matrix"
     echo "Only high correlations (>=0.75) will be projected onto the protein!"
-    correlationplus visualize -p ${protein}.pdb -i nLMI.dat -t lmi -o lmi -v 0.75
+    correlationplus visualize -p ${protein}.pdb -i nLMI.dat -t nlmi -o nlmi -v 0.75
 
     #Step 3: Network analysis of the normalized LMI matrix
     echo "Analyzing dynamical network from the normalized LMI matrix"
