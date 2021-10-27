@@ -534,10 +534,10 @@ def calcMD_LMI(topology, trajectory, startingFrame=0, endingFrame=(-1),
 
             lmiMatrix[j][i] = lmiMatrix[i][j]
     #########################################################################
+    # Just to make the diagonal element 1.0 when normalized!
+    np.fill_diagonal(lmiMatrix, 2000.0) 
 
     if normalized:
-        # Just to make the diagonal element 1.0 when normalized!
-        np.fill_diagonal(lmiMatrix, 2000.0) 
         lmi_normalized = np.zeros((N, N), np.double)
         lmi_normalized = np.sqrt(1.0 - np.exp(-2.0 / 3.0 * lmiMatrix))
         
@@ -559,7 +559,7 @@ def calcMD_LMI(topology, trajectory, startingFrame=0, endingFrame=(-1),
 def calcENM_LMI(selectedAtoms, cut_off, method="ANM", nmodes=100,
                 normalized=True, saveMatrix=True, out_file="nDCC.dat"):
     """
-        Calculate normalized linear mutual information matrix based on elastic 
+        Calculate linear mutual information matrix based on elastic 
         network model.
     
     Parameters

@@ -31,27 +31,33 @@ from correlationplus.calculate import *
 
 
 def usage_calculateApp():
-    """                                                                                                                                                                                       
-    Show how to use this program!                                                                                                                                                             
+    """
+                                         
+    Show how to use this program!
+                                          
     """
     print("""
 Example usage: 
 
-If you would like to calculate ANM-based normalized cross-correlations from a 
-pdb file:                                                                                                                                                                                
+If you would like to calculate ANM-based normalized dynamical cross-correlations
+ from a pdb file:
+                                            
 correlationplus calculate -p 4z90.pdb
 
-If you would like to calculate cross-correlations from a reference pdb file 
-and a trajectory file (in dcd, xtc or trr formats):                                                                                                                                                                                
+If you would like to calculate dynamical cross-correlations from a reference pdb
+ file and a trajectory file (in dcd, xtc or trr formats):
+                                                                                     
 correlationplus calculate -p 4z90.pdb -f 4z90.xtc
 
-If you would like to calculate ANM-based linear mutual information maps from a 
-pdb file:                                                                                                                                                                                
-correlationplus calculate -p 4z90.pdb -t lmi
+If you would like to calculate ANM-based normalized linear mutual information maps
+ from a pdb file:                                   
 
-If you would like to calculate a linear mutual information map from a reference pdb file 
-and a trajectory file (in dcd, xtc or trr formats):                                                                                                                                                                                
-correlationplus calculate -p 4z90.pdb -f 4z90.xtc -t lmi
+correlationplus calculate -p 4z90.pdb -t nlmi
+
+If you would like to calculate a normalized linear mutual information map from a 
+reference pdb file and a trajectory file (in dcd, xtc or trr formats):
+ 
+correlationplus calculate -p 4z90.pdb -f 4z90.xtc -t nlmi
 
 Arguments:                                                                                         
            -p: PDB file of the protein. (Mandatory)

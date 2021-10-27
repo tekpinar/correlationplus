@@ -46,19 +46,19 @@ elastic network models and molecular dynamics trajectories.
 The only input file needed is a PDB file. The file can contain single or multiple chains. In all of 
 the computations via script interfaces, only Calpha atoms are selected and used.    
 
-To calculate **dynamical cross-correlations** with **Gaussian** network model::
+To calculate **normalized dynamical cross-correlations** with **Gaussian** network model::
 
-  correlationplus calculate -p 6lu7_dimer_with_N3_protein_sim1_ca.pdb -m GNM -o dcc-6lu7-gnm.dat
+  correlationplus calculate -p 6lu7_dimer_with_N3_protein_sim1_ca.pdb -m GNM -o ndcc-6lu7-gnm.dat
 
-To calculate **dynamical cross-correlations** with **Anisotropic** network model::
+To calculate **normalized dynamical cross-correlations** with **Anisotropic** network model::
 
-  correlationplus calculate -p 6lu7_dimer_with_N3_protein_sim1_ca.pdb -m ANM -o dcc-6lu7-anm.dat
+  correlationplus calculate -p 6lu7_dimer_with_N3_protein_sim1_ca.pdb -m ANM -o ndcc-6lu7-anm.dat
 
-To calculate **dynamical cross-correlations** from a molecular dynamics trajectory (in dcd, xtc or trr format)::
+To calculate **normalized dynamical cross-correlations** from a molecular dynamics trajectory (in dcd, xtc or trr format)::
 
   correlationplus calculate -p 6lu7_dimer_with_N3_protein_sim1_ca.pdb \
                             -f 6lu7_dimer_with_N3_protein_sim1_ca_short.trr\
-			    -o dcc-6lu7-md.dat
+			                      -o ndcc-6lu7-md.dat
 
 To calculate **normalized linear mutual informations** with **Anisotropic** network model::
 
@@ -68,7 +68,7 @@ To calculate **normalized linear mutual informations** from a molecular dynamics
 
   correlationplus calculate -p 6lu7_dimer_with_N3_protein_sim1_ca.pdb \
                             -f 6lu7_dimer_with_N3_protein_sim1_ca_short.trr -t nlmi\
-			    -o nlmi-6lu7-md.dat
+			                      -o nlmi-6lu7-md.dat
 
 **visualize** script
 --------------------

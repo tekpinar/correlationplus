@@ -36,20 +36,20 @@ def runTests():
     prefix = os.path.normpath(os.path.join(__file__, '..', '..'))
     # Test calculate module to produce nDCC map with GNM.
     command = f"correlationplus calculate -p {prefix}/examples/6lu7_dimer_with_N3_protein_sim1_ca.pdb  " \
-              f"-m GNM -o dcc-6lu7-gnm.dat"
+              f"-m GNM -o ndcc-6lu7-gnm.dat"
     print(f"\n@> Testing the nDCC calculation from GNM with the following command:\n\n{command}\n\n")
     os.system(command)
 
     # Test calculate module to produce nDCC map with ANM.
     command = f"correlationplus calculate -p {prefix}/examples/6lu7_dimer_with_N3_protein_sim1_ca.pdb  " \
-              f"-m ANM -o dcc-6lu7-anm.dat"
+              f"-m ANM -o ndcc-6lu7-anm.dat"
     print(f"\n@> Testing the nDCC calculation from ANM with the following command:\n\n{command}\n\n")
     os.system(command)
 
     # Test calculate module to produce nDCC (normalized dynamical cross-correlation) map from an MD trajectory.
     command = f"correlationplus calculate "\
               f"-p {prefix}/examples/6lu7_dimer_with_N3_protein_sim1_ca.pdb "\
-              f"-f {prefix}/examples/6lu7_dimer_with_N3_protein_sim1_ca_short.trr -o dcc-6lu7-md.dat"
+              f"-f {prefix}/examples/6lu7_dimer_with_N3_protein_sim1_ca_short.trr -o ndcc-6lu7-md.dat"
     print(f"\n@> Testing the nDCC calculation from an MD trajectory with the following command:\n\n{command}\n\n")
     os.system(command)
 
@@ -61,7 +61,12 @@ def runTests():
     print(f"\n@> Testing the DCC calculation from an MD trajectory with the following command:\n\n{command}\n\n")
     os.system(command)
 
-    # Test calculate module to produce LMI map with ANM modes.
+    # Test calculate module to produce a normalized LMI map with ANM modes.
+    os.system(f"correlationplus calculate "
+              f"-p {prefix}/examples/6lu7_dimer_with_N3_protein_sim1_ca.pdb "
+               "-t nlmi -o nlmi-6lu7-anm.dat")
+
+    # Test calculate module to produce a NON-normalized LMI map with ANM modes.
     os.system(f"correlationplus calculate "
               f"-p {prefix}/examples/6lu7_dimer_with_N3_protein_sim1_ca.pdb "
                "-t lmi -o lmi-6lu7-anm.dat")
@@ -74,7 +79,7 @@ def runTests():
     # Test calculate module to produce normalized LMI map from an MD trajectory.
     os.system(f"correlationplus calculate "
               f"-p {prefix}/examples/6lu7_dimer_with_N3_protein_sim1_ca.pdb "
-              f"-f {prefix}/examples/6lu7_dimer_with_N3_protein_sim1_ca_short.trr -t nlmi -o lmi-6lu7-md.dat")
+              f"-f {prefix}/examples/6lu7_dimer_with_N3_protein_sim1_ca_short.trr -t nlmi -o nlmi-6lu7-md.dat")
 
     # Test visualizemapApp for absolute nDCC maps
     os.system(f"correlationplus visualize "

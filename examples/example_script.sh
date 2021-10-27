@@ -39,7 +39,7 @@ then
 
     #Step 3: Network analysis of the normalized LMI matrix
     echo "Analyzing dynamical network from the normalized LMI matrix"
-    correlationplus analyze -p ${protein}.pdb -i nLMI.dat -t lmi -o network
+    correlationplus analyze -p ${protein}.pdb -i nLMI.dat -t nlmi -o network
 
     #Voila! You have many pml and tcl files.
     #You can open pml files as

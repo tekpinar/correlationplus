@@ -27,11 +27,11 @@ Program Name: correlationplus
 Author      : Mustafa TEKPINAR
 Email       : tekpinar@buffalo.edu
 
-Purpose     : A Python package to calculate, visualize and analyze dynamical 
-              correlations maps of proteins.
+Purpose     : A Python package to calculate, visualize and analyze 
+              correlations of proteins.
 """
 
 __all__ = ['calculate', 'visualize', 'centralityAnalysis', 'pathAnalysis']
 
-__version__ = '0.2.0'
+__version__ = '0.2.1rc1'
 

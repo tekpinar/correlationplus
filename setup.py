@@ -28,7 +28,7 @@ from correlationplus import __version__ as cp_vers
 
 setup(name='correlationplus',
       version=cp_vers,
-      description="A Python package to calculate, visualize and analyze dynamical correlations of proteins.",
+      description="A Python package to calculate, visualize and analyze correlations of proteins.",
       long_description=open('README.md').read(),
       long_description_content_type="text/markdown",
       author="Mustafa Tekpinar",
