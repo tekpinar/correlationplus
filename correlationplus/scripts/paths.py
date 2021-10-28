@@ -54,11 +54,11 @@ Arguments: -i: A file containing correlations in matrix format. (Mandatory)
 
            -p: PDB file of the protein. (Mandatory)
            
-           -t: Type of the matrix. It can be ndcc, lmi, absndcc (absolute values of ndcc)
-               or eg (elasticity graph).
+           -t: Type of the matrix. It can be dcc, ndcc, lmi, nlmi (normalized lmi), 
+               absndcc (absolute values of ndcc) or eg (elasticity graph).
                In addition, coeviz and evcouplings are also some options to analyze sequence
                correlations. 
-               If your data any other coupling data in full matrix format, you can select generic
+               If your data is any other coupling data in full matrix format, you can select 'generic'
                as your data type. 
                Default value is ndcc (Optional)
 
@@ -196,7 +196,7 @@ def pathAnalysisApp():
 
     ##########################################################################
     # Read data file and assign to a numpy array
-    if sel_type.lower() == "ndcc":
+    if ((sel_type.lower() == "dcc") or (sel_type.lower() == "ndcc")):
         # Check if the data type is sparse matrix
         data_file = open(inp_file, 'r')
         allLines = data_file.readlines()
@@ -230,7 +230,7 @@ def pathAnalysisApp():
                                                         writeAllOutput=False))
         else:
             ccMatrix = np.absolute(np.loadtxt(inp_file, dtype=float))
-    elif sel_type.lower()== "lmi":
+    elif ((sel_type.lower()== "lmi") or (sel_type.lower()== "nlmi")):
         # Check if the data type is sparse matrix
         data_file = open(inp_file, 'r')
         allLines = data_file.readlines()
@@ -273,10 +273,10 @@ def pathAnalysisApp():
         ccMatrix = parseElasticityGraph(inp_file, selectedAtoms, \
                                             writeAllOutput=False)
     else:
-        print("@> ERROR: Unknown data type: Type can only be ndcc, absndcc, lmi,\n")
-        print("@>        coeviz or evcouplings. If you have your data in full \n")
+        print("@> ERROR: Unknown data type: Type can only be dcc, ndcc, absndcc, \n")
+        print("@>        lmi, nlmi, coeviz or evcouplings. If you have your data in full \n")
         print("@>        matrix format and your data type is none of the options\n")
-        print("@>        mentionned, you can set data type 'generic'.\n")
+        print("@>        mentionned, you can set data type as 'generic'.\n")
         sys.exit(-1)
 
     sourceResid = src_res
@@ -284,14 +284,13 @@ def pathAnalysisApp():
     distanceMatrix = buildDistMatrix(selectedAtoms)
     resDict = mapResid2ResIndex(selectedAtoms)
 
-    if ((sel_type.lower() == "evcouplings") or \
-        (sel_type.lower() == "generic") or \
-        (sel_type.lower() == "eg")):
-        network = buildSequenceNetwork(ccMatrix, distanceMatrix, \
+    if ((sel_type.lower() == "ndcc") or \
+        (sel_type.lower() == "nlmi")):
+        network = buildDynamicsNetwork(ccMatrix, distanceMatrix, \
                                     float(val_fltr), float(dis_fltr),\
                                     selectedAtoms)
     else:
-        network = buildDynamicsNetwork(ccMatrix, distanceMatrix, \
+        network = buildSequenceNetwork(ccMatrix, distanceMatrix, \
                                     float(val_fltr), float(dis_fltr),\
                                     selectedAtoms)
                                     

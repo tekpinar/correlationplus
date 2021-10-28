@@ -46,7 +46,7 @@ Arguments: -i: The first file containing normalized dynamical cross correlations
            -j: The second file containing normalized dynamical cross correlations or LMI in matrix format. (Mandatory)
            -p: PDB file of the protein. (Mandatory)")
            -q: A second PDB file for the other conformation if residues numbers are not same in two conformations. (Optional)
-           -t: It can be ndcc, lmi or absndcc (absolute values of ndcc). Default value is ndcc (Optional)
+           -t: It can be ndcc, nlmi or absndcc (absolute values of ndcc). Default value is ndcc (Optional)
            -o: This will be your output file prefix. Output figures are in png format. (Optional)
 
 """)
@@ -121,7 +121,7 @@ def diffMapApp():
 
     selectedAtomSet1 = parsePDB(pdb_file1, subset='ca')
 
-    if sel_type == 'lmi':
+    if sel_type == 'nlmi':
         ccMatrix1 = convertLMIdata2Matrix(inp_file1, writeAllOutput=False)
         ccMatrix2 = convertLMIdata2Matrix(inp_file2, writeAllOutput=False)
 
@@ -142,7 +142,7 @@ def diffMapApp():
 
     else:
         print("Error: Unknown matrix type!")
-        print("What is the type of your correlation map: lmi, ndcc or absndcc?")
+        print("What is the type of your correlation map: nlmi, ndcc or absndcc?")
         sys.exit(-1)
 
     # One has to check if the lengths of two matrices match each other.

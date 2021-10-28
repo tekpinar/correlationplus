@@ -19,7 +19,7 @@ of dynamical correlations.
 
 ## Video Tutorials
 * Installation: https://www.youtube.com/watch?v=Fc_xpnrbbWU
-* Calculate Module: https://www.youtube.com/watch?v=HG8Mzmy1IOM
+* Calculate Module: https://www.youtube.com/watch?v=04b7mdulHW8
 * Visualize Module: https://www.youtube.com/watch?v=HgUVAV1unXs
 * Analyze Module: https://www.youtube.com/watch?v=04BwJDauOn4
 * Sequence Conservation Analysis with CoeViz and correlationplus (Part 1): https://www.youtube.com/watch?v=ieu91glEd0s
@@ -88,6 +88,15 @@ correlationplus paths -h
 
 Go to our [readthedocs](https://correlationplus.readthedocs.io/en/latest/quickstart.html) for 
 detailed usage examples for each script.
+
+## Cite
+If you use correlationplus, please cite us:
+
+**Extracting Dynamical Correlations and Identifying Key Residues for Allosteric Communication in Proteins by correlationplus**
+Mustafa Tekpinar, Bertrand Neron, and Marc Delarue
+Journal of Chemical Information and Modeling Article ASAP
+[DOI: 10.1021/acs.jcim.1c00742](https://pubs.acs.org/doi/10.1021/acs.jcim.1c00742)
+
 
 ## Licensing
 

@@ -136,7 +136,7 @@ def calcENMnDCC(selectedAtoms, cut_off, method="ANM", nmodes=100, \
         sys.exit(-1)
     if normalized:
         ccMatrix = calcCrossCorr(modes, n_cpu=1, norm=True)
-        out_file = "n" + out_file
+        # out_file = "n" + out_file
     else:
         ccMatrix = calcCrossCorr(modes, n_cpu=1, norm=False)
     if saveMatrix:
@@ -200,18 +200,18 @@ def calcMDnDCC(topology, trajectory, startingFrame=0, endingFrame=(-1),
     if endingFrame == -1:
         endingFrame = universe.trajectory.n_frames
     skip = 1 
-    
+
+    # Perform Calpha alignment first
+    if alignTrajectory:
+        print("@> Aligning only Calpha atoms to the initial frame!")
+        alignment = align.AlignTraj(universe, universe, select="protein and name CA", in_memory=True)
+        alignment.run()
+
     Rvector = []
     # Iterate through the universe trajectory
     for timestep in universe.trajectory[startingFrame:endingFrame:skip]:
         Rvector.append(calphas.positions.flatten())
     ##############################################
-
-    # Perform Calpha alignment
-    if alignTrajectory:
-        print("@> Aligning only Calpha atoms to the initial frame!")
-        alignment = align.AlignTraj(universe, universe, select="protein and name CA", in_memory=True)
-        alignment.run()
 
     # I reassign this bc in ccMatrix calculation, we may skip some part of the trajectory!
     N_Frames = len(Rvector)
@@ -231,7 +231,7 @@ def calcMDnDCC(topology, trajectory, startingFrame=0, endingFrame=(-1),
                 cc_normalized[j][i] = cc_normalized[i][j]
         
         if saveMatrix:
-            np.savetxt("n" + out_file, cc_normalized, fmt='%.6f')
+            np.savetxt(out_file, cc_normalized, fmt='%.6f')
 
         return cc_normalized
     else:
@@ -242,6 +242,97 @@ def calcMDnDCC(topology, trajectory, startingFrame=0, endingFrame=(-1),
             np.savetxt(out_file, ccMatrix, fmt='%.6f')
         return ccMatrix
 
+def calcMDtlDCC(topology, trajectory, startingFrame=0, endingFrame=(-1),
+               timeLag=0, normalized=True, alignTrajectory=True, 
+               saveMatrix=True, out_file="DCC"):
+    """
+        Calculate normalized dynamical cross-correlations when a topology
+        and a trajectory file is given. 
+
+    Parameters
+    ----------
+    topology: string
+        A PDB file.
+    trajectory: string
+        A trajectory file in dcd, xtc or trr format.
+    startingFrame: int
+        You can specify this value if you want to exclude some initial frames
+        from your cross-correlation calculations. Default value is 0.
+    endingFrame: int
+        You can specify this value if you want to calculate cross-correlation 
+        calculations up to a certain ending frame. Default value is -1 and it 
+        indicates the last frame in your trajectory.
+    timeLag: int
+        timeLag is not a time. In fact, it is just an integer specifying frame delay.
+        You have to multiply it with sampling time to obtain real time lag or time delay.
+        For example, if you select timeLag=5 and your sampling time is 200 ps, your 
+        time delay/lag is 1 ns.  
+    normalized: bool
+        Default value is True and it means that the cross-correlation matrix
+        will be normalized. In fact, we should note that time-lagged dynamical 
+        cross-correlation matrices are not truly 'normalized' like equal time
+        dynamical cross-correlations.
+    alignTrajectory: bool
+        Default value is True and it means that all frames in the trajectory 
+        will be aligned to the initial frame.  
+    saveMatrix: bool
+        If True, cross-correlation matrix will be written to an output file. 
+    out_file: string
+        Output file name for the cross-correlation matrix. 
+        Default value is DCC and the file extension is .dat. 
+
+    Returns
+    -------
+    ccMatrix: A numpy square matrix of floats
+        time lagged cross-correlation matrix.
+
+    """
+    # Create the universe (That sounds really fancy :)
+    universe = mda.Universe(topology, trajectory)
+
+    # Create an atomgroup from the alpha carbon selection
+    calphas = universe.select_atoms("protein and name CA")
+    N = calphas.n_atoms
+    print(f"@> Parsed {N} Calpha atoms.")
+    # Set your frame window for your trajectory that you want to analyze
+    # startingFrame = 0
+    if endingFrame == -1:
+        endingFrame = universe.trajectory.n_frames
+    skip = 1 
+    
+    # First, perform Calpha alignment
+    if alignTrajectory:
+        print("@> Aligning only Calpha atoms to the initial frame!")
+        alignment = align.AlignTraj(universe, universe, select="protein and name CA", in_memory=True)
+        alignment.run()
+    
+    Rvector = []
+    # Iterate through the universe trajectory
+    for timestep in universe.trajectory[startingFrame:endingFrame:skip]:
+        Rvector.append(calphas.positions.flatten())
+
+    # I reassign this bc in ccMatrix calculation, we may skip some part of the trajectory!
+    N_Frames = len(Rvector)
+
+    R_average = np.mean(Rvector, axis=0)
+    print("@> Warning: Time-lagged correlations feature is experimental!")
+    print("@> Calculating time-lagged cross-correlation matrix:")
+    ccMatrix = timeLaggedDCCmatrixCalculation(N, np.array(Rvector), R_average, timeLag)
+
+    if normalized:
+        cc_normalized = np.zeros((N, N), np.double)
+        diagonal = np.diag(ccMatrix)
+        normalization_matrix = np.outer(diagonal, diagonal)
+        normalization_matrix = np.sqrt(np.absolute(normalization_matrix))
+        cc_normalized = np.divide(ccMatrix, normalization_matrix)
+
+        if saveMatrix:
+            np.savetxt(out_file, cc_normalized, fmt='%.6f')
+        return cc_normalized
+    else:
+        if saveMatrix:
+            np.savetxt(out_file, ccMatrix, fmt='%.6f')
+        return ccMatrix
 
 @numba.njit
 def DCCmatrixCalculation(N, Rvector, R_average):
@@ -263,9 +354,59 @@ def DCCmatrixCalculation(N, Rvector, R_average):
                                    deltaR[ind_3i + 2] * deltaR[ind_3j + 2])
     return ccMatrix
 
+@numba.njit
+def timeLaggedDCCmatrixCalculation(N, Rvector, R_average, timeLag):
+    """
+        This function calculates upper triangle of time-lagged dynamical
+        cross-correlation matrix. If time lag is zero, it gives (equal-time)
+        dynamical cross-correlations.
+    """
+    #DeltaR is the fluctuation matrix
+    deltaR = Rvector - R_average
+    # print(deltaR)
+    # print(Rvector)
+    # print(R_average)
+    ccMatrix = np.zeros((N, N), np.double)
+    
+    for k in range(0, len(Rvector)-timeLag):
+        if k % 100 == 0:
+            print("@> Frame: " + str(k))
+        deltaR_k = deltaR[k]
+        deltaR_kPlusTimeLag = deltaR[k+timeLag]
+        for i in range(0, N):
+            ind_3i = 3 * i
+            for j in range(i, N):
+                ind_3j = 3 * j
+                part1 = (deltaR_k[ind_3i]*deltaR_kPlusTimeLag[ind_3j] + \
+                                   deltaR_k[ind_3i + 1] * deltaR_kPlusTimeLag[ind_3j + 1] + \
+                                   deltaR_k[ind_3i + 2] * deltaR_kPlusTimeLag[ind_3j + 2])
+                part2 = (deltaR_k[ind_3j]*deltaR_kPlusTimeLag[ind_3i] + \
+                                   deltaR_k[ind_3j + 1] * deltaR_kPlusTimeLag[ind_3i + 1] + \
+                                   deltaR_k[ind_3j + 2] * deltaR_kPlusTimeLag[ind_3i + 2])
+                # norm_i = (deltaR_k[ind_3i]*deltaR_k[ind_3i] + \
+                #                    deltaR_k[ind_3i + 1] * deltaR_k[ind_3i + 1] + \
+                #                    deltaR_k[ind_3i + 2] * deltaR_k[ind_3i + 2])
+                # norm_j = (deltaR_kPlusTimeLag[ind_3j]*deltaR_kPlusTimeLag[ind_3j] + \
+                #                    deltaR_kPlusTimeLag[ind_3j + 1] * deltaR_kPlusTimeLag[ind_3j + 1] + \
+                #                    deltaR_kPlusTimeLag[ind_3j + 2] * deltaR_kPlusTimeLag[ind_3j + 2])
+                # cosAngle = part1 / (np.sqrt(norm_i*norm_j))
+                # if(i == j):
+                #     print(part1, part2)
+                #     # print(deltaR_k[ind_3i], deltaR_k[ind_3i+1], deltaR_k[ind_3i+2])
+                #     # print(deltaR_kPlusTimeLag[ind_3j], deltaR_kPlusTimeLag[ind_3j + 1], deltaR_kPlusTimeLag[ind_3j + 2])
+                #     print(i, j, cosAngle)
+
+                ccMatrix[i][j] += (part1)
+                ccMatrix[j][i] += (part2)
+    
+
+    ccMatrix = ccMatrix / float(len(Rvector)-timeLag)
+   
+    return ccMatrix
 
 def calcMD_LMI(topology, trajectory, startingFrame=0, endingFrame=(-1),
                normalized=True, alignTrajectory=True,
+               atomSelection="protein and name CA",
                saveMatrix=True, out_file="LMI"):
     """
         Calculate linear mutual information when a topology
@@ -289,7 +430,12 @@ def calcMD_LMI(topology, trajectory, startingFrame=0, endingFrame=(-1),
         matrix will be normalized. 
     alignTrajectory: bool
         Default value is True and it means that all frames in the trajectory 
-        will be aligned to the initial frame. 
+        will be aligned to the initial frame.
+    atomSelection: string 
+        Default atomSelection string is "protein and name CA". However, this argument gives 
+        flexibility to select some other atoms of the protein or even non protein atoms. 
+        Please note that even if you select some other atoms, (if alignTrajectory=True)
+        alignment of the system will still be performed using only Calpha atoms. 
     saveMatrix: bool
         If True, linear mutual information matrix will be written to an output
         file. 
@@ -306,28 +452,32 @@ def calcMD_LMI(topology, trajectory, startingFrame=0, endingFrame=(-1),
     # Create the universe (That sounds really fancy :)
     universe = mda.Universe(topology, trajectory)
 
-    # Create an atomgroup from the alpha carbon selection
-    calphas = universe.select_atoms("protein and name CA")
-    N = calphas.n_atoms
-    print(f"@> Parsed {N} Calpha atoms.")
+    # Create an atomgroup selection
+    # Typically, we select Calpha atoms but atomSelection string gives us more 
+    # more flexibility.
+    selectedAtoms = universe.select_atoms(atomSelection)
+    
+    N = selectedAtoms.n_atoms
+    print(f"@> Parsed {N} atoms.")
     # Set your frame window for your trajectory that you want to analyze
     #startingFrame = 0
     if endingFrame == -1:
         endingFrame = universe.trajectory.n_frames
-    skip = 1 
-    
-    Rvector = []
-    # Iterate through the universe trajectory
-    for timestep in universe.trajectory[startingFrame:endingFrame:skip]:
-        Rvector.append(calphas.positions.flatten())
-    ##############################################
+    skip = 1
 
+    #Align trajectory first 
     if alignTrajectory:
         # Perform Calpha alignment
         print("@> Aligning only Calpha atoms to the initial frame!")
         alignment = align.AlignTraj(universe, universe,
                                     select="protein and name CA", in_memory=True)
         alignment.run()
+
+    Rvector = []
+    # Iterate through the universe trajectory
+    for timestep in universe.trajectory[startingFrame:endingFrame:skip]:
+        Rvector.append(selectedAtoms.positions.flatten())
+    ##############################################
 
     # I reassign this bc in lmiMatrix calculation, we may skip some part of the trajectory!
     N_Frames = len(Rvector)
@@ -348,8 +498,7 @@ def calcMD_LMI(topology, trajectory, startingFrame=0, endingFrame=(-1),
 
     lmiMatrix = np.zeros((N, N), np.double)
 
-    # Just to make the diagonal element 1.0 when normalized!
-    np.fill_diagonal(lmiMatrix, 2000.0) 
+
     
     #TODO: This part can be put under @numba.njit to accelarate it!
     for i in range(0, N):
@@ -385,13 +534,16 @@ def calcMD_LMI(topology, trajectory, startingFrame=0, endingFrame=(-1),
 
             lmiMatrix[j][i] = lmiMatrix[i][j]
     #########################################################################
+    # Just to make the diagonal element 1.0 when normalized!
+    np.fill_diagonal(lmiMatrix, 2000.0) 
 
     if normalized:
         lmi_normalized = np.zeros((N, N), np.double)
         lmi_normalized = np.sqrt(1.0 - np.exp(-2.0 / 3.0 * lmiMatrix))
         
         if saveMatrix:
-            np.savetxt("n" + out_file, lmi_normalized, fmt='%.6f')
+            np.savetxt(out_file, lmi_normalized, fmt='%.6f')
+            #np.savetxt("n" + out_file, lmi_normalized, fmt='%.6f')
 
         return lmi_normalized
     else:
@@ -403,10 +555,11 @@ def calcMD_LMI(topology, trajectory, startingFrame=0, endingFrame=(-1),
         return lmiMatrix
 
 
+
 def calcENM_LMI(selectedAtoms, cut_off, method="ANM", nmodes=100,
                 normalized=True, saveMatrix=True, out_file="nDCC.dat"):
     """
-        Calculate normalized linear mutual information matrix based on elastic 
+        Calculate linear mutual information matrix based on elastic 
         network model.
     
     Parameters
@@ -520,7 +673,8 @@ def calcENM_LMI(selectedAtoms, cut_off, method="ANM", nmodes=100,
         lmi_normalized = np.sqrt(1.0 - np.exp(-2.0 / 3.0 * lmiMatrix))
         
         if saveMatrix:
-            np.savetxt("n" + out_file, lmi_normalized, fmt='%.6f')
+            np.savetxt(out_file, lmi_normalized, fmt='%.6f')
+            # np.savetxt("n" + out_file, lmi_normalized, fmt='%.6f')
 
         return lmi_normalized
     else:

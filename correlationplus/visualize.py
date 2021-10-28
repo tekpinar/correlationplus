@@ -339,16 +339,18 @@ def parseElasticityGraph(inp_file, selectedAtoms, \
     return cc
 
 def filterCorrelationMapByDistance(ccMatrix, out_file, title,
-                                   selectedAtoms, distanceValue,
+                                   selectedAtoms, disMinValue, disMaxValue,
                                    absoluteValues: bool, writeAllOutput: bool):
 
     
     """
-        Remove correlations lower than a threshold value.
+        Zero correlations lower than disMinValue and higher than disMaxValue.
     
     If residues are closer to each other than a certain distance
-    (distanceValue), make these correlations zero. This filter can be useful
-    to get rid of high short distance correlations for visualization purposes.
+    (disMinValue), make these correlations zero. If residues are farther to 
+    each other than a certain distance (disMaxValue), make these correlations
+    also zero. This filter can be useful to get rid of high short distance 
+    correlations or just to visualize correlations in a window of distances. 
     This function returns a filtered ccMatrix.
 
     Parameters
@@ -362,10 +364,13 @@ def filterCorrelationMapByDistance(ccMatrix, out_file, title,
         Title of the figure.
     selectedAtoms: prody object
         A list of -typically CA- atoms selected from the parsed PDB file.
-    distanceValue: float
+    disMinValue: float
         A distance value in Angstrom unit. For example, it is good to remove 
-        high correlations for residues within less 5.0 Angstrom distance 
-        to have a clear visualization.
+        high correlations for residues within less than 5.0 Angstrom distance 
+        to have a clear visualization. Default value is 0.0.
+    disMaxValue: float
+        A distance value in Angstrom unit. The residues with this value or higher
+        will not be visualized with PyMol or VMD. Default value is 9999.0 Angstrom.
     absoluteValues: bool
         If True, an absolute values file will be written. 
     writeAllOutput: bool
@@ -378,13 +383,15 @@ def filterCorrelationMapByDistance(ccMatrix, out_file, title,
     Nothing
 
     """
-    print(f"@> Filtering correlations lower than {distanceValue} Angstrom.")
+    print(f"@> Filtering correlations lower than {disMinValue} Angstrom and")
+    print(f"@> higher than {disMaxValue} Angstrom inter-residue distances.")
     # Calculate distance matrix
     dist_matrix = buildDistMatrix(selectedAtoms)
 
     for i in range(0, len(ccMatrix)):
         for j in range(i + 1, len(ccMatrix)):
-            if dist_matrix[i][j] < distanceValue:
+            if ((dist_matrix[i][j] < disMinValue) or \
+                (dist_matrix[i][j] >= disMaxValue) ):
                 ccMatrix[i][j] = 0.0
                 ccMatrix[j][i] = 0.0
 

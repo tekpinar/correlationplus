@@ -25,9 +25,11 @@ Correlation Data Types
 ----------------------
 Correlationplus can handle the following correlation/coupling data types:
 
+* dcc: Dynamical cross-correlations in full matrix format.
 * ndcc: Normalized dynamical cross-correlations in full matrix format.
 * absndcc: Absolute values normalized dynamical cross-correlations in full matrix format
-* lmi: Normalized linear mutual information in full matrix format or output of g_correlation program. 
+* lmi: Linear mutual information in full matrix format or output of g_correlation program.
+* nlmi: Normalized linear mutual information in full matrix format or output of g_correlation program. 
 * coeviz: After removing the header lines, the data is in matrix format. 
 * evcouplings: The sequence coupling csv files obtained from https://evcouplings.org/ can be parsed directly. 
 * generic: If you have some coupling data (from dynamics, sequences or any other data) in full matrix format, select this option. 
@@ -44,29 +46,29 @@ elastic network models and molecular dynamics trajectories.
 The only input file needed is a PDB file. The file can contain single or multiple chains. In all of 
 the computations via script interfaces, only Calpha atoms are selected and used.    
 
-To calculate **dynamical cross-correlations** with **Gaussian** network model::
+To calculate **normalized dynamical cross-correlations** with **Gaussian** network model::
 
-  correlationplus calculate -p 6lu7_dimer_with_N3_protein_sim1_ca.pdb -m GNM -o dcc-6lu7-gnm.dat
+  correlationplus calculate -p 6lu7_dimer_with_N3_protein_sim1_ca.pdb -m GNM -o ndcc-6lu7-gnm.dat
 
-To calculate **dynamical cross-correlations** with **Anisotropic** network model::
+To calculate **normalized dynamical cross-correlations** with **Anisotropic** network model::
 
-  correlationplus calculate -p 6lu7_dimer_with_N3_protein_sim1_ca.pdb -m ANM -o dcc-6lu7-anm.dat
+  correlationplus calculate -p 6lu7_dimer_with_N3_protein_sim1_ca.pdb -m ANM -o ndcc-6lu7-anm.dat
 
-To calculate **dynamical cross-correlations** from a molecular dynamics trajectory (in dcd, xtc or trr format)::
+To calculate **normalized dynamical cross-correlations** from a molecular dynamics trajectory (in dcd, xtc or trr format)::
 
   correlationplus calculate -p 6lu7_dimer_with_N3_protein_sim1_ca.pdb \
                             -f 6lu7_dimer_with_N3_protein_sim1_ca_short.trr\
-			    -o dcc-6lu7-md.dat
+			                      -o ndcc-6lu7-md.dat
 
-To calculate **linear mutual informations** with **Anisotropic** network model::
+To calculate **normalized linear mutual informations** with **Anisotropic** network model::
 
-  correlationplus calculate -p 6lu7_dimer_with_N3_protein_sim1_ca.pdb -t lmi -o lmi-6lu7-anm.dat
+  correlationplus calculate -p 6lu7_dimer_with_N3_protein_sim1_ca.pdb -t nlmi -o nlmi-6lu7-anm.dat
 
-To calculate **linear mutual informations** from a molecular dynamics trajectory (in dcd, xtc or trr format)::
+To calculate **normalized linear mutual informations** from a molecular dynamics trajectory (in dcd, xtc or trr format)::
 
   correlationplus calculate -p 6lu7_dimer_with_N3_protein_sim1_ca.pdb \
-                            -f 6lu7_dimer_with_N3_protein_sim1_ca_short.trr -t lmi\
-			    -o lmi-6lu7-md.dat
+                            -f 6lu7_dimer_with_N3_protein_sim1_ca_short.trr -t nlmi\
+			                      -o nlmi-6lu7-md.dat
 
 **visualize** script
 --------------------

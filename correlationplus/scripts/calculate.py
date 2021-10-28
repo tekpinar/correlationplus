@@ -31,27 +31,33 @@ from correlationplus.calculate import *
 
 
 def usage_calculateApp():
-    """                                                                                                                                                                                       
-    Show how to use this program!                                                                                                                                                             
+    """
+                                         
+    Show how to use this program!
+                                          
     """
     print("""
 Example usage: 
 
-If you would like to calculate ANM-based normalized cross-correlations from a 
-pdb file:                                                                                                                                                                                
+If you would like to calculate ANM-based normalized dynamical cross-correlations
+ from a pdb file:
+                                            
 correlationplus calculate -p 4z90.pdb
 
-If you would like to calculate cross-correlations from a reference pdb file 
-and a trajectory file (in dcd, xtc or trr formats):                                                                                                                                                                                
+If you would like to calculate dynamical cross-correlations from a reference pdb
+ file and a trajectory file (in dcd, xtc or trr formats):
+                                                                                     
 correlationplus calculate -p 4z90.pdb -f 4z90.xtc
 
-If you would like to calculate ANM-based linear mutual information maps from a 
-pdb file:                                                                                                                                                                                
-correlationplus calculate -p 4z90.pdb -t lmi
+If you would like to calculate ANM-based normalized linear mutual information maps
+ from a pdb file:                                   
 
-If you would like to calculate a linear mutual information map from a reference pdb file 
-and a trajectory file (in dcd, xtc or trr formats):                                                                                                                                                                                
-correlationplus calculate -p 4z90.pdb -f 4z90.xtc -t lmi
+correlationplus calculate -p 4z90.pdb -t nlmi
+
+If you would like to calculate a normalized linear mutual information map from a 
+reference pdb file and a trajectory file (in dcd, xtc or trr formats):
+ 
+correlationplus calculate -p 4z90.pdb -f 4z90.xtc -t nlmi
 
 Arguments:                                                                                         
            -p: PDB file of the protein. (Mandatory)
@@ -69,7 +75,10 @@ Arguments:
                is number of Calpha atoms.)
            -c: Cutoff radius in Angstrom for ANM or GNM. (Optional) 
                Default is 15 for ANM and 10 for GNM. 
-           -t: Type of the correlation matrix. It can be ndcc or lmi.
+           -t: Type of the correlation matrix. It can be dcc, ndcc, 
+               tldcc (time-lagged dynamical cross-correlations),
+               tlndcc (time-lagged normalized dynamical cross-correlations),
+               lmi or nlmi (normalized lmi).
                Default value is ndcc. (Optional)
            -o: This will be your output data file.
                Default is DCC.dat. (Optional)
@@ -86,10 +95,11 @@ def handle_arguments_calculateApp():
     end_frm = -1
     num_mod = 100
     cut_off = None
+    timeLag = 0
 
     try:
-        opts, args = getopt.getopt(sys.argv[2:], "hm:o:t:p:f:b:e:n:c:",
-                        ["help", "method=", "out=", "type=", "pdb=", "frames=", "beg=", "end=", "n_modes=", "cutoff="])
+        opts, args = getopt.getopt(sys.argv[2:], "hm:o:t:p:f:b:e:l:n:c:",
+                        ["help", "method=", "out=", "type=", "pdb=", "frames=", "beg=", "end=", "lag=", "n_modes=", "cutoff="])
     except getopt.GetoptError:
         usage_calculateApp()
         print("@> ERROR: Unknown option encountered!")
@@ -113,6 +123,8 @@ def handle_arguments_calculateApp():
             beg_frm = int(arg)
         elif opt in ("-e", "--end"):
             end_frm = int(arg)
+        elif opt in ("-l", "--lag"):
+            timeLag = int(arg)
         elif opt in ("-n", "--n_modes"):
             num_mod = int(arg)
         elif opt in ("-c", "--cutoff"):
@@ -144,28 +156,49 @@ def handle_arguments_calculateApp():
             usage_calculateApp()
             sys.exit(-1)
 
-    # Assign a default matrix type                                                                                                                               
+    # Assign a default matrix type, if none is specified!                                                                                                                               
     if sel_type is None:
         sel_type = "ndcc"
+    
+    # Raise an error if an unknown correlation type is requested!
+    if ((sel_type.lower() != "ndcc") and \
+        (sel_type.lower() != "dcc") and \
+        (sel_type.lower() != "tldcc") and \
+        (sel_type.lower() != "tlndcc") and \
+        (sel_type.lower() != "nlmi") and \
+        (sel_type.lower() != "lmi")):
+        print("@> ERROR: Unknown correlation matrix calculation requested!")
+        print("@> This app can only calculate dcc, ndcc, tldcc, lmi or nlmi matrices!")
+        print("@> Please check what you specified with -t option!")
+        usage_calculateApp()
+        sys.exit(-1)
 
     # Assign a default name if the user forgets the output file prefix.                                                                                                                      
     if out_file is None:
         if sel_type.lower() == "ndcc":
+            out_file = "nDCC"
+        elif sel_type.lower() == "dcc":
             out_file = "DCC"
+        elif sel_type.lower() == "tldcc":
+            out_file = "tlDCC"
+        elif sel_type.lower() == "tlndcc":
+            out_file = "tlnDCC"
         elif sel_type.lower() == "lmi":
             out_file = "LMI"
+        elif sel_type.lower() == "nlmi":
+            out_file = "nLMI"
         else:
             print("@> ERROR: Unknown correlation matrix calculation requested!")
-            print("@> This app can only calculate lmi or ndcc matrices.")
+            print("@> This app can only calculate dcc, ndcc, tldcc, tlndcc, lmi or nlmi matrices.")
             print("@> Please check what you specified with -t option!")
             usage_calculateApp()
             sys.exit(-1)
 
-    return method, out_file, sel_type, pdb_file, trj_file, beg_frm, end_frm, num_mod, cut_off
+    return method, out_file, sel_type, pdb_file, trj_file, beg_frm, end_frm, timeLag, num_mod, cut_off
 
 
 def calculateApp():
-    method, out_file, sel_type, pdb_file, trj_file, beg_frm, end_frm, num_mod, cut_off = handle_arguments_calculateApp()
+    method, out_file, sel_type, pdb_file, trj_file, beg_frm, end_frm, timeLag, num_mod, cut_off = handle_arguments_calculateApp()
     print(f"""                                                                                                                                                                                
 @> Running 'calculate App'
                                             
@@ -191,11 +224,32 @@ def calculateApp():
         print("@> Cutoff radius   : " + str(cut_off))
         # Read pdb file
         selectedAtoms = parsePDB(pdb_file, subset='ca')
-        if sel_type == "lmi":
+        if (sel_type == "nlmi"):
             calcENM_LMI(selectedAtoms, cut_off,
                         method=method, 
                         nmodes=num_mod,
                         normalized=True,
+                        saveMatrix=True,
+                        out_file=out_file)
+        elif ((sel_type == "lmi")):
+            calcENM_LMI(selectedAtoms, cut_off,
+                        method=method, 
+                        nmodes=num_mod,
+                        normalized=False,
+                        saveMatrix=True,
+                        out_file=out_file)
+        elif (sel_type == "ndcc"):
+            calcENMnDCC(selectedAtoms, cut_off,
+                        method=method, 
+                        nmodes=num_mod,
+                        normalized=True,
+                        saveMatrix=True,
+                        out_file=out_file)
+        elif (sel_type == "dcc"):
+            calcENMnDCC(selectedAtoms, cut_off,
+                        method=method, 
+                        nmodes=num_mod,
+                        normalized=False,
                         saveMatrix=True,
                         out_file=out_file)
         else:
@@ -214,6 +268,52 @@ def calculateApp():
             calcMD_LMI(pdb_file, trj_file,
                        startingFrame=beg_frm,
                        endingFrame=end_frm,
+                       normalized=False,
+                       alignTrajectory=True,
+                       atomSelection="(protein and name CA)",
+                       saveMatrix=True,
+                       out_file=out_file)
+        elif sel_type == "nlmi":
+            calcMD_LMI(pdb_file, trj_file,
+                       startingFrame=beg_frm,
+                       endingFrame=end_frm,
+                       normalized=True,
+                       alignTrajectory=True,
+                       atomSelection="(protein and name CA)",
+                       saveMatrix=True,
+                       out_file=out_file)
+        elif sel_type == "ndcc":
+            calcMDnDCC(pdb_file, trj_file,
+                       startingFrame=beg_frm,
+                       endingFrame=end_frm,
+                       normalized=True,
+                       alignTrajectory=True,
+                       saveMatrix=True,
+                       out_file=out_file)
+        elif sel_type == "dcc":
+            calcMDnDCC(pdb_file, trj_file,
+                       startingFrame=beg_frm,
+                       endingFrame=end_frm,
+                       normalized=False,
+                       alignTrajectory=True,
+                       saveMatrix=True,
+                       out_file=out_file)
+        elif sel_type == "tldcc":
+            print("@> Time lag        : " + str(timeLag) + " frames." )
+            calcMDtlDCC(pdb_file, trj_file,
+                       startingFrame=beg_frm,
+                       endingFrame=end_frm,
+                       timeLag=timeLag,
+                       normalized=False,
+                       alignTrajectory=True,
+                       saveMatrix=True,
+                       out_file=out_file)
+        elif sel_type == "tlndcc":
+            print("@> Time lag        : " + str(timeLag) + " frames." )
+            calcMDtlDCC(pdb_file, trj_file,
+                       startingFrame=beg_frm,
+                       endingFrame=end_frm,
+                       timeLag=timeLag,
                        normalized=True,
                        alignTrajectory=True,
                        saveMatrix=True,
