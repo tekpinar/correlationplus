@@ -19,7 +19,7 @@ of dynamical correlations.
 
 ## Video Tutorials
 * Installation: https://www.youtube.com/watch?v=Fc_xpnrbbWU
-* Calculate Module: https://www.youtube.com/watch?v=HG8Mzmy1IOM
+* Calculate Module: https://www.youtube.com/watch?v=04b7mdulHW8
 * Visualize Module: https://www.youtube.com/watch?v=HgUVAV1unXs
 * Analyze Module: https://www.youtube.com/watch?v=04BwJDauOn4
 * Sequence Conservation Analysis with CoeViz and correlationplus (Part 1): https://www.youtube.com/watch?v=ieu91glEd0s
