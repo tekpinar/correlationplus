@@ -167,7 +167,7 @@ def visualizemapApp():
     ##########################################################################
     # Read PDB file
     protein= parsePDB(pdb_file)
-    selectedAtoms = protein.select('(protein and name CA)')
+    selectedAtoms = protein.select('protein and name CA')
     print("@> Selected only "+str(selectedAtoms.numAtoms())+" atoms!\n")
     ##########################################################################
     minColorBarLimit = 0.0
