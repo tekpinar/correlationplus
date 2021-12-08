@@ -684,3 +684,189 @@ def calcENM_LMI(selectedAtoms, cut_off, method="ANM", nmodes=100,
         if saveMatrix:
             np.savetxt(out_file, lmiMatrix, fmt='%.6f')
         return lmiMatrix
+
+def calcMDsingleDihedralCC(topology, trajectory, startingFrame=0, endingFrame=(-1),
+               normalized=True, dihedralType="psi",
+               saveMatrix=True, out_file="dihedral-cc.dat"):
+    """
+        Calculate dihedral cross-correlations when a topology
+        and a trajectory file is given. 
+
+    Parameters
+    ----------
+    topology: string
+        A PDB file.
+    trajectory: string
+        A trajectory file in dcd, xtc or trr format.
+    startingFrame: int
+        You can specify this value if you want to exclude some initial frames
+        from your cross-correlation calculations. Default value is 0.
+    endingFrame: int
+        You can specify this value if you want to calculate cross-correlation 
+        calculations up to a certain ending frame. Default value is -1 and it 
+        indicates the last frame in your trajectory.
+    normalized: bool
+        Default value is True and it means that the cross-correlation matrix
+        will be normalized.
+    dihedralType: string
+        Default value is 'all' and it means that all dihedral angles will be 
+        used. It is also possible to do the dihedral calculation based on 
+        just 'omega', 'phi' or 'psi' dihedral angles. Please note that these 
+        are all only backbone dihedrals.    
+    saveMatrix: bool
+        If True, cross-correlation matrix will be written to an output file. 
+    out_file: string
+        Output file name for the cross-correlation matrix. 
+        Default value is DCC and the file extension is .dat. 
+
+    Returns
+    -------
+    ccMatrix: A numpy square matrix of floats
+        dihedral cross-correlation matrix.
+
+    """
+    debug = False
+    from MDAnalysis.analysis import dihedrals
+    # Create the universe (That sounds really fancy :)
+    universe = mda.Universe(topology, trajectory)
+
+    # Create an atomgroup from the protein atoms selection
+    proteinAtoms = universe.select_atoms("protein")
+    
+    print(f"@> Parsed {proteinAtoms.n_atoms} protein atoms.")
+    # Set your frame window for your trajectory that you want to analyze
+    # startingFrame = 0
+    if endingFrame == -1:
+        endingFrame = universe.trajectory.n_frames
+    skip = 1
+    noneIndex = 0
+    noneList = []
+    if dihedralType == 'omega':
+        # Determine residue indices that a dihedral can not be constructed.
+        # This can be chain intervals etc.
+        for res in proteinAtoms.residues:            
+            omega = res.omega_selection()
+            if omega is None:
+                names = None
+                noneList.append(noneIndex)
+            else:
+                names = omega.names
+            if(debug):
+                print('{}: {} '.format(res.resname, names))
+            noneIndex += 1
+        if(debug):
+            print(noneList)
+        selected_dihs = [res.omega_selection() for res in proteinAtoms.residues]
+
+        # N = (len(selected_dihs)-len(noneList))
+        N = (len(selected_dihs))
+        # print(N)
+
+        # Remove the None indice locations from the dihedral angles list. 
+        for index in sorted(noneList, reverse=True): 
+            del selected_dihs[index]
+
+    elif dihedralType == 'phi':
+        # Determine residue indices that a dihedral can not be constructed.
+        # This can be chain beginnings-ends or missing residues etc.
+        for res in proteinAtoms.residues:            
+            phi = res.phi_selection()
+            if phi is None:
+                names = None
+                noneList.append(noneIndex)
+            else:
+                names = phi.names
+            if(debug):
+                print('{}: {} '.format(res.resname, names))
+            noneIndex += 1
+        if(debug):
+            print(noneList)
+        selected_dihs = [res.phi_selection() for res in proteinAtoms.residues]
+        # print(selected_dihs[1].dihedral.value())
+
+        # N = (len(selected_dihs)-len(noneList))
+        N = (len(selected_dihs))
+
+        # Remove the None indice locations from the dihedral angles list. 
+        for index in sorted(noneList, reverse=True): 
+            del selected_dihs[index]
+        
+    elif dihedralType == 'psi':
+        # Determine residue indices that a dihedral can not be constructed.
+        # This can be chain intervals etc.
+        for res in proteinAtoms.residues:            
+            psi = res.psi_selection()
+            if psi is None:
+                names = None
+                noneList.append(noneIndex)
+            else:
+                names = psi.names
+            if(debug):
+                print('{}: {} '.format(res.resname, names))
+            noneIndex += 1
+        if(debug):
+            print(noneList)
+        selected_dihs = [res.psi_selection() for res in proteinAtoms.residues]
+        # print(selected_dihs[1].dihedral.value())
+
+        #N = (len(selected_dihs)-len(noneList))
+        N = (len(selected_dihs))
+
+        # Remove the None indice locations from the dihedral angles list. 
+        for index in sorted(noneList, reverse=True): 
+            del selected_dihs[index]
+        
+    dihs = dihedrals.Dihedral(selected_dihs).run(start=startingFrame, stop=endingFrame);
+    #angles below will be deprecated and replaced with results.angles in MDAnalysis 3.0.0
+    # print(dihs.angles)
+
+    Rvector = np.cos(dihs.angles*np.pi/180)
+    
+    # All this shit is just to overcome the problem of 
+    # residues without a dihedral angle such as N or C terminals!
+    for missing in noneList:
+        Rvector = np.insert(Rvector, missing, 1.0, axis=1)
+
+    # print(Rvector)
+    # print(len(Rvector[0]))    
+
+    # # I reassign this bc in ccMatrix calculation, we may skip some part of the trajectory!
+    N_Frames = len(Rvector)
+    # print(np.isnan(Rvector).any())
+    R_average = np.mean(Rvector, axis=0)
+    
+    # All this shit is just to overcome the problem of 
+    # residues without a dihedral angle!
+    for missing in noneList:
+        R_average[missing] = 0.0
+    
+    print("@> Calculating cross-correlation matrix:")
+    ccMatrix = np.zeros((N, N), np.double)
+    for k in range(0, len(Rvector)):
+        if k % 100 == 0:
+            print("@> Frame: " + str(k))
+        deltaR = np.subtract(Rvector[k], R_average)
+        ccMatrix += np.outer(deltaR, deltaR)
+
+    # Do the averaging
+    ccMatrix = ccMatrix / float(N_Frames)
+
+    if normalized:
+        cc_normalized = np.zeros((N, N), np.double)
+        for i in range(0, N):
+            for j in range (i, N):
+                cc_normalized[i][j] = ccMatrix[i][j] / ((ccMatrix[i][i] * ccMatrix[j][j]) ** 0.5)
+                cc_normalized[j][i] = cc_normalized[i][j]
+        
+        if saveMatrix:
+            np.savetxt(out_file, cc_normalized, fmt='%.6f')
+
+        return cc_normalized
+    else:
+        for i in range(0, N):
+            for j in range(i + 1, N):
+                ccMatrix[j][i] = ccMatrix[i][j]
+        if saveMatrix:
+            np.savetxt(out_file, ccMatrix, fmt='%.6f')
+        return ccMatrix
+

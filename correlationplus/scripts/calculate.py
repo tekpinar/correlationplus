@@ -75,10 +75,11 @@ Arguments:
                is number of Calpha atoms.)
            -c: Cutoff radius in Angstrom for ANM or GNM. (Optional) 
                Default is 15 for ANM and 10 for GNM. 
-           -t: Type of the correlation matrix. It can be dcc, ndcc, 
-               tldcc (time-lagged dynamical cross-correlations),
-               tlndcc (time-lagged normalized dynamical cross-correlations),
-               lmi or nlmi (normalized lmi).
+           -t: Type of the correlation matrix. It can be dynamical cross
+               correlations (dcc, ndcc), linear mutual information (lmi or nlmi),
+               dihedral cross-correlations (omegacc, phicc, psicc),
+               time-lagged dynamical cross-correlations (tldcc),
+               time-lagged normalized dynamical cross-correlations (tlndcc).
                Default value is ndcc. (Optional)
            -o: This will be your output data file.
                Default is DCC.dat. (Optional)
@@ -163,12 +164,19 @@ def handle_arguments_calculateApp():
     # Raise an error if an unknown correlation type is requested!
     if ((sel_type.lower() != "ndcc") and \
         (sel_type.lower() != "dcc") and \
+        (sel_type.lower() != "omegacc") and \
+        (sel_type.lower() != "phicc") and \
+        (sel_type.lower() != "psicc") and \
         (sel_type.lower() != "tldcc") and \
         (sel_type.lower() != "tlndcc") and \
         (sel_type.lower() != "nlmi") and \
         (sel_type.lower() != "lmi")):
         print("@> ERROR: Unknown correlation matrix calculation requested!")
-        print("@> This app can only calculate dcc, ndcc, tldcc, lmi or nlmi matrices!")
+        print("@> This app can only calculate:")
+        print("@>     i) dynamical cross-correlations: dcc, ndcc")
+        print("@>    ii) linear mutual information: lmi or nlmi")
+        print("@>   iii) dihedral cross-correlations: omegacc, phicc, psicc")    
+        print("@>    iv) time-lagged dynamical cross-correlations: tldcc or tlndcc (need tests!) ")
         print("@> Please check what you specified with -t option!")
         usage_calculateApp()
         sys.exit(-1)
@@ -179,6 +187,12 @@ def handle_arguments_calculateApp():
             out_file = "nDCC"
         elif sel_type.lower() == "dcc":
             out_file = "DCC"
+        elif sel_type.lower() == "omegacc":
+            out_file = "omega-cc"
+        elif sel_type.lower() == "phicc":
+            out_file = "phi-cc"
+        elif sel_type.lower() == "psicc":
+            out_file = "psi-cc"
         elif sel_type.lower() == "tldcc":
             out_file = "tlDCC"
         elif sel_type.lower() == "tlndcc":
@@ -189,9 +203,12 @@ def handle_arguments_calculateApp():
             out_file = "nLMI"
         else:
             print("@> ERROR: Unknown correlation matrix calculation requested!")
-            print("@> This app can only calculate dcc, ndcc, tldcc, tlndcc, lmi or nlmi matrices.")
+            print("@> This app can only calculate:")
+            print("@>     i) dynamical cross-correlations: dcc, ndcc")
+            print("@>    ii) linear mutual information: lmi or nlmi")
+            print("@>   iii) dihedral cross-correlations: omegacc, phicc, psicc")    
+            print("@>    iv) time-lagged dynamical cross-correlations: tldcc or tlndcc (needs tests!) ")
             print("@> Please check what you specified with -t option!")
-            usage_calculateApp()
             sys.exit(-1)
 
     return method, out_file, sel_type, pdb_file, trj_file, beg_frm, end_frm, timeLag, num_mod, cut_off
@@ -296,6 +313,30 @@ def calculateApp():
                        endingFrame=end_frm,
                        normalized=False,
                        alignTrajectory=True,
+                       saveMatrix=True,
+                       out_file=out_file)
+        elif sel_type == "omegacc":
+            calcMDsingleDihedralCC(pdb_file, trj_file,
+                       startingFrame=beg_frm,
+                       endingFrame=end_frm,
+                       normalized=True,
+                       dihedralType="omega",
+                       saveMatrix=True,
+                       out_file=out_file)
+        elif sel_type == "phicc":
+            calcMDsingleDihedralCC(pdb_file, trj_file,
+                       startingFrame=beg_frm,
+                       endingFrame=end_frm,
+                       normalized=True,
+                       dihedralType="phi",
+                       saveMatrix=True,
+                       out_file=out_file)
+        elif sel_type == "psicc":
+            calcMDsingleDihedralCC(pdb_file, trj_file,
+                       startingFrame=beg_frm,
+                       endingFrame=end_frm,
+                       normalized=True,
+                       dihedralType="psi",
                        saveMatrix=True,
                        out_file=out_file)
         elif sel_type == "tldcc":

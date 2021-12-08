@@ -35,87 +35,87 @@ def runTests():
     # Test correlationMapApp for nDCC maps
     prefix = os.path.normpath(os.path.join(__file__, '..', '..'))
     # Test calculate module to produce nDCC map with GNM.
-    command = f"correlationplus calculate -p {prefix}/examples/6lu7_dimer_with_N3_protein_sim1_ca.pdb  " \
+    command = f"correlationplus calculate -p {prefix}/examples/6lu7_dimer_with_N3_protein_sim1.pdb  " \
               f"-m GNM -o ndcc-6lu7-gnm.dat"
     print(f"\n@> Testing the nDCC calculation from GNM with the following command:\n\n{command}\n\n")
     os.system(command)
 
     # Test calculate module to produce nDCC map with ANM.
-    command = f"correlationplus calculate -p {prefix}/examples/6lu7_dimer_with_N3_protein_sim1_ca.pdb  " \
+    command = f"correlationplus calculate -p {prefix}/examples/6lu7_dimer_with_N3_protein_sim1.pdb  " \
               f"-m ANM -o ndcc-6lu7-anm.dat"
     print(f"\n@> Testing the nDCC calculation from ANM with the following command:\n\n{command}\n\n")
     os.system(command)
 
     # Test calculate module to produce nDCC (normalized dynamical cross-correlation) map from an MD trajectory.
     command = f"correlationplus calculate "\
-              f"-p {prefix}/examples/6lu7_dimer_with_N3_protein_sim1_ca.pdb "\
-              f"-f {prefix}/examples/6lu7_dimer_with_N3_protein_sim1_ca_short.trr -o ndcc-6lu7-md.dat"
+              f"-p {prefix}/examples/6lu7_dimer_with_N3_protein_sim1.pdb "\
+              f"-f {prefix}/examples/6lu7_dimer_with_N3_protein_sim1_short.trr -o ndcc-6lu7-md.dat"
     print(f"\n@> Testing the nDCC calculation from an MD trajectory with the following command:\n\n{command}\n\n")
     os.system(command)
 
     # Test calculate module to produce DCC (dynamical cross-correlation) map from an MD trajectory.
     # Please note that DCC values are not normalized here!
     command = f"correlationplus calculate "\
-              f"-p {prefix}/examples/6lu7_dimer_with_N3_protein_sim1_ca.pdb "\
-              f"-f {prefix}/examples/6lu7_dimer_with_N3_protein_sim1_ca_short.trr -o dcc-6lu7-md.dat -t dcc"
+              f"-p {prefix}/examples/6lu7_dimer_with_N3_protein_sim1.pdb "\
+              f"-f {prefix}/examples/6lu7_dimer_with_N3_protein_sim1_short.trr -o dcc-6lu7-md.dat -t dcc"
     print(f"\n@> Testing the DCC calculation from an MD trajectory with the following command:\n\n{command}\n\n")
     os.system(command)
 
     # Test calculate module to produce a normalized LMI map with ANM modes.
     os.system(f"correlationplus calculate "
-              f"-p {prefix}/examples/6lu7_dimer_with_N3_protein_sim1_ca.pdb "
+              f"-p {prefix}/examples/6lu7_dimer_with_N3_protein_sim1.pdb "
                "-t nlmi -o nlmi-6lu7-anm.dat")
 
     # Test calculate module to produce a NON-normalized LMI map with ANM modes.
     os.system(f"correlationplus calculate "
-              f"-p {prefix}/examples/6lu7_dimer_with_N3_protein_sim1_ca.pdb "
+              f"-p {prefix}/examples/6lu7_dimer_with_N3_protein_sim1.pdb "
                "-t lmi -o lmi-6lu7-anm.dat")
 
     # Test calculate module to produce NON-normalized LMI map from an MD trajectory.
     os.system(f"correlationplus calculate "
-              f"-p {prefix}/examples/6lu7_dimer_with_N3_protein_sim1_ca.pdb "
-              f"-f {prefix}/examples/6lu7_dimer_with_N3_protein_sim1_ca_short.trr -t lmi -o lmi-6lu7-md.dat")
+              f"-p {prefix}/examples/6lu7_dimer_with_N3_protein_sim1.pdb "
+              f"-f {prefix}/examples/6lu7_dimer_with_N3_protein_sim1_short.trr -t lmi -o lmi-6lu7-md.dat")
 
     # Test calculate module to produce normalized LMI map from an MD trajectory.
     os.system(f"correlationplus calculate "
-              f"-p {prefix}/examples/6lu7_dimer_with_N3_protein_sim1_ca.pdb "
-              f"-f {prefix}/examples/6lu7_dimer_with_N3_protein_sim1_ca_short.trr -t nlmi -o nlmi-6lu7-md.dat")
+              f"-p {prefix}/examples/6lu7_dimer_with_N3_protein_sim1.pdb "
+              f"-f {prefix}/examples/6lu7_dimer_with_N3_protein_sim1_short.trr -t nlmi -o nlmi-6lu7-md.dat")
 
     # Test visualizemapApp for absolute nDCC maps
     os.system(f"correlationplus visualize "
               f"-i {prefix}/examples/ndcc-6lu7-anm.dat "
-              f"-p {prefix}/examples/6lu7_dimer_with_N3_protein_sim1_ca.pdb  "
+              f"-p {prefix}/examples/6lu7_dimer_with_N3_protein_sim1.pdb  "
               "-t absndcc -v 0.75")
 
     # Test visualizemapApp for LMI maps
     os.system(f"correlationplus visualize "
               f"-i {prefix}/examples/6lu7_dimer_with_N3_protein_sim1-lmi.dat "
-              f"-p {prefix}/examples/6lu7_dimer_with_N3_protein_sim1_ca.pdb "
+              f"-p {prefix}/examples/6lu7_dimer_with_N3_protein_sim1.pdb "
               "-t nlmi -v 0.75 ")
  
     # Test diffMapApp for nLMI maps
     os.system(f"correlationplus diffMap "
               f"-i {prefix}/examples/6lu7_dimer_with_N3_protein_sim1-lmi.dat  "
               f"-j {prefix}/examples/6lu7_dimer_no_ligand_protein_sim1-lmi.dat  "
-              f"-p {prefix}/examples/6lu7_dimer_with_N3_protein_sim1_ca.pdb "
+              f"-p {prefix}/examples/6lu7_dimer_with_N3_protein_sim1.pdb "
               "-t nlmi")
 
     # Test centralityAnalysisApp for LMI maps
     os.system(f"correlationplus analyze "
               f"-i {prefix}/examples/6lu7_dimer_with_N3_protein_sim1-lmi.dat "
-              f"-p {prefix}/examples/6lu7_dimer_with_N3_protein_sim1_ca.pdb "
+              f"-p {prefix}/examples/6lu7_dimer_with_N3_protein_sim1.pdb "
               "-t nlmi")
 
     # Test pathAnalysisApp for ndcc maps
     os.system(f"correlationplus paths "
               f"-i {prefix}/examples/ndcc-6lu7-anm.dat "
-              f"-p {prefix}/examples/6lu7_dimer_with_N3_protein_sim1_ca.pdb "
+              f"-p {prefix}/examples/6lu7_dimer_with_N3_protein_sim1.pdb "
               "-b A41 -e B41")
 
     # Test pathAnalysisApp for LMI maps
     os.system(f"correlationplus paths "
               f"-i {prefix}/examples/6lu7_dimer_with_N3_protein_sim1-lmi.dat "
-              f"-p {prefix}/examples/6lu7_dimer_with_N3_protein_sim1_ca.pdb "
+              f"-p {prefix}/examples/6lu7_dimer_with_N3_protein_sim1.pdb "
               "-t nlmi -b A41 -e B41")
 
     # Test to visualize elasticity graphs (FitNMA) obtained from
