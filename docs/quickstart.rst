@@ -28,6 +28,9 @@ Correlationplus can handle the following correlation/coupling data types:
 * dcc: Dynamical cross-correlations in full matrix format.
 * ndcc: Normalized dynamical cross-correlations in full matrix format.
 * absndcc: Absolute values normalized dynamical cross-correlations in full matrix format
+* omegacc: Normalized Pearson correlations of backbone dihedral angle omega in full matrix format.
+* phicc: Normalized Pearson correlations of backbone dihedral angle phi in full matrix format.
+* psicc: Normalized Pearson correlations of backbone dihedral angle psi in full matrix format.
 * lmi: Linear mutual information in full matrix format or output of g_correlation program.
 * nlmi: Normalized linear mutual information in full matrix format or output of g_correlation program. 
 * coeviz: After removing the header lines, the data is in matrix format. 
@@ -48,27 +51,46 @@ the computations via script interfaces, only Calpha atoms are selected and used.
 
 To calculate **normalized dynamical cross-correlations** with **Gaussian** network model::
 
-  correlationplus calculate -p 6lu7_dimer_with_N3_protein_sim1_ca.pdb -m GNM -o ndcc-6lu7-gnm.dat
+  correlationplus calculate -p 6lu7_dimer_with_N3_protein_sim1.pdb -m GNM -o ndcc-6lu7-gnm.dat
 
 To calculate **normalized dynamical cross-correlations** with **Anisotropic** network model::
 
-  correlationplus calculate -p 6lu7_dimer_with_N3_protein_sim1_ca.pdb -m ANM -o ndcc-6lu7-anm.dat
+  correlationplus calculate -p 6lu7_dimer_with_N3_protein_sim1.pdb -m ANM -o ndcc-6lu7-anm.dat
 
 To calculate **normalized dynamical cross-correlations** from a molecular dynamics trajectory (in dcd, xtc or trr format)::
 
-  correlationplus calculate -p 6lu7_dimer_with_N3_protein_sim1_ca.pdb \
-                            -f 6lu7_dimer_with_N3_protein_sim1_ca_short.trr\
+  correlationplus calculate -p 6lu7_dimer_with_N3_protein_sim1.pdb \
+                            -f 6lu7_dimer_with_N3_protein_sim1_short.trr\
 			                      -o ndcc-6lu7-md.dat
 
 To calculate **normalized linear mutual informations** with **Anisotropic** network model::
 
-  correlationplus calculate -p 6lu7_dimer_with_N3_protein_sim1_ca.pdb -t nlmi -o nlmi-6lu7-anm.dat
+  correlationplus calculate -p 6lu7_dimer_with_N3_protein_sim1.pdb -t nlmi -o nlmi-6lu7-anm.dat
 
 To calculate **normalized linear mutual informations** from a molecular dynamics trajectory (in dcd, xtc or trr format)::
 
-  correlationplus calculate -p 6lu7_dimer_with_N3_protein_sim1_ca.pdb \
-                            -f 6lu7_dimer_with_N3_protein_sim1_ca_short.trr -t nlmi\
+  correlationplus calculate -p 6lu7_dimer_with_N3_protein_sim1.pdb \
+                            -f 6lu7_dimer_with_N3_protein_sim1_short.trr -t nlmi\
 			                      -o nlmi-6lu7-md.dat
+To calculate **normalized Pearson cross-correlations of backbone omega dihedral angles** from a molecular dynamics trajectory (in dcd, xtc or trr format)::
+
+  correlationplus calculate -p 6lu7_dimer_with_N3_protein_sim1.pdb \
+                            -f 6lu7_dimer_with_N3_protein_sim1_short.trr\
+			    -t omegacc -o omegacc-6lu7-md.dat
+
+To calculate **normalized Pearson cross-correlations of backbone phi dihedral angles** from a molecular dynamics trajectory (in dcd, xtc or trr format)::
+
+  correlationplus calculate -p 6lu7_dimer_with_N3_protein_sim1.pdb \
+                            -f 6lu7_dimer_with_N3_protein_sim1_short.trr\
+			    -t phicc -o phicc-6lu7-md.dat
+
+To calculate **normalized Pearson cross-correlations of backbone psi dihedral angles** from a molecular dynamics trajectory (in dcd, xtc or trr format)::
+
+  correlationplus calculate -p 6lu7_dimer_with_N3_protein_sim1.pdb \
+                            -f 6lu7_dimer_with_N3_protein_sim1_short.trr\
+			    -t psicc -o psicc-6lu7-md.dat
+
+Sometimes, there are not dihedral angles for some residues at the beginning/end of the chains (See https://userguide.mdanalysis.org/1.1.1/examples/analysis/structure/dihedrals.html for details). If there are some missing atoms, you may not also be able to calculate some dihedral angles. To avoid these problems, we fill these missing values with 1.0 to maintain a one-to-one correspondence with the number of residues. Due to this reason, pay attention to the highly correlated values that may be due to this artificial filling. 
 
 **visualize** script
 --------------------
