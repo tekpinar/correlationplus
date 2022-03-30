@@ -55,8 +55,8 @@ def projectCentralitiesOntoProteinVMD(centrality, centralityArray, \
     centrality: string
         It can have 'degree', 'betweenness', 'closeness',
         'current_flow_betweenness' or 'current_flow_closeness'.
-    centralityArray: A numpy data array ?
-        It is a numpy matrix of typically nDCC, LMI or Generalized Correlations.
+    centralityArray: A Python list.
+        It is a floating point Python list of the centrality values.
     out_file: string
         Prefix of the output file. According to the centrality measure, it will be
         extended.
@@ -109,18 +109,17 @@ def projectCentralitiesOntoProteinPyMol(centrality, centralityArray, out_file, \
     Produces PyMol output files for visualizing protein centralities.
 
     This function writes a pml file and a PDB file that can be viewed in
-    VMD. Bfactor field of the protein contains the centrality information.
+    PyMol. Bfactor field of the protein contains the centrality information.
     The first N residues with the highest centrality are highlighed in VDW
-    representation.  that  that contains the centralities on
-    on Bfactor field of the pdb.
-    The output files can be visualized with VMD (Visual Molecular
-    dynamics) program as follows: pymol output.pml
+    representation. 
+    The output files can be visualized with PyMol program as follows: 
+        pymol output.pml
 
     Parameters
     ----------
     centrality: string
         It can have 'degree', 'betweenness', 'closeness',
-        'current_flow_betweenness' or 'current_flow_closeness'.
+        'current_flow_betweenness', 'current_flow_closeness', or 'eigenvector'.
     centralityArray: A numpy data array ?
         It is a numpy matrix of typically nDCC, LMI or Generalized Correlations.
     out_file: string
@@ -151,6 +150,7 @@ def projectCentralitiesOntoProteinPyMol(centrality, centralityArray, out_file, \
     vdw_representation_string = "show spheres, chain {0:s} and resi {1:d} and name ca\n"
 
     sortedList = np.flip(np.argsort(centralityArray))
+
     for i in range(0, numKeyResidues):
         # print(centralityArray[sortedList[i]])
         PML_FILE.write(vdw_representation_string.\
@@ -163,6 +163,142 @@ def projectCentralitiesOntoProteinPyMol(centrality, centralityArray, out_file, \
 
     PML_FILE.close()
 
+def autoScaleCentralities(centrality, centralityArray,\
+                          selectedAtoms, global_or_local):
+    """
+    Scales the centralities automatically.
+
+    The centralities are scaled to [0, 1] according to the 
+    c_scaled = c_i - c_min / (c_max - c_min) formula.
+
+    Please note that the centrality quantity must always have 
+    positive values for this function. 
+
+    Parameters
+    ----------
+    centrality: string
+        It can have 'degree', 'betweenness', 'closeness',
+        'current_flow_betweenness', 'current_flow_closeness' or 'eigenvector'.
+    centralityArray: A Python list.
+        It is a floating point Python list of the centrality values.
+    selectedAtoms: object
+        This is a prody.parsePDB object of typically CA atoms of a protein.
+    global_or_local: string
+        This string can only have one of the two strings: 'global', 'local'.
+        If it is 'global', the scaling will be performed for the entire protein.
+        This is particularly good for monomeric structures. 
+        If 'local' is selected, the scaling will be performed for each chain 
+        separateyl. This can be particularly good for multimeric structures. 
+
+    Returns
+    -------
+    centralityArrayUpdated: A numpy data array
+
+    """
+    
+    chains = Counter(selectedAtoms.getChids()).keys()
+
+    idx = 0
+    if (len(chains) > 1):
+        if(global_or_local == 'global'):
+            c_max = np.amax(centralityArray)
+            # print (c_max)
+            c_min = np.amin(centralityArray)
+            # print (c_min)
+            diff = (c_max - c_min)
+            for i in range (len(centralityArray)):
+                centralityArray[i] = (centralityArray[i] - c_min) / diff
+            # print(centralityArray)
+        elif(global_or_local == 'local'):
+            for ch in chains:
+                # Find beginning and end indices of the chains. 
+                localCentralityArray = np.where(selectedAtoms.getChids() == ch)
+                print(localCentralityArray[0])
+                beg = localCentralityArray[0][0]
+                end = localCentralityArray[0][-1]
+                # print(beg, end)
+                # print(centralityArray[beg:end+1])
+                c_max = np.amax(centralityArray[beg:end+1])
+                c_min = np.amin(centralityArray[beg:end+1])
+                diff = (c_max - c_min)
+
+                for j in range(beg, end+1):
+                    centralityArray[j] = (centralityArray[j] - c_min) / diff
+        else:
+            print("\n@> ERROR: Unknown global_or_local value!\n")
+            print("@>        It can only be 'global' or 'local'")
+    elif len(chains) == 1:
+        c_max = np.amax(centralityArray)
+        # print (c_max)
+        c_min = np.amin(centralityArray)
+        # print (c_min)
+        diff = (c_max - c_min)
+        for i in range (len(centralityArray)):
+            centralityArray[i] = (centralityArray[i] - c_min) / diff
+        # print(centralityArray)
+    else:
+        print("@> ERROR: Shame on you! There are not chain IDs in the pdb!")
+        sys.exit(-1)
+    return centralityArray
+
+
+def projectCentralitiesOntoProteinPyMol_v2(centrality, centralityArray, out_file, \
+                                            selectedAtoms, percentage=0.10):
+    """
+    Produces PyMol output files for visualizing protein centralities
+    projected onto protein B factors column.
+
+    This function writes a pml file and a PDB file that can be viewed in
+    PyMol. Bfactor field of the protein contains the centrality information.
+    The first N residues with the highest centrality are highlighed in VDW
+    representation. 
+    The output files can be visualized with PyMol program as follows: 
+        pymol output.pml
+
+    Parameters
+    ----------
+    centrality: string
+        It can have 'degree', 'betweenness', 'closeness',
+        'current_flow_betweenness', 'current_flow_closeness' or 'eigenvector'.
+    centralityArray: A Python list.
+        It is a floating point Python list of the centrality values.
+    out_file: string
+        Prefix of the output file. According to the centralty measure, it will be
+        extended.
+    selectedAtoms: object
+        This is a prody.parsePDB object of typically CA atoms of a protein.
+    percentage: float
+        Values between [0, 1]. Default value is 0.10, which means that 10
+        percent of the residues will be plotted as VdW spheres.
+
+    Returns
+    -------
+    Nothing
+
+    """
+
+    numKeyResidues = int(percentage * len(selectedAtoms))
+    PML_FILE = open(out_file + '_' + centrality + '.pml', 'w')
+    
+    PML_FILE.write("load " + out_file + "_" + centrality + ".pdb" + "\n")
+    PML_FILE.write("cartoon type = tube\n")
+    PML_FILE.write("spectrum b\n")
+    PML_FILE.write("set sphere_scale, 0.75\n\n")
+
+    vdw_representation_string = "show spheres, chain {0:s} and resi {1:d} and name ca\n"
+
+    sortedList = np.flip(np.argsort(centralityArray))
+    for i in range(0, numKeyResidues):
+        # print(centralityArray[sortedList[i]])
+        PML_FILE.write(vdw_representation_string.\
+            format(selectedAtoms.getChids()[sortedList[i]],
+                    selectedAtoms.getResnums()[sortedList[i]]))
+
+    selectedAtoms.setBetas([ i for i in centralityArray])
+
+    writePDB(out_file + '_' + centrality + '.pdb', selectedAtoms)
+
+    PML_FILE.close()
 
 def plotCentralities(centrality, centralityArray, out_file, selectedAtoms, \
                     scalingFactor):
@@ -655,18 +791,19 @@ def centralityAnalysis(graph, valueFilter, distanceFilter, \
                                                                    selectedAtoms[i].getChid()))
         eigenvectorFile.close()
 
+        # centralityArrayScaled = autoScaleCentralities(centrality, \
+        #                                     list(eigenvectorResult.values()),
+        #                                     selectedAtoms, 'global')
         projectCentralitiesOntoProteinVMD(centrality,
-                                          list(eigenvectorResult.values()),
-                                          out_file,
-                                          selectedAtoms, scalingFactor=1)
+                                            list(eigenvectorResult.values()),
+                                            out_file,
+                                            selectedAtoms, scalingFactor=1)
         projectCentralitiesOntoProteinPyMol(centrality,
-                                          list(eigenvectorResult.values()),
-                                          out_file,
-                                          selectedAtoms, scalingFactor=1)
-        plotCentralities(centrality,
-                         list(eigenvectorResult.values()),
-                         out_file,
-                         selectedAtoms, scalingFactor=1)
+                                            list(eigenvectorResult.values()),
+                                            out_file,
+                                            selectedAtoms, scalingFactor=1)
+        plotCentralities(centrality, list(eigenvectorResult.values()), out_file,
+                                            selectedAtoms, scalingFactor=1)
     ########################## Calculate communities with Girvan-Newman
     elif centrality == 'community':
         from networkx.algorithms import community
