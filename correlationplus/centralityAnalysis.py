@@ -163,7 +163,7 @@ def projectCentralitiesOntoProteinPyMol(centrality, centralityArray, out_file, \
 
     PML_FILE.close()
 
-def autoScaleCentralities(centrality, centralityArray,\
+def autoScaleCentralities(centralityArray,\
                           selectedAtoms, global_or_local):
     """
     Scales the centralities automatically.
@@ -580,6 +580,85 @@ def buildSequenceNetwork(ccMatrix, distanceMatrix, \
                 seqNetwork.add_edge(i, j, weight=(1.0/fabs(ccMatrix[i][j])))
  
     return seqNetwork
+
+def calcEigenvector2Centrality(ccMatrix, distanceMatrix, 
+                                selectedAtoms, out_file, localityFactor=5.0):
+    """
+    This function build a network (graph) from a dynamical correlation
+    matrix and a distance matrix. 
+
+    The network is build as explained in the 
+    https://www.pnas.org/doi/epdf/10.1073/pnas.1810452115
+
+    Parameters
+    ----------
+    ccMatrix: Numpy matrix
+        It is a numpy matrix of typically nDCC, nLMI or Generalized Correlations.
+    distanceMatrix: Numpy matrix
+        The distances between Calpha atoms of the protein stored in a matrix.
+    valueFilter: float
+        The ccMatrix values lower than the valueFilter will be ignored.
+    distanceFilter: float
+        The distance values higher than the distanceFilter will be ignored
+        and they will not be considered as edges in a network. 
+        This kind of value pruning may work for low conformational change MD
+        simulations or ENM based calculations. However, if there are large
+        scale structural changes, it will be necessary to eliminate the edges 
+        based on contacts and their preservation during the entire simulation.
+    selectedAtoms: object
+        This is a prody.parsePDB object of typically CA atoms of a protein.
+
+    Returns
+    -------
+    eigenvectorResult
+
+    """
+    # Create your  graph
+    dynNetwork = nx.Graph()
+
+    n = selectedAtoms.numAtoms()
+
+    # Add all CA atoms as nodes
+    for i in range(n):
+        dynNetwork.add_node(i)
+
+    # Add all pairwise interactions greater than the valueFilter as edges.
+    # In addition, add only edges which has a distance of lower than the 
+    # distance filter
+    for i in range(n):
+        for j in range(n):
+            dynNetwork.add_edge(i, j, weight=(-log(fabs(ccMatrix[i][j])) * np.exp(-distanceMatrix[i][j])/localityFactor) )
+            # if fabs(ccMatrix[i][j]) > valueFilter and distanceMatrix[i][j] <= distanceFilter:
+            #     dynNetwork.add_edge(i, j, weight=-log(fabs(ccMatrix[i][j])))
+            #     # dynNetwork.add_edge(i, j, weight=fabs(correlationArray[i][j]))
+    
+    eigenvectorResult = nx.eigenvector_centrality_numpy(dynNetwork, weight='weight')
+
+    print("@> Eigenvector2 calculation finished!")
+
+    # open a file for eigenvectors
+    eigenvectorFile = open(f"{out_file}_eigenvector_value_filter{localityFactor:.2f}.dat", "w")
+
+    for i in range(n):
+        #    print(str(i)+" "+(str(graph.closeness(i, weight='weight'))))
+        eigenvectorFile.write("{0:d}\t{1:.6f}\t{2:s}\n".format(selectedAtoms[i].getResnum(),
+                                                                eigenvectorResult[i],
+                                                                selectedAtoms[i].getChid()))
+    eigenvectorFile.close()
+    centralityArrayScaled = autoScaleCentralities(list(eigenvectorResult.values()),
+                                    selectedAtoms, 'local')
+    projectCentralitiesOntoProteinVMD('eigenvector2',
+                                        centralityArrayScaled,
+                                        out_file,
+                                        selectedAtoms, scalingFactor=1)
+    projectCentralitiesOntoProteinPyMol('eigenvector2',
+                                        centralityArrayScaled,
+                                        out_file,
+                                        selectedAtoms, scalingFactor=1)
+    plotCentralities('eigenvector2', centralityArrayScaled, out_file,
+                                        selectedAtoms, scalingFactor=1)
+
+    return eigenvectorResult
 
 def centralityAnalysis(graph, valueFilter, distanceFilter, \
                         out_file, centrality, selectedAtoms):

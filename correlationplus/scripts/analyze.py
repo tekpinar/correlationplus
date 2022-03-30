@@ -33,9 +33,9 @@ from correlationplus.visualize import convertLMIdata2Matrix
 from correlationplus.visualize import parseEVcouplingsScores
 from correlationplus.visualize import parseSparseCorrData
 from correlationplus.visualize import parseElasticityGraph
-from correlationplus.centralityAnalysis import centralityAnalysis
-from correlationplus.centralityAnalysis import buildDynamicsNetwork
-from correlationplus.centralityAnalysis import buildSequenceNetwork
+from correlationplus.centralityAnalysis import *
+# from correlationplus.centralityAnalysis import buildDynamicsNetwork
+# from correlationplus.centralityAnalysis import buildSequenceNetwork
 # from .visualizemap import handle_arguments_visualizemapApp
 
 
@@ -287,6 +287,10 @@ def centralityAnalysisApp():
         # Community analysis is time consuming. Therefore, it will not be called by default.
         # centralityAnalysis(ccMatrix, valueFilter, distanceFilter, out_file, "community",
         #                    selectedAtoms)
+        
+    elif centrality_type == "eigenvector2":
+        calcEigenvector2Centrality(ccMatrix, distanceMatrix, selectedAtoms, \
+                                    out_file, localityFactor=5.0)
     else:
         centralityAnalysis(network, valueFilter, distanceFilter, out_file, centrality_type,
                            selectedAtoms)
