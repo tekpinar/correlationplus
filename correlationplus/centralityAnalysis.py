@@ -213,7 +213,7 @@ def autoScaleCentralities(centralityArray,\
             for ch in chains:
                 # Find beginning and end indices of the chains. 
                 localCentralityArray = np.where(selectedAtoms.getChids() == ch)
-                print(localCentralityArray[0])
+                # print(localCentralityArray[0])
                 beg = localCentralityArray[0][0]
                 end = localCentralityArray[0][-1]
                 # print(beg, end)
@@ -637,7 +637,7 @@ def calcEigenvector2Centrality(ccMatrix, distanceMatrix,
     print("@> Eigenvector2 calculation finished!")
 
     # open a file for eigenvectors
-    eigenvectorFile = open(f"{out_file}_eigenvector_value_filter{localityFactor:.2f}.dat", "w")
+    eigenvectorFile = open(f"{out_file}_eigenvector2_locality_factor{localityFactor:.2f}.dat", "w")
 
     for i in range(n):
         #    print(str(i)+" "+(str(graph.closeness(i, weight='weight'))))
