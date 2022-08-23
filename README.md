@@ -6,6 +6,7 @@
 [![Docker Image Version (tag latest semver)](https://img.shields.io/docker/v/structuraldynamicslab/correlationplus/latest)](https://hub.docker.com/repository/docker/structuraldynamicslab/correlationplus)
 ![Conda](https://img.shields.io/conda/pn/bioconda/correlationplus)
 [![SWH](https://archive.softwareheritage.org/badge/origin/https://github.com/tekpinar/correlationplus/)](https://archive.softwareheritage.org/browse/origin/?origin_url=https://github.com/tekpinar/correlationplus)
+[![Anaconda-Server Badge](https://anaconda.org/bioconda/correlationplus/badges/downloads.svg)](https://anaconda.org/bioconda/correlationplus)
 
 # correlationplus
 
