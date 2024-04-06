@@ -1367,9 +1367,17 @@ def overallUniformDifferenceMap(ccMatrix1, ccMatrix2,
     diffMap = np.subtract(ccMatrix1, ccMatrix2)
 
     n = len(ccMatrix1)
-    numOfLabels = 9
-    generatePNG(diffMap, minColorBarLimit, maxColorBarLimit, numOfLabels,
+    labelsList = []
+    numOfLabels = 0
+    if len(labelsList) == 0:
+         numOfLabels = 6
+    else:
+        numOfLabels = len(labelsList)
+    generatePNG_v2(diffMap, minColorBarLimit, maxColorBarLimit, numOfLabels,
                 f"{out_file}-overall-difference.png", title, selectedAtoms)
+    # overallCorrelationMap(diffMap,
+    #                       minColorBarLimit, maxColorBarLimit,
+    #                       f"{out_file}-overall-difference.png", title, selectedAtoms)
 
 
 def overallNonUniformDifferenceMap(ccMatrix1, ccMatrix2, minColorBarLimit,
@@ -1779,6 +1787,156 @@ def generatePNG(ccMatrix, minColorBarLimit, maxColorBarLimit,
         ax.annotate(myList[i], xy=(1.05, 0), xycoords='axes fraction', xytext=(1.05, middlePoint - 0.015),
                     rotation=90, size=14, color='black')
         # print(middlePoint)
+
+    # plt.tight_layout()
+    plt.savefig(out_file, bbox_inches='tight', dpi=200)
+    # plt.show()
+
+def generatePNG_v2(ccMatrix, minColorBarLimit, maxColorBarLimit,
+                    numOfLabels, out_file, title, selectedAtoms):
+    """
+        Plots nDCC maps for the whole structure.
+
+    Parameters
+    ----------
+    ccMatrix: A numpy square matrix of floats
+    minColorBarLimit: signed int
+        Mostly, -1 or 0.
+    maxColorBarLimit: unsigned int
+        Mostly, 1.
+    out_file: string
+        prefix for the output png files.
+        This prefix will get _overall.png extension.
+    title: string
+        Title of the figure.
+    selectedAtoms: prody object
+        A list of -typically CA- atoms selected from the parsed PDB file.
+
+    Returns
+    -------
+    Nothing
+
+    """
+
+    # selectedAtoms = parsePDB(pdb_file, subset='ca')
+    # chainLengths = Counter(selectedAtoms.getChids()).values()
+
+    n = len(ccMatrix)
+    ##########################################################################
+    # Set residue interface definitions
+    fig = plt.figure()
+    fig.set_size_inches(8.0, 5.5, forward=True)
+    plt.rcParams['font.size'] = 16
+    ax = fig.add_subplot(1, 1, 1)
+
+    plt.xlabel('Residue indices')
+    plt.ylabel('Residue indices')
+    plt.title(title, y=1.08)
+
+    # print(selectedAtoms.getChids())
+
+    selection_reorder = []
+    selection_tick_labels = []
+    selection_tick_labels.append(str(selectedAtoms.getResnums()[0]))
+    selection_reorder.append(0)
+    tempVal = 0
+    myList = list(Counter(selectedAtoms.getChids()).keys())
+
+    major_nums = []
+    major_labels = []
+
+    if len(myList) == 1:
+        realTicsList = np.linspace(0, len(selectedAtoms.getResnums()) - 1, numOfLabels, dtype=int)
+        major_nums = realTicsList
+
+        for item in (realTicsList):
+            # print(selectedAtoms.getResnums()[item])
+            major_labels.append(str(selectedAtoms.getResnums()[item]))
+    elif (len(myList) > 1):
+        for i in Counter(selectedAtoms.getChids()).values():
+            tempVal = tempVal + i
+            selection_reorder.append(tempVal)
+            selection_tick_labels.append(str(selectedAtoms.getResnums()[tempVal - 1]))
+        major_nums.extend(selection_reorder)
+        major_labels.extend(selection_tick_labels)
+    else:
+        print("Warning: Unknown chain ID!")
+    # print(selection_reorder)
+
+    ##########################################################################
+    # Set plotting parameters
+
+    # plt.rcParams['axes.titlepad'] = 20
+    ax.autoscale(False)
+    ax.set_aspect('equal')
+
+    # ax.set_xticks(major_nums, major_labels, rotation=45, minor=False)
+    plt.xticks(major_nums, major_labels, size=12, rotation=45)
+    plt.yticks(major_nums, major_labels, size=12)
+
+    # ax.xaxis.set_tick_params(width=2, length=5, labelsize=12, minor=False)
+    # ax.yaxis.set_tick_params(width=2, length=5)
+
+    plt.axis([0, n, 0, n])
+    ax.tick_params(which='major', width=2, length=5)
+    ax.tick_params(which='minor', width=1, length=3)
+
+    # print("Min value")
+    # print("Row Index of min value")
+    # print(np.argmin(ccMatrix_sub, 0))
+
+    # print("Column Index of min value")
+    # print(np.argmin(ccMatrix_sub, 1))
+
+    # Set colorbar features here!
+    jet = plt.get_cmap('jet')
+    djet = cmap_discretize(jet, 8)
+
+    plt.imshow(np.matrix(ccMatrix), cmap=djet)
+    plt.clim(minColorBarLimit, maxColorBarLimit)
+
+    position = fig.add_axes([0.85, 0.15, 0.03, 0.70])
+    cbar = plt.colorbar(cax=position)
+
+    #cbar.set_ticks([-1.00, -0.75, -0.50, -0.25, 0.00, 0.25, 0.50, 0.75, 1.00])
+    numOfLabels = 9
+    cbar.set_ticks(np.linspace(minColorBarLimit, maxColorBarLimit, num=numOfLabels))
+
+    for t in cbar.ax.get_yticklabels():
+        t.set_horizontalalignment('right')
+        t.set_x(4.0)
+
+    if len(myList) > 1:
+        # Add chain borders to the plot
+        for i in range(len(selection_reorder) - 1):
+            beginningPoint = selection_reorder[i] / selection_reorder[-1]
+            endingPoint = selection_reorder[i + 1] / selection_reorder[-1]
+            middlePoint = (float(beginningPoint) + float(endingPoint)) / 2.0
+            if i % 2 == 0:
+                # x axis
+                ax.annotate('', xy=(beginningPoint, 1.03), xycoords='axes fraction',
+                            xytext=(endingPoint, 1.03),
+                            arrowprops=dict(linewidth=2., arrowstyle="-", color='black'))
+
+                # y axis
+                ax.annotate('', xy=(1.04, beginningPoint), xycoords='axes fraction',
+                            xytext=(1.04, endingPoint),
+                            arrowprops=dict(linewidth=2., arrowstyle="-", color='black'))
+
+            elif i % 2 == 1:
+                # x axis
+                ax.annotate('', xy=(beginningPoint, 1.03), xycoords='axes fraction',
+                            xytext=(endingPoint, 1.03), arrowprops=dict(linewidth=2., arrowstyle="-", color='gray'))
+
+                # y axis
+                ax.annotate('', xy=(1.04, beginningPoint), xycoords='axes fraction',
+                            xytext=(1.04, endingPoint), arrowprops=dict(linewidth=2., arrowstyle="-", color='gray'))
+
+            ax.annotate(myList[i], xy=(0, 1.04), xycoords='axes fraction',
+                        xytext=(middlePoint - 0.015, 1.04), size=14, color='black')
+            ax.annotate(myList[i], xy=(1.05, 0), xycoords='axes fraction',
+                        xytext=(1.05, middlePoint - 0.015), rotation=90, size=14, color='black')
+            # print(middlePoint)
 
     # plt.tight_layout()
     plt.savefig(out_file, bbox_inches='tight', dpi=200)

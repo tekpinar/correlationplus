@@ -5,6 +5,7 @@
 # Copyright Mustafa Tekpinar 2017-2018                                        #
 # Copyright CNRS-UMR3528, 2019                                                #
 # Copyright Institut Pasteur Paris, 2020-2021                                 #
+# Copyright Mustafa Tekpinar 2022-2024                                        #
 #                                                                             #
 # This file is part of correlationplus.                                       #
 #                                                                             #
@@ -33,5 +34,5 @@ Purpose     : A Python package to calculate, visualize and analyze
 
 __all__ = ['calculate', 'visualize', 'centralityAnalysis', 'pathAnalysis']
 
-__version__ = '0.2.1'
+__version__ = '0.2.2'
 

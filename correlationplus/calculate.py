@@ -709,10 +709,9 @@ def calcMDsingleDihedralCC(topology, trajectory, startingFrame=0, endingFrame=(-
         Default value is True and it means that the cross-correlation matrix
         will be normalized.
     dihedralType: string
-        Default value is 'all' and it means that all dihedral angles will be 
-        used. It is also possible to do the dihedral calculation based on 
-        just 'omega', 'phi' or 'psi' dihedral angles. Please note that these 
-        are all only backbone dihedrals.    
+        Default value is 'psi'. It is also possible to do the dihedral 
+        calculation based on just 'omega' or 'phi' dihedral angles. 
+        Please note that these are all only backbone dihedrals.    
     saveMatrix: bool
         If True, cross-correlation matrix will be written to an output file. 
     out_file: string
@@ -815,6 +814,10 @@ def calcMDsingleDihedralCC(topology, trajectory, startingFrame=0, endingFrame=(-
         # Remove the None indice locations from the dihedral angles list. 
         for index in sorted(noneList, reverse=True): 
             del selected_dihs[index]
+    else:
+        print("@> ERROR: Unknown dihedral requested! Dihedrals can only be")
+        print("@> psi, phi or omega!")
+        sys.exit(-1)
         
     dihs = dihedrals.Dihedral(selected_dihs).run(start=startingFrame, stop=endingFrame);
     #angles below will be deprecated and replaced with results.angles in MDAnalysis 3.0.0
