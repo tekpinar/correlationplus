@@ -1,6 +1,15 @@
-biopython>=1.76
-MDAnalysis>=1.1.0
-matplotlib>=3.2.2, <=3.3.4
-networkx>=2.5.1
-prody
+numpy<1.24
+scipy<1.11.0
+matplotlib<3.9.0
 numba>=0.50.0
+prody
+networkx>=2.5.1
+biopython>=1.76
+mdanalysis>=2.3.0
+
+
+
+
+
+
+

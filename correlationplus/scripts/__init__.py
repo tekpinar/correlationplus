@@ -5,6 +5,7 @@
 # Copyright Mustafa Tekpinar 2017-2018                                        #
 # Copyright CNRS-UMR3528, 2019                                                #
 # Copyright Institut Pasteur Paris, 2020-2021                                 #
+# Copyright Mustafa Tekpinar 2022-2024                                        #
 #                                                                             #
 # This file is part of correlationplus.                                       #
 #                                                                             #

@@ -5,6 +5,7 @@
 # Copyright Mustafa Tekpinar 2017-2018                                        #
 # Copyright CNRS-UMR3528, 2019                                                #
 # Copyright Institut Pasteur Paris, 2020-2021                                 #
+# Copyright Mustafa Tekpinar 2022-2024                                        #
 #                                                                             #
 # This file is part of correlationplus.                                       #
 #                                                                             #
@@ -45,6 +46,7 @@ setup(name='correlationplus',
           'Programming Language :: Python :: 3.6',
           'Programming Language :: Python :: 3.7',
           'Programming Language :: Python :: 3.8',
+          'Programming Language :: Python :: 3.11',
           'License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)',
           'Intended Audience :: Science/Research',
           'Topic :: Scientific/Engineering :: Bio-Informatics',
