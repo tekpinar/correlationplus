@@ -6,10 +6,4 @@ prody
 networkx>=2.5.1
 biopython>=1.76
 mdanalysis>=2.3.0
-
-
-
-
-
-
-
+sphinx_rtd_theme
