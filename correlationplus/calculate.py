@@ -204,7 +204,7 @@ def calcMDnDCC(topology, trajectory, startingFrame=0, endingFrame=(-1),
     # Perform Calpha alignment first
     if alignTrajectory:
         print("@> Aligning only Calpha atoms to the initial frame!")
-        alignment = align.AlignTraj(universe, universe, select="protein and name CA", in_memory=True)
+        alignment = align.AlignTraj(universe, universe, select="protein and name CA", in_memory=False)
         alignment.run()
 
     Rvector = []
@@ -303,7 +303,7 @@ def calcMDtlDCC(topology, trajectory, startingFrame=0, endingFrame=(-1),
     # First, perform Calpha alignment
     if alignTrajectory:
         print("@> Aligning only Calpha atoms to the initial frame!")
-        alignment = align.AlignTraj(universe, universe, select="protein and name CA", in_memory=True)
+        alignment = align.AlignTraj(universe, universe, select="protein and name CA", in_memory=False)
         alignment.run()
     
     Rvector = []
@@ -470,7 +470,7 @@ def calcMD_LMI(topology, trajectory, startingFrame=0, endingFrame=(-1),
         # Perform Calpha alignment
         print("@> Aligning only Calpha atoms to the initial frame!")
         alignment = align.AlignTraj(universe, universe,
-                                    select="protein and name CA", in_memory=True)
+                                    select="protein and name CA", in_memory=False)
         alignment.run()
 
     Rvector = []
