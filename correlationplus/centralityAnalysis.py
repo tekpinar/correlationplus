@@ -157,11 +157,15 @@ def projectCentralitiesOntoProteinPyMol(centrality, centralityArray, out_file, \
             format(selectedAtoms.getChids()[sortedList[i]],
                     selectedAtoms.getResnums()[sortedList[i]]))
 
+    PML_FILE.write("bg_color white\n")
+
+    PML_FILE.write("png "+out_file + "_" + centrality + "_projection.png, dpi=300, ray=1\n")
+    PML_FILE.close()
     selectedAtoms.setBetas([scalingFactor * i for i in centralityArray])
 
     writePDB(out_file + '_' + centrality + '.pdb', selectedAtoms)
 
-    PML_FILE.close()
+
 
 def autoScaleCentralities(centralityArray,\
                           selectedAtoms, global_or_local):
