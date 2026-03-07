@@ -6,7 +6,7 @@
 #              for the most uptodate usage information and more examples. 
 #Prerequisite: You must have installed correlationplus. Otherwise, try 'pip install correlationplus'.
 #Author      : Mustafa Tekpinar
-#Email       : tekpinar@buffalo.edu
+#Email       : mtekpinar@yyu.edu.tr
 #Date        : August 9, 2021
 #Licence     : LGPL v3
 
@@ -51,7 +51,7 @@ then
     #Please note that pymol or vmd has to be in your path to run these commands.
     #Any other problem?
     #Read the documentation at https://correlationplus.readthedocs.io/en/latest/quickstart.html
-    #Or email me at tekpinar@buffalo.edu!
+    #Or email me at mtekpinar@yyu.edu.tr!
     
 else    
         echo "ERROR: ${protein}.pdb file is not in the directory!"

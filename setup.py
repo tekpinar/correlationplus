@@ -5,7 +5,7 @@
 # Copyright Mustafa Tekpinar 2017-2018                                        #
 # Copyright CNRS-UMR3528, 2019                                                #
 # Copyright Institut Pasteur Paris, 2020-2021                                 #
-# Copyright Mustafa Tekpinar 2022-2024                                        #
+# Copyright Mustafa Tekpinar 2022-2026                                        #
 #                                                                             #
 # This file is part of correlationplus.                                       #
 #                                                                             #
@@ -33,7 +33,7 @@ setup(name='correlationplus',
       long_description=open('README.md').read(),
       long_description_content_type="text/markdown",
       author="Mustafa Tekpinar",
-      author_email="tekpinar@buffalo.edu",
+      author_email="mtekpinar@yyu.edu.tr",
       url="https://github.com/tekpinar/correlationplus",
       download_url="https://github.com/tekpinar/correlationplus",
       license="LGPL",
