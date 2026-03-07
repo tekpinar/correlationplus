@@ -891,7 +891,7 @@ def distanceDistribution(ccMatrix, out_file, title, selectedAtoms,
 
     plt.xticks(fontsize=16)
     plt.yticks(fontsize=16)
-    plt.xlabel("Distance ($\AA$)", fontsize=20)
+    plt.xlabel(r"Distance ($\AA$)", fontsize=20)
     plt.ylabel(title, fontsize=20)
     if absoluteValues:
         #plt.ylim([0.0, 1.0])

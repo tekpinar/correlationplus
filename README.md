@@ -19,6 +19,9 @@ information, sequence based covariation/coevolution or any other pairwise coupli
 You can use elastic network models or your molecular dynamics trajectories for calculation 
 of dynamical correlations.  
 
+The easiest way to test correlationplus is to use it via Google Colab. 
+Click [correlationplus.ipynb](correlationplus.ipynb) to use correlationplus without installing it on your computer.  
+
 ## Video Tutorials
 * Installation: https://www.youtube.com/watch?v=Fc_xpnrbbWU
 * Calculate Module: https://www.youtube.com/watch?v=04b7mdulHW8
@@ -96,7 +99,7 @@ If you use correlationplus, please cite us:
 
 **Extracting Dynamical Correlations and Identifying Key Residues for Allosteric Communication in Proteins by correlationplus**
 Mustafa Tekpinar, Bertrand Neron, and Marc Delarue
-Journal of Chemical Information and Modeling Article ASAP
+Journal of Chemical Information and Modeling Article
 [DOI: 10.1021/acs.jcim.1c00742](https://pubs.acs.org/doi/10.1021/acs.jcim.1c00742)
 
 
