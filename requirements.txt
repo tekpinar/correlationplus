@@ -1,6 +1,6 @@
 numpy
 scipy
-matplotlib<3.9.0
+matplotlib
 numba>=0.50.0
 prody>=2.6.1
 networkx>=2.5.1

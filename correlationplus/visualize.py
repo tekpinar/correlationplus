@@ -27,11 +27,18 @@ from collections import Counter, OrderedDict
 from typing import ValuesView
 import matplotlib
 import matplotlib.pyplot as plt
-from matplotlib.cm import get_cmap
+
 import numpy as np
 from prody import buildDistMatrix
 
-
+def get_compatible_cmap(name):
+    try:
+        # Preferred method for Matplotlib 3.10+
+        return matplotlib.colormaps[name]
+    except AttributeError:
+        # Fallback for legacy versions
+        return plt.cm.get_cmap(name)
+    
 def cmap_discretize(cmap, N):
     """
         Creates a discrete colormap from the continuous colormap cmap.
@@ -55,7 +62,7 @@ def cmap_discretize(cmap, N):
     """
 
     if type(cmap) == str:
-        cmap = get_cmap(cmap)
+        cmap = get_compatible_cmap(cmap)
     colors_i = np.concatenate((np.linspace(0, 1., N), (0., 0., 0., 0.)))
     colors_rgba = cmap(colors_i)
     indices = np.linspace(0, 1., N+1)
@@ -516,7 +523,7 @@ def overallCorrelationMap(ccMatrix,
     # print(np.argmin(ccMatrix_sub, 1))
 
     # Set colorbar features here!
-    jet = plt.get_cmap('jet')
+    jet = get_compatible_cmap('jet')
     djet = cmap_discretize(jet, 8)
 
     plt.imshow(np.matrix(ccMatrix), cmap=djet)
@@ -672,7 +679,7 @@ def intraChainCorrelationMaps(ccMatrix,
         # print(np.argmin(ccMatrix_sub, 1))
 
         # Set colorbar features here!
-        jet = plt.get_cmap('jet')
+        jet = get_compatible_cmap('jet')
         djet = cmap_discretize(jet, 8)
         plt.axis([0, (selection_reorder[j + 1] - selection_reorder[j]), 0,
                   (selection_reorder[j + 1] - selection_reorder[j])])
@@ -814,7 +821,7 @@ def interChainCorrelationMaps(ccMatrix,
             # print(np.argmin(ccMatrix_sub, 1))
 
             # Set colorbar features here!
-            jet = plt.get_cmap('jet')
+            jet = get_compatible_cmap('jet')
             djet = cmap_discretize(jet, 8)
             plt.axis([0, n, 0, n])
             plt.axis([0, (selection_reorder[l + 1] - selection_reorder[l]), 0,
@@ -1493,7 +1500,7 @@ def overallNonUniformDifferenceMap(ccMatrix1, ccMatrix2, minColorBarLimit,
     # print(np.argmin(ccMatrix1_sub, 1))
 
     # Set colorbar features here!
-    jet = plt.get_cmap('jet')
+    jet = get_compatible_cmap('jet')
     djet = cmap_discretize(jet, 8)
 
     plt.imshow(np.matrix(diffMap), cmap=djet)
@@ -1743,7 +1750,7 @@ def generatePNG(ccMatrix, minColorBarLimit, maxColorBarLimit,
     # print(np.argmin(ccMatrix1_sub, 1))
 
     # Set colorbar features here!
-    jet = plt.get_cmap('jet')
+    jet = get_compatible_cmap('jet')
     djet = cmap_discretize(jet, 8)
 
     plt.imshow(np.matrix(ccMatrix), cmap=djet)
@@ -1889,7 +1896,7 @@ def generatePNG_v2(ccMatrix, minColorBarLimit, maxColorBarLimit,
     # print(np.argmin(ccMatrix_sub, 1))
 
     # Set colorbar features here!
-    jet = plt.get_cmap('jet')
+    jet = get_compatible_cmap('jet')
     djet = cmap_discretize(jet, 8)
 
     plt.imshow(np.matrix(ccMatrix), cmap=djet)
