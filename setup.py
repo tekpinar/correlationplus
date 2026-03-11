@@ -25,7 +25,14 @@
 
 from setuptools import setup, find_packages
 
-from correlationplus import __version__ as cp_vers
+def get_version():
+    with open("correlationplus/__init__.py") as f:
+        for line in f:
+            if line.startswith("__version__"):
+                return line.split("=")[1].strip().strip('"').strip("'")
+
+cp_vers = get_version()
+#from correlationplus import __version__ as cp_vers
 
 setup(name='correlationplus',
       version=cp_vers,
@@ -53,7 +60,7 @@ setup(name='correlationplus',
           'Topic :: Scientific/Engineering :: Bio-Informatics',
           'Topic :: Scientific/Engineering :: Chemistry'
           ],
-      python_requires='>=3.6',
+      python_requires='>=3.8',
       install_requires=[i for i in [l.strip() for l in open("requirements.txt").read().split('\n')] if i],
       # zip_safe=False,
       packages=[p for p in find_packages() if p != 'tests'],

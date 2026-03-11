@@ -34,5 +34,5 @@ Purpose     : A Python package to calculate, visualize and analyze
 
 __all__ = ['calculate', 'visualize', 'analyze', 'paths']
 
-__version__ = '0.2.2'
+__version__ = '0.2.3rc1'
 

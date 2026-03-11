@@ -1,0 +1,55 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "correlationplus"
+dynamic = ["version", "readme"]
+
+description = "A Python package to calculate, visualize and analyze correlations of proteins."
+authors = [
+    {name = "Mustafa Tekpinar", email = "mtekpinar@yyu.edu.tr"}
+]
+
+license = "LGPL-3.0-or-later"
+
+requires-python = ">=3.8"
+dependencies = ["numpy>=1.23,<2.0",
+	     "scipy>=1.9",
+	     "matplotlib>=3.5",
+	     "numba>=0.50.0",
+	     "prody>=2.6.1",
+	     "networkx>=2.8",
+	     "biopython>=1.76",
+	     "mdanalysis>=2.4",
+]
+
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "Operating System :: POSIX",
+    "Operating System :: Microsoft :: Windows",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+    "Topic :: Scientific/Engineering :: Chemistry"
+]
+
+[project.urls]
+Homepage = "https://github.com/tekpinar/correlationplus"
+Documentation = "https://correlationplus.readthedocs.io"
+Repository = "https://github.com/tekpinar/correlationplus"
+
+[project.scripts]
+correlationplus = "correlationplus.scripts.correlationplus:main"
+
+[tool.setuptools]
+packages = {find = {exclude = ["tests"]}}
+# license-files = ["COPYING", "COPYING.LESSER"] #After setuptools>77
+
+[tool.setuptools.dynamic]
+version = {attr = "correlationplus.__version__"}
+readme = {file = ["README.md"], content-type = "text/markdown"}

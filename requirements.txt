@@ -1,8 +1,8 @@
-numpy
-scipy
-matplotlib
+numpy>=1.23,<2.0
+scipy>=1.9
+matplotlib>=3.5
 numba>=0.50.0
 prody>=2.6.1
-networkx>=2.5.1
+networkx>=2.8
 biopython>=1.76
-mdanalysis>=2.3.0
+mdanalysis>=2.4
