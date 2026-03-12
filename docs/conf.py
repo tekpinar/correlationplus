@@ -19,11 +19,11 @@ import sphinx_rtd_theme
 # -- Project information -----------------------------------------------------
 
 project = 'correlationplus'
-copyright = '2024, Mustafa Tekpinar'
+copyright = '2026, Mustafa Tekpinar'
 author = 'Mustafa Tekpinar'
 
 # The full version, including alpha/beta/rc tags
-release = '0.2.2'
+release = '0.2.3'
 
 
 # -- General configuration ---------------------------------------------------

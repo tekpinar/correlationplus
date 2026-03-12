@@ -33,7 +33,7 @@ LABEL org.label-schema.docker.cmd="docker run -v ~:/home/correlationplus correla
 USER root
 
 RUN python3.11 -m pip install --upgrade pip
-RUN python3.11 -m pip install numpy==1.26.4 matplotlib==3.8.4 scipy==1.9 networkx==2.8 biopython==1.79 prody==2.6.1 MDAnalysis==2.4 numba==0.56
+RUN python3.11 -m pip install numpy==1.26.4 matplotlib==3.10.8 scipy==1.17.1 networkx==3.6.1 prody==2.6.1 MDAnalysis==2.10.0 numba==0.64.0
 RUN python3.11 -m pip install correlationplus==0.2.3
 RUN python3.11 -m pip install ipython
 

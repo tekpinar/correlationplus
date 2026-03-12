@@ -104,7 +104,7 @@ def projectCentralitiesOntoProteinVMD(centrality, centralityArray, \
     VMD_FILE.close()
 
 def projectCentralitiesOntoProteinPyMol(centrality, centralityArray, out_file, \
-                                        selectedAtoms, scalingFactor):
+                                    selectedAtoms, scalingFactor):
     """
     Produces PyMol output files for visualizing protein centralities.
 
@@ -247,7 +247,7 @@ def autoScaleCentralities(centralityArray,\
 
 
 def projectCentralitiesOntoProteinPyMol_v2(centrality, centralityArray, out_file, \
-                                            selectedAtoms, percentage=0.10):
+                                        selectedAtoms, percentage=0.10):
     """
     Produces PyMol output files for visualizing protein centralities
     projected onto protein B factors column.
