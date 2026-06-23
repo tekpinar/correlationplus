@@ -219,6 +219,7 @@ def calcMDnDCC(topology, trajectory, startingFrame=0, endingFrame=(-1),
     R_average = np.mean(Rvector, axis=0)
     print("@> Calculating cross-correlation matrix:")
     ccMatrix = DCCmatrixCalculation(N, np.array(Rvector), R_average)
+    # ccMatrix = DCCmatrixCalculationV2(N, Rvector, R_average, use_first_frame_as_reference=True)
 
     # Do the averaging
     ccMatrix = ccMatrix / float(N_Frames)
@@ -352,6 +353,63 @@ def DCCmatrixCalculation(N, Rvector, R_average):
                 ccMatrix[i][j] += (deltaR[ind_3i]*deltaR[ind_3j] +
                                    deltaR[ind_3i + 1] * deltaR[ind_3j + 1] +
                                    deltaR[ind_3i + 2] * deltaR[ind_3j + 2])
+    return ccMatrix
+
+@numba.njit
+def DCCmatrixCalculationV2(N, Rvector, R_average, use_first_frame_as_reference=True):
+    """
+    Calculates upper triangle of dynamical cross-correlation matrix.
+
+    Parameters
+    ----------
+    N         : int
+        Number of atoms/residues
+    Rvector   : array (n_frames, 3N)
+        Flattened coordinate vectors for each frame.
+        Assumed to be pre-aligned to Rvector[0].
+    R_average : array (3N,)
+        Mean structure computed from trajectory
+    use_first_frame_as_reference : bool
+        If False (default): standard DCC, fluctuations around trajectory mean.
+        If True: raw second moment relative to frame 0, matching R bio3d
+                 behavior when an external reference is provided.
+    """
+    ccMatrix = np.zeros((N, N), np.double)
+    num_frames = len(Rvector)
+
+    # Determine reference: frame 0 or trajectory mean
+    ref = Rvector[0] if use_first_frame_as_reference else R_average
+
+    for k in range(num_frames):
+        if k % 100 == 0:
+            print(f"@> Frame: {k}")
+        deltaR = np.subtract(Rvector[k], ref)
+        for i in range(N):
+            ind_3i = 3 * i
+            for j in range(i, N):
+                ind_3j = 3 * j
+                ccMatrix[i][j] += (deltaR[ind_3i]   * deltaR[ind_3j]   +
+                                   deltaR[ind_3i+1] * deltaR[ind_3j+1] +
+                                   deltaR[ind_3i+2] * deltaR[ind_3j+2])
+
+    # Divide by n to get ensemble average
+    ccMatrix /= num_frames
+
+    # Add outer(mxyz, mxyz) correction term — equivalent to R's:
+    #   covmat <- covmat + outer(mxyz, mxyz)
+    # mxyz is the mean displacement of the trajectory from the reference.
+    # When use_first_frame_as_reference=False, ref == R_average so
+    # deltaR_mean is zero everywhere and this block is skipped.
+    if use_first_frame_as_reference:
+        deltaR_mean = np.subtract(R_average, Rvector[0])  # mxyz in R
+        for i in range(N):
+            ind_3i = 3 * i
+            for j in range(i, N):
+                ind_3j = 3 * j
+                ccMatrix[i][j] += (deltaR_mean[ind_3i]   * deltaR_mean[ind_3j]   +
+                                   deltaR_mean[ind_3i+1] * deltaR_mean[ind_3j+1] +
+                                   deltaR_mean[ind_3i+2] * deltaR_mean[ind_3j+2])
+
     return ccMatrix
 
 @numba.njit

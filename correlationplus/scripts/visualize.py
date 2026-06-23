@@ -71,6 +71,9 @@ Arguments: -i: A file containing correlations in matrix format. (Mandatory)
                It can be used to improve tcl and pml outputs to view the interaction 
                strengths properly. Recommended values are between 0.0 and 2.0. (Optional)
 
+           -c: Matplotlib colormap name for visualizations (e.g., 'viridis', 'plasma', 'coolwarm').
+               Default is 'jet'. (Optional)
+
            -o: This will be your output file. Output figures are in png format. (Optional)
 """)
 
@@ -85,10 +88,11 @@ def handle_arguments_visualizemapApp():
     dmin_fltr = None
     dmax_fltr = None
     cyl_rad = None
+    cmap_name = None
     try:
-        opts, args = getopt.getopt(sys.argv[2:], "hi:o:t:p:v:x:d:D:r:", \
+        opts, args = getopt.getopt(sys.argv[2:], "hi:o:t:p:v:x:d:D:r:c:", \
             ["help", "inp=", "out=", "type=", "pdb=", "vmin=", "vmax=", \
-            "dmin=", "dmax=", "radius="])
+            "dmin=", "dmax=", "radius=", "cmap="])
     except getopt.GetoptError:
         usage_visualizemapApp()
     for opt, arg in opts:
@@ -113,6 +117,8 @@ def handle_arguments_visualizemapApp():
             dmax_fltr = arg
         elif opt in ("-r", "--radius"):
             cyl_rad = arg
+        elif opt in ("-c", "--cmap"):
+            cmap_name = arg
         else:
             assert False, usage_visualizemapApp()
 
@@ -144,15 +150,18 @@ def handle_arguments_visualizemapApp():
     if dmax_fltr is None:
         dmax_fltr = 9999.9
 
+    if cmap_name is None:
+        cmap_name = 'jet'
+
     return inp_file, out_file, sel_type, pdb_file, \
             vmin_fltr, vmax_fltr, \
-            dmin_fltr, dmax_fltr, cyl_rad
+            dmin_fltr, dmax_fltr, cyl_rad, cmap_name
 
 
 def visualizemapApp():
     inp_file, out_file, sel_type, pdb_file, \
     vmin_fltr, vmax_fltr, \
-    dmin_fltr, dmax_fltr, cyl_rad = handle_arguments_visualizemapApp()
+    dmin_fltr, dmax_fltr, cyl_rad, cmap_name = handle_arguments_visualizemapApp()
     print(f"""
 @> Running 'visualize' app:
     
@@ -161,6 +170,7 @@ def visualizemapApp():
 @> Data type        : {sel_type}
 @> Min. dist. filter: {dmin_fltr}
 @> Max. dist. filter: {dmax_fltr}
+@> Colormap         : {cmap_name}
 @> Output           : {out_file}""")
 
 
@@ -359,7 +369,7 @@ def visualizemapApp():
     # Call overall correlation calculation
 
     overallCorrelationMap(ccMatrix, minColorBarLimit, maxColorBarLimit,
-                          out_file, " ", selectedAtoms)
+                          out_file, " ", selectedAtoms, cmap_name=cmap_name)
 
     plotDistributions = True
     VMDcylinderRadiusScale = 0.5
@@ -425,9 +435,9 @@ def visualizemapApp():
     plotChains = True
     if len(chains) > 1 and plotChains:
         intraChainCorrelationMaps(ccMatrix, minColorBarLimit, maxColorBarLimit,
-                                  out_file, " ", selectedAtoms, saveMatrix)
+                                  out_file, " ", selectedAtoms, saveMatrix, cmap_name=cmap_name)
         interChainCorrelationMaps(ccMatrix, minColorBarLimit, maxColorBarLimit,
-                                  out_file, " ", selectedAtoms, saveMatrix)
+                                  out_file, " ", selectedAtoms, saveMatrix, cmap_name=cmap_name)
 
     # Here, we can filter some correlation values closer than a distance.
     # Typically, it is supposed to filter out the correlation within the

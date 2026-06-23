@@ -32,11 +32,14 @@ import numpy as np
 from prody import buildDistMatrix
 
 def get_compatible_cmap(name):
+    # Accept either a colormap name or a colormap instance
+    if not isinstance(name, str):
+        return name
     try:
         # Preferred method for Matplotlib 3.10+
         return matplotlib.colormaps[name]
-    except AttributeError:
-        # Fallback for legacy versions
+    except Exception:
+        # Fallback for legacy versions or if lookup fails
         return plt.cm.get_cmap(name)
     
 def cmap_discretize(cmap, N):
@@ -427,7 +430,7 @@ def filterCorrelationMapByDistance(ccMatrix, out_file, title,
 
 def overallCorrelationMap(ccMatrix,
                           minColorBarLimit, maxColorBarLimit,
-                          out_file, title, selectedAtoms):
+                          out_file, title, selectedAtoms, cmap_name='jet'):
     """
         Plots nDCC maps for the whole structure.
 
@@ -523,7 +526,7 @@ def overallCorrelationMap(ccMatrix,
     # print(np.argmin(ccMatrix_sub, 1))
 
     # Set colorbar features here!
-    jet = get_compatible_cmap('jet')
+    jet = get_compatible_cmap(cmap_name)
     djet = cmap_discretize(jet, 8)
 
     plt.imshow(np.matrix(ccMatrix), cmap=djet)
@@ -579,7 +582,7 @@ def overallCorrelationMap(ccMatrix,
 
 def intraChainCorrelationMaps(ccMatrix,
                               minColorBarLimit, maxColorBarLimit,
-                              out_file, title, selectedAtoms, saveMatrix):
+                              out_file, title, selectedAtoms, saveMatrix, cmap_name='jet'):
     """
         Plot intra-chain correlations to different png files,
         if there are at least two chains!
@@ -679,7 +682,7 @@ def intraChainCorrelationMaps(ccMatrix,
         # print(np.argmin(ccMatrix_sub, 1))
 
         # Set colorbar features here!
-        jet = get_compatible_cmap('jet')
+        jet = get_compatible_cmap(cmap_name)
         djet = cmap_discretize(jet, 8)
         plt.axis([0, (selection_reorder[j + 1] - selection_reorder[j]), 0,
                   (selection_reorder[j + 1] - selection_reorder[j])])
@@ -706,7 +709,7 @@ def intraChainCorrelationMaps(ccMatrix,
 
 def interChainCorrelationMaps(ccMatrix, 
                               minColorBarLimit, maxColorBarLimit, 
-                              out_file, title, selectedAtoms, saveMatrix):
+                              out_file, title, selectedAtoms, saveMatrix, cmap_name='jet'):
     """
         Plot inter-chain correlations to different png files,
         if there are at least two chains!
@@ -821,7 +824,7 @@ def interChainCorrelationMaps(ccMatrix,
             # print(np.argmin(ccMatrix_sub, 1))
 
             # Set colorbar features here!
-            jet = get_compatible_cmap('jet')
+            jet = get_compatible_cmap(cmap_name)
             djet = cmap_discretize(jet, 8)
             plt.axis([0, n, 0, n])
             plt.axis([0, (selection_reorder[l + 1] - selection_reorder[l]), 0,
@@ -1339,7 +1342,7 @@ def projectCorrelationsOntoProteinPyMol(pdb_file, ccMatrix, pml_out_file,
 
 def overallUniformDifferenceMap(ccMatrix1, ccMatrix2,
                                 minColorBarLimit, maxColorBarLimit, 
-                                out_file, title, selectedAtoms):
+                                out_file, title, selectedAtoms, cmap_name='jet'):
     """
         Plots the difference map between correlation maps for the entire structure.
         Sizes of ccMatrix1 and ccMatrix2 are identical. Only one atom set is
@@ -1500,7 +1503,7 @@ def overallNonUniformDifferenceMap(ccMatrix1, ccMatrix2, minColorBarLimit,
     # print(np.argmin(ccMatrix1_sub, 1))
 
     # Set colorbar features here!
-    jet = get_compatible_cmap('jet')
+    jet = get_compatible_cmap(cmap_name)
     djet = cmap_discretize(jet, 8)
 
     plt.imshow(np.matrix(diffMap), cmap=djet)
@@ -1667,7 +1670,7 @@ def triangulateMaps(ccMatrix1, ccMatrix2,
 
 
 def generatePNG(ccMatrix, minColorBarLimit, maxColorBarLimit,
-                numOfLabels, out_file, title, selectedAtoms):
+                numOfLabels, out_file, title, selectedAtoms, cmap_name='jet'):
     """
         Generates a heatmap in PNG format from the ccMatrix. 
         
@@ -1750,7 +1753,7 @@ def generatePNG(ccMatrix, minColorBarLimit, maxColorBarLimit,
     # print(np.argmin(ccMatrix1_sub, 1))
 
     # Set colorbar features here!
-    jet = get_compatible_cmap('jet')
+    jet = get_compatible_cmap(cmap_name)
     djet = cmap_discretize(jet, 8)
 
     plt.imshow(np.matrix(ccMatrix), cmap=djet)
@@ -1800,7 +1803,7 @@ def generatePNG(ccMatrix, minColorBarLimit, maxColorBarLimit,
     # plt.show()
 
 def generatePNG_v2(ccMatrix, minColorBarLimit, maxColorBarLimit,
-                    numOfLabels, out_file, title, selectedAtoms):
+                    numOfLabels, out_file, title, selectedAtoms, cmap_name='jet'):
     """
         Plots nDCC maps for the whole structure.
 
@@ -1896,7 +1899,7 @@ def generatePNG_v2(ccMatrix, minColorBarLimit, maxColorBarLimit,
     # print(np.argmin(ccMatrix_sub, 1))
 
     # Set colorbar features here!
-    jet = get_compatible_cmap('jet')
+    jet = get_compatible_cmap(cmap_name)
     djet = cmap_discretize(jet, 8)
 
     plt.imshow(np.matrix(ccMatrix), cmap=djet)
