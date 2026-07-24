@@ -1203,9 +1203,12 @@ def projectCorrelationsOntoProteinPyMol(pdb_file, ccMatrix, pml_out_file,
 
     DATA_FILE = open(pml_out_file + '-general.pml', 'w')
     DATA_FILE.write(f"load {pdb_file} \n")
-    DATA_FILE.write("cartoon type = tube\n")
+    #DATA_FILE.write("cartoon type = tube\n")
     #DATA_FILE.write("spectrum chain\n")
     DATA_FILE.write("set sphere_scale, 0.75\n")
+    # Added for better/unbroken visualization of Calpha traces
+    DATA_FILE.write("set cartoon_trace_atoms, 1")
+    DATA_FILE.write("show cartoon")
 
     spheresList = []
     for i in range(0, len(ccMatrix)):
