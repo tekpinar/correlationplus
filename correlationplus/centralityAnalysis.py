@@ -143,9 +143,12 @@ def projectCentralitiesOntoProteinPyMol(centrality, centralityArray, out_file, \
     PML_FILE = open(out_file + '_' + centrality + '.pml', 'w')
     
     PML_FILE.write("load " + out_file + "_" + centrality + ".pdb" + "\n")
-    PML_FILE.write("cartoon type = tube\n")
+    # PML_FILE.write("cartoon type = tube\n")
     PML_FILE.write("spectrum b\n")
     PML_FILE.write("set sphere_scale, 0.75\n\n")
+    # Added for better/unbroken visualization of Calpha traces
+    PML_FILE.write("set cartoon_trace_atoms, 1")
+    PML_FILE.write("show cartoon")
 
     vdw_representation_string = "show spheres, chain {0:s} and resi {1:d} and name ca\n"
 
