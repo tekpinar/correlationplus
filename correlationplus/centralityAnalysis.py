@@ -147,8 +147,8 @@ def projectCentralitiesOntoProteinPyMol(centrality, centralityArray, out_file, \
     PML_FILE.write("spectrum b\n")
     PML_FILE.write("set sphere_scale, 0.75\n\n")
     # Added for better/unbroken visualization of Calpha traces
-    PML_FILE.write("set cartoon_trace_atoms, 1")
-    PML_FILE.write("show cartoon")
+    PML_FILE.write("set cartoon_trace_atoms, 1\n")
+    PML_FILE.write("show cartoon\n")
 
     vdw_representation_string = "show spheres, chain {0:s} and resi {1:d} and name ca\n"
 
